@@ -1,6 +1,7 @@
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { SiteProvider, useSite } from './context/SiteContext';
+import ErrorBoundary from './components/ErrorBoundary';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import WhatsAppButton from './components/WhatsAppButton';
@@ -38,8 +39,9 @@ const AppContent = () => {
       <Navbar />
       <main>
         <React.Suspense fallback={
-          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh', color: 'var(--text-secondary)' }}>
-            <div className="spinner">Cargando...</div>
+          <div className="loading-fallback">
+            <div className="spinner"></div>
+            <span>Cargando...</span>
           </div>
         }>
           <Routes>
@@ -67,9 +69,11 @@ const AppContent = () => {
 
 const App = () => {
   return (
-    <SiteProvider>
-      <AppContent />
-    </SiteProvider>
+    <ErrorBoundary>
+      <SiteProvider>
+        <AppContent />
+      </SiteProvider>
+    </ErrorBoundary>
   );
 };
 

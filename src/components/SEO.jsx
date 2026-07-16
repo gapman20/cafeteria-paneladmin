@@ -1,10 +1,13 @@
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
+import { useSite } from '../context/SiteContext';
 
 const SEO = ({ title, description, keywords, image, url }) => {
-  const siteTitle = 'Electrica | Servicios de Clase Mundial';
+  const { content } = useSite();
+  const siteName = content.siteName || 'Café Aromático';
+  const siteTitle = `${siteName} | Café de Especialidad`;
   const fullTitle = title ? `${title} | ${siteTitle}` : siteTitle;
-  const defaultDesc = 'Descubre nuestros servicios de primera calidad y diseño de clase mundial.';
+  const defaultDesc = content.footer?.description || 'Café de especialidad, recién tostado y preparado con pasión. Tu taza perfecta te espera.';
   
   return (
     <Helmet>

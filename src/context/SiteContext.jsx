@@ -1,79 +1,107 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { signInWithEmailAndPassword, onAuthStateChanged, signOut, updatePassword, reauthenticateWithCredential, EmailAuthProvider } from 'firebase/auth';
-import { db, auth } from '../firebase';
 
 // ─── Default Text Content ─────────────────────────────────────────────────────
 const defaultContent = {
-  siteName:  'MiEmpresa',
-  tagline:   'Soluciones web profesionales y administrables.',
-  ctaButton: 'Contáctanos',
+  siteName:  'Café Aromático',
+  tagline:   'El mejor café de especialidad, recién tostado',
+  ctaButton: 'Ordenar Ahora',
 
   seo: {
-    title:       'MiEmpresa | Soluciones Web Profesionales',
-    description: 'Diseñamos sitios web de alto rendimiento, totalmente autogestionables, con diseño premium y enfoque en resultados.',
-    keywords:    'diseño web, marketing digital, apps móviles, sitio web profesional',
+    title:       'Café Aromático | Café de Especialidad',
+    description: 'Café de especialidad recién tostado. Espresso, cold brew, pour over y repostería artesanal. Visítanos en el centro de la ciudad.',
+    keywords:    'café de especialidad, espresso, cold brew, cafetería, café artesanal, tostado artesanal, pour over',
   },
 
   social: {
-    instagram: 'https://instagram.com/',
-    youtube:   'https://youtube.com/',
-    facebook:  'https://facebook.com/',
-    tiktok:    '',
+    facebook:  'https://facebook.com/cafearomatico',
+    instagram: 'https://instagram.com/cafearomatico',
+    tiktok:    'https://tiktok.com/@cafearomatico',
+    youtube:   '',
     linkedin:  '',
   },
 
   whatsappFloat: {
     number:  '+521234567890',
-    message: 'Hola! Vi su página web y me gustaría solicitar más información.',
+    message: 'Hola! Me gustaría reservar una mesa o hacer un pedido.',
   },
 
   home: {
-    badge:              'NUEVA VERSIÓN 2024 DISPONIBLE',
-    title:              'Eleva tu Empresa al',
-    titleAccent:        'Siguiente Nivel Digital',
-    subtitle:           'Diseñamos experiencias web de alto rendimiento. Estética premium, arquitectura escalable y un panel de control completamente autogestionable pensado para maximizar tus ventas.',
-    ctaText:            'Cotiza tu Proyecto',
-    ctaSecondary:       'Ver Casos de Éxito',
-    featuresTitle:      'Tecnología de Vanguardia',
-    featuresSubtitle:   'No hacemos páginas comunes. Construimos ecosistemas digitales listos para competir y ganar en tu industria.',
-    ctaSectionTitle:    '¿Listo para el cambio?',
-    ctaSectionSubtitle: 'Únete a las empresas que ya están facturando más gracias a un ecosistema digital profesional.',
+    badge:              '☕ Café de Especialidad',
+    title:              'Sabor que',
+    titleAccent:        'Enamora',
+    subtitle:           'Granos seleccionados de las mejores fincas latinoamericanas, tostados artesanalmente en pequeños lotes para ofrecerte una experiencia única en cada taza.',
+    ctaText:            'Ver Menú',
+    ctaSecondary:       'Nuestra Historia',
+    ctaSectionTitle:    'Visítanos Hoy',
+    ctaSectionSubtitle: 'Ambiente acogedor, wifi gratuito y el mejor café de la ciudad. Tu lugar favorito para desconectar.',
+    // Stats
+    stats: [
+      { number: '500+', label: 'Tazas Diarias' },
+      { number: '4.9', label: 'Calificación' },
+      { number: '12', label: 'Orígenes' },
+      { number: '8', label: 'Años' },
+    ],
+    // Process
+    processTitle: 'Del Grano a Tu Taza',
+    processSubtitle: 'Cada paso es una decisión de calidad que se refleja en tu experiencia.',
+    steps: [
+      { number: '01', title: 'Selección', desc: 'Viajamos a las mejores fincas de Colombia, Etiopía y Guatemala para seleccionar granos de altura con perfiles únicos.' },
+      { number: '02', title: 'Tueste', desc: 'Tostamos en pequeños lotes cada semana, controlando temperatura y tiempo para resaltar las notas de cada origen.' },
+      { number: '03', title: 'Preparación', desc: 'Nuestros baristas certificados dominan cada método: espresso, pour over, cold brew y más.' },
+      { number: '04', title: 'Servicio', desc: 'Te lo servimos con atención personalizada, porque cada taza es una experiencia que merece ser disfrutada.' },
+    ],
+    // Testimonials
+    testimonialsTitle: 'Lo Que Dicen Nuestros Clientes',
+    testimonialsSubtitle: 'La mejor recompensa es verte sonreír con cada sorbo.',
+    testimonials: [
+      { name: 'Laura Méndez', role: 'Fotógrafa', text: 'El mejor cold brew que he probado. Vengo todos los martes y nunca me falla. El ambiente es perfecto para trabajar.' },
+      { name: 'Roberto Silva', role: 'Emprendedor', text: 'El café de origen de Etiopía me cambió la perspectiva del café. Ahora entiendo lo que es un buen tueste. Imperdible.' },
+      { name: 'Sofía Torres', role: 'Diseñadora', text: 'El pour over es una obra de arte. Se nota la pasión en cada detalle, desde la selección del grano hasta la presentación.' },
+    ],
+    // Tech stack
+    techTitle: 'Nuestros Métodos',
+    techSubtitle: 'Dominamos las técnicas más exigentes del mundo cafetero.',
+    tech: ['Espresso', 'Pour Over', 'Cold Brew', 'Aeropress', 'Chemex', 'Sifón'],
   },
 
   about: {
-    title:      'Nosotros',
-    subtitle:   'Conoce al equipo detrás de las mejores experiencias digitales.',
-    misionTitle:'Nuestra Misión',
-    misionText: 'Empoderar a empresas de todos los tamaños mediante el desarrollo de plataformas digitales robustas, escalables y visualmente impactantes.',
-    visionTitle:'Nuestra Visión',
-    visionText: 'Ser la agencia de desarrollo web líder a nivel nacional, reconocida por nuestra excelencia en diseño (UI/UX) y soluciones autogestionables.',
+    title:      'Nuestra Historia',
+    subtitle:   'Desde 2017, dedicados a la excelencia cafetera',
+    description: 'Café Aromático nació del sueño de dos amigos apasionados por el café de especialidad. Lo que comenzó como un pequeño tueste artesanal en un garaje, hoy es una comunidad de amantes del buen café. Creemos que cada grano tiene una historia, y nuestro trabajo es contarla a través del sabor.',
+    mission:    'Acercar a las personas el verdadero sabor del café de especialidad, conectando productores, baristas y comunidad en una experiencia que trasciende la taza.',
+    vision:     'Ser la cafetería de referencia en la ciudad, reconocida por nuestra transparencia, calidad y por crear un espacio donde la gente se sienta como en casa.',
+    values: ['Calidad sin Compromiso', 'Transparencia', 'Comunidad', 'Sostenibilidad'],
   },
 
   services: {
-    title:    'Servicios Premium',
-    subtitle: 'Desarrollamos armas digitales. Tecnologías enfocadas en crecimiento exponencial.',
+    title:    'Nuestro Menú',
+    subtitle: 'Descubre nuestra selección de cafés, bebidas y repostería artesanal preparados con pasión.',
     cards: [
-      { id: '1', title: 'Diseño Web Ultrasónico',  desc: 'Interfaces de usuario vibrantes y animadas. Arquitectura frontend de última generación.', active: true },
-      { id: '2', title: 'Marketing de Dominación', desc: 'Estrategias SEM y SEO agresivas utilizando IA para posicionar tu marca en todos los frentes.', active: true },
-      { id: '3', title: 'Aplicaciones Móviles',    desc: 'Desarrollo nativo o híbrido que se siente fluido, pensado para la retención del usuario.', active: true },
-      { id: '4', title: 'Sistemas a Medida',       desc: 'CRMs y automatización de procesos complejos bajo arquitecturas robustas.', active: true },
+      { id: '1', title: 'Espresso & Tradición',     desc: 'Nuestro espresso signature con notas de chocolate oscuro y un toque ahumado. Doble extracción con granulometría perfecta.', active: true },
+      { id: '2', title: 'Métodos Especiales',  desc: 'Pour over, Aeropress, Chemex y más. Cada método resalta notas únicas del café de origen que elijas.', active: true },
+      { id: '3', title: 'Cold Brew & Helados',    desc: '12 horas de infusión en frío. Suave, refrescante y con un sabor que te conquista. También affogato y bebidas frías.', active: true },
+      { id: '4', title: 'Repostería Artesanal',       desc: 'Croissants, muffins, pasteles y galletas preparados cada mañana con ingredientes premium y recetas de la casa.', active: true },
     ],
   },
 
   contact: {
-    title:    'Comienza Ahora',
-    subtitle: 'El momento de escalar tus operaciones es hoy.',
-    whatsapp: '+52 (123) 456-7890',
-    email:    'hola@agenciadigital.com',
-    address:  'Av. Reforma 222, CDMX.',
+    title:    'Encuéntranos',
+    subtitle: 'Te esperamos para compartir una buena taza de café',
+    email:    'hola@cafearomatico.com',
+    whatsapp: '+52 (55) 1234-5678',
+    address:  'Calle Principal #123, Colonia Centro, Ciudad de México',
     mapLat:   19.4326,
     mapLng:   -99.1332,
   },
 
+  products: {
+    title:    'Nuestros Cafés',
+    subtitle: 'Cada taza cuenta una historia. Descubre nuestros cafés de especialidad y encuentra tu favorito.',
+  },
+
   footer: {
-    description: 'Soluciones web profesionales y autogestionables. Diseño premium, entrega rápida y resultados medibles.',
-    copyright:   'MiEmpresa. Todos los derechos reservados.',
+    description: 'Café de especialidad, recién tostado y preparado con pasión. Tu taza perfecta te espera.',
+    copyright:   'Café Aromático. Todos los derechos reservados.',
   },
 };
 
@@ -81,35 +109,35 @@ const defaultContent = {
 const defaultBlogPosts = [
   {
     id: 'post-1',
-    title:     'Tendencias de Diseño Web para 2024',
-    excerpt:   'Descubre los estilos visuales y arquitecturas tecnológicas que dominarán la industria digital este año.',
-    content:   'A medida que entramos en un nuevo año, el panorama del diseño web continúa evolucionando rápidamente. Las interfaces oscuras (Dark Mode), el minimalismo funcional y las micro-interacciones suaves ya no son opcionales, sino expectativas estándar de los usuarios premium.\n\nEn este artículo exploraremos cómo la Tipografía Fluida y los Diseños Glassmórficos están dominando el espacio tecnológico, proporcionando experiencias de usuario (UX) inmersivas que retienen por más tiempo a los clientes potenciales.\n\nEl glassmorfismo avanzado utiliza fondos semi-transparentes con desenfoque de fondo, creando una jerarquía visual impresionante especialmente cuando se superpone en fondos fotográficos profundos.',
-    author:    'Admin',
-    date:      'Oct 12, 2023',
+    title:     'Los Secretos del Tueste Perfecto',
+    excerpt:   'Descubre cómo la temperatura, el tiempo y la humedad transforman un grano verde en una experiencia aromática única.',
+    content:   'El tueste del café es tanto un arte como una ciencia. Cada grano de café verde pasa por una transformación química compleja cuando se expone al calor.\n\nEn Café Aromático, tostamos en un tostador Diedrich de 15kg que nos permite controlar con precisión la temperatura de cada fase del tueste. Desde el punto caramelo hasta el segundo crack, cada segundo cuenta.\n\nLos perfiles de tueste ligero preservan las notas frutales y florales del origen, mientras que un tueste medio desarrolla sabores más balanceados de chocolate y caramelo. El tueste oscuro, por su parte, intensifica los sabores achocolatados pero puede enmascarar las notas sutiles del grano.',
+    author:    'Carlos Mendoza',
+    date:      'Jul 12, 2026',
     image:     null,
-    tags:      'diseño web, tendencias, UI/UX',
+    tags:      'tueste, café, proceso, artesanal',
     published: true,
   },
   {
     id: 'post-2',
-    title:     'Cómo optimizar tu SEO Local',
-    excerpt:   'Estrategias probadas para hacer que tu negocio aparezca primero en las búsquedas de Google Maps de tu ciudad.',
-    content:   'El SEO local es fundamental para cualquier negocio que atienda a clientes en una zona geográfica específica. Aparecer en los primeros resultados de Google Maps puede marcar la diferencia entre tener o no tener clientes.\n\nEn esta guía aprenderás a optimizar tu perfil de Google Business, cómo conseguir reseñas auténticas de clientes, y las palabras clave locales que debes incluir en tu sitio web para dominar tu mercado local.',
-    author:    'Equipo Marketing',
-    date:      'Oct 05, 2023',
+    title:     'Guía: Cómo Preparar el Cold Brew Perfecto',
+    excerpt:   'Paso a paso para lograr un cold brew suave, concentrado y lleno de sabor en la comodidad de tu hogar.',
+    content:   'El cold brew se ha convertido en la bebida del verano, pero poca gente sabe prepararlo correctamente. La clave está en la paciencia y la proporción.\n\nNuestra receta: 100g de café molido grueso por cada 700ml de agua fría. Mezcla suavemente, tapa y refrigera durante 12 a 16 horas. No hay atajos aquí.\n\nDespués de la infusión, cuela con un colador fino y un papel de filtro. El resultado es un concentrado que puedes diluir con agua o leche al gusto. Guarda el resto en el refrigerador — dura hasta una semana.',
+    author:    'María López',
+    date:      'Jul 5, 2026',
     image:     null,
-    tags:      'SEO, marketing local, Google',
+    tags:      'cold brew, receta, café frío, tutorial',
     published: true,
   },
   {
     id: 'post-3',
-    title:     'La importancia de un panel autogestionable',
-    excerpt:   'Por qué depender de un programador para cada cambio de texto es algo del pasado y cómo un CMS ahorra costos.',
-    content:   'En el mundo empresarial moderno, la agilidad es clave. Tener que esperar días o semanas para que un programador actualice el texto de tu landing page es una desventaja competitiva seria.\n\nLos paneles de administración modernos permiten a cualquier persona del equipo actualizar contenido, imágenes, precios y más, sin tocar una sola línea de código. Esto reduce costos, aumenta la velocidad de respuesta al mercado y empodera a tu equipo.',
-    author:    'Admin',
-    date:      'Sep 28, 2023',
+    title:     'Café de Origen vs Mezcla: ¿Cuál Elegir?',
+    excerpt:   'Entiende las diferencias fundamentales entre un single origin y una mezcla, y cuál se adapta mejor a tu paladar.',
+    content:   'Si alguna vez te has preguntado por qué un café de Etiopía sabe a frutas mientras que uno de Colombia recuerda al chocolate, la respuesta está en el concepto de origen.\n\nUn café de origen único (single origin) proviene de una sola finca, región o país. Esto significa que cada lote tiene un perfil de sabor único determinado por el clima, la altitud, el suelo y el procesamiento del grano.\n\nLas mezclas, por otro lado, combinan granos de diferentes orígenes para crear un perfil de sabor consistente y equilibrado. Un buen master roaster sabe combinar granos para resaltar lo mejor de cada uno.',
+    author:    'Carlos Mendoza',
+    date:      'Jun 28, 2026',
     image:     null,
-    tags:      'CMS, administración, negocios',
+    tags:      'café de origen, mezcla, single origin, guía',
     published: true,
   },
 ];
@@ -117,37 +145,42 @@ const defaultBlogPosts = [
 // ─── Default Pages ─────────────────────────────────────────────────────────────
 const defaultPages = [
   { id: 'home', name: 'Inicio', path: '/', active: true, isCustom: false },
-  { id: 'about', name: 'Nosotros', path: '/nosotros', active: true, isCustom: false },
-  { id: 'services', name: 'Servicios', path: '/servicios', active: true, isCustom: false },
-  { id: 'products', name: 'Productos', path: '/productos', active: true, isCustom: false },
-  { id: 'portfolio', name: 'Portafolio', path: '/portafolio', active: true, isCustom: false },
-  { id: 'blog', name: 'Blog', path: '/blog', active: true, isCustom: false },
+  { id: 'services', name: 'Menú', path: '/menu', active: true, isCustom: false },
+  { id: 'products', name: 'Cafés', path: '/cafes', active: true, isCustom: false },
+  { id: 'portfolio', name: 'Galería', path: '/galeria', active: true, isCustom: false },
+  { id: 'blog', name: 'Noticias', path: '/noticias', active: true, isCustom: false },
 ];
 
 // ─── Default Products ────────────────────────────────────────────────────────
 const defaultProducts = [
-  { id: 'prod-1', name: 'Foco LED 12W', description: 'Foco LED luz fría, alto rendimiento y bajo consumo. Ideal para interiores y exteriores techados.', price: '$45.00', image: null, active: true },
-  { id: 'prod-2', name: 'Cable Calibre 12 THW', description: 'Rollo de cable de cobre de 100m. Resistente al calor y humedad. Colores disponibles: rojo, negro, verde y blanco.', price: '$1,250.00', image: null, active: true },
-  { id: 'prod-3', name: 'Centro de Carga 2 Polos', description: 'Centro de carga QO para montaje de sobreponer, incluye zapatas principales.', price: '$220.00', image: null, active: true },
-  { id: 'prod-4', name: 'Contacto Duplex con Placa', description: 'Contacto polarizado en color blanco, diseño moderno y fácil instalación.', price: '$35.00', image: null, active: true },
+  { id: 'prod-1', name: 'Espresso Doble',        description: 'Doble extracción con granulometría perfecta. Notas intensas de cacao, avellana y un final dulce.', price: '$65', image: null, active: true },
+  { id: 'prod-2', name: 'Cappuccino Clásico',     description: 'Espresso con espuma de leche sedosa, balance perfecto entre café y cremosidad. Un clásico que nunca falla.', price: '$85', image: null, active: true },
+  { id: 'prod-3', name: 'Pour Over Ethiopia',     description: 'Café de origen único con notas de arándano, jazmín y un final cítrico brillante. Preparado método V60.', price: '$120', image: null, active: true },
+  { id: 'prod-4', name: 'Affogato Artesanal',     description: 'Espresso caliente sobre helado de vainilla hecho en casa. El postre perfecto para los amantes del café.', price: '$95', image: null, active: true },
 ];
 
 // ─── Default Theme ────────────────────────────────────────────────────────────
 const defaultTheme = {
-  accentPrimary:   '#3b82f6',
-  accentSecondary: '#8b5cf6',
-  bgPrimary:       '#050505',
-  bgSecondary:     '#0a0a0d',
-  bgTertiary:      '#111116',
-  textPrimary:     '#ffffff',
-  textSecondary:   '#a1a1aa',
-  // Explicit per-element controls
-  navbarColor:     '#0a0a0d',   // navbar background
-  cardBg:          '#0f0f14',   // glass cards background
-  textNavbarPrimary:   '#ffffff',
-  textNavbarSecondary: '#a1a1aa',
-  textCardPrimary:     '#ffffff',
-  textCardSecondary:   '#a1a1aa',
+  accentPrimary:   '#C8956C',  // Caramel/crema — the beautiful layer on espresso
+  accentSecondary: '#A67B5B',  // Muted coffee brown
+  bgPrimary:       '#1A1410',  // Deep espresso (almost black but warm)
+  bgSecondary:     '#231C15',  // Dark roast
+  bgTertiary:      '#2C2318',  // Medium roast
+  textPrimary:     '#F5EDE4',  // Warm cream (like milk in coffee)
+  textSecondary:   '#A89888',  // Dusty brown
+  navbarColor:     '#1A1410',  // Deep espresso
+  cardBg:          '#231C15',  // Dark roast
+  textNavbarPrimary:   '#F5EDE4',
+  textNavbarSecondary: '#A89888',
+  textCardPrimary:     '#F5EDE4',
+  textCardSecondary:   '#A89888',
+  // Typography
+  fontDisplay: "'Fraunces', Georgia, serif",
+  fontBody: "'Outfit', system-ui, sans-serif",
+  // Effects
+  radiusMultiplier: 1,      // Tighter, more grounded
+  glassOpacity: 0.04,       // Subtle
+  glowIntensity: 0.3,       // Restrained
 };
 
 // ─── Default Images ────────────────────────────────────────────────────────────
@@ -201,6 +234,15 @@ function applyTheme(theme) {
   root.style.setProperty('--accent-secondary',  theme.accentSecondary);
   root.style.setProperty('--accent-gradient',   `linear-gradient(135deg, ${theme.accentPrimary}, ${theme.accentSecondary})`);
   root.style.setProperty('--accent-glow',       `${theme.accentPrimary}66`);
+  root.style.setProperty('--color-accent',      theme.accentPrimary);
+  root.style.setProperty('--color-accent-hover', theme.accentSecondary);
+  // Button text: dark for light accents, white for dark accents
+  const accentHex = theme.accentPrimary.replace('#', '');
+  const ar = parseInt(accentHex.substring(0, 2), 16);
+  const ag = parseInt(accentHex.substring(2, 4), 16);
+  const ab = parseInt(accentHex.substring(4, 6), 16);
+  const accentLuminance = (0.299 * ar + 0.587 * ag + 0.114 * ab) / 255;
+  root.style.setProperty('--btn-text', accentLuminance > 0.5 ? '#09090B' : '#FAFAFA');
   root.style.setProperty('--bg-primary',        theme.bgPrimary);
   root.style.setProperty('--bg-secondary',      theme.bgSecondary);
   root.style.setProperty('--bg-tertiary',       theme.bgTertiary);
@@ -226,6 +268,47 @@ function applyTheme(theme) {
   const isLight = theme.bgPrimary > '#888888';
   root.style.setProperty('--glass-border',
     isLight ? 'rgba(0,0,0,0.12)' : 'rgba(255,255,255,0.09)');
+
+  // ── Typography ────────────────────────────────────────────────────────────
+  root.style.setProperty('--font-display', theme.fontDisplay || "'Space Grotesk', system-ui, sans-serif");
+  root.style.setProperty('--font-body', theme.fontBody || "'Inter', system-ui, sans-serif");
+
+  // ── Border radius (multiplied) ────────────────────────────────────────────
+  const rm = theme.radiusMultiplier || 1;
+  root.style.setProperty('--radius-sm', `${4 * rm}px`);
+  root.style.setProperty('--radius-md', `${6 * rm}px`);
+  root.style.setProperty('--radius-lg', `${8 * rm}px`);
+  root.style.setProperty('--radius-xl', `${12 * rm}px`);
+
+  // ── Glass opacity ─────────────────────────────────────────────────────────
+  const go = theme.glassOpacity ?? 0.06;
+  root.style.setProperty('--glass-bg', theme.cardBg || theme.bgSecondary);
+  root.style.setProperty('--glass-border',
+    isLight ? `rgba(0,0,0,${0.08 + go})` : `rgba(255,255,255,${0.05 + go})`);
+
+  // ── Legacy color-* variables (used by index.css and admin.css) ──────────
+  root.style.setProperty('--color-base',            theme.bgPrimary);
+  root.style.setProperty('--color-surface',         theme.bgSecondary);
+  root.style.setProperty('--color-elevated',        theme.bgTertiary);
+  root.style.setProperty('--color-overlay',         theme.bgTertiary);
+  root.style.setProperty('--color-text',            theme.textPrimary);
+  root.style.setProperty('--color-text-secondary',  theme.textSecondary);
+  root.style.setProperty('--color-text-muted',      isLight ? '#64748b' : '#71717A');
+  root.style.setProperty('--color-accent-subtle',   `${theme.accentPrimary}14`);
+  root.style.setProperty('--color-accent-border',   `${theme.accentPrimary}33`);
+  root.style.setProperty('--color-border',
+    isLight ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.08)');
+  root.style.setProperty('--color-border-hover',
+    isLight ? 'rgba(0,0,0,0.18)' : 'rgba(255,255,255,0.14)');
+  root.style.setProperty('--hero-overlay',
+    isLight
+      ? 'linear-gradient(180deg, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0.7) 100%)'
+      : 'linear-gradient(180deg, rgba(9,9,11,0.5) 0%, rgba(9,9,11,0.85) 100%)');
+
+  // ── Glow intensity ────────────────────────────────────────────────────────
+  const gi = theme.glowIntensity ?? 1;
+  const glowAlpha = Math.round(gi * 0.15 * 255).toString(16).padStart(2, '0');
+  root.style.setProperty('--shadow-glow', `0 0 ${20 * gi}px ${theme.accentPrimary}${glowAlpha}`);
 }
 
 // ─── Context ──────────────────────────────────────────────────────────────────
@@ -303,38 +386,15 @@ export const SiteProvider = ({ children }) => {
   const [saveStatus, setSaveStatus] = useState(null);
   const [loadingDb, setLoadingDb] = useState(true);
 
-  // Firebase Auth Listener
+  // Check localStorage for existing session on mount
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setIsAuthenticated(!!user);
-    });
-    return unsubscribe;
+    const session = localStorage.getItem('site_session_v1');
+    if (session) setIsAuthenticated(true);
   }, []);
 
-  // Load from Firebase on mount
+  // Load data from localStorage on mount
   useEffect(() => {
-    const loadFromDb = async () => {
-      try {
-        const docRef = doc(db, 'site_data', 'main');
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-          const data = docSnap.data();
-          if (data.content) setContent(deepMerge(defaultContent, data.content));
-          if (data.images) setImages({ ...defaultImages, ...data.images });
-          if (data.theme) setTheme({ ...defaultTheme, ...data.theme });
-          if (data.blogPosts) setBlogPosts(data.blogPosts);
-          if (data.pages) setPages(data.pages);
-          if (data.products) setProducts(data.products);
-          if (data.analytics) setAnalytics(data.analytics);
-          if (data.inbox) setInbox(data.inbox);
-        }
-      } catch (e) {
-        console.error("Error loading from Firebase:", e);
-      } finally {
-        setLoadingDb(false);
-      }
-    };
-    loadFromDb();
+    setLoadingDb(false);
   }, []);
 
   // Apply every theme change live (real-time preview)
@@ -364,6 +424,31 @@ export const SiteProvider = ({ children }) => {
     setContent(prev => {
       const next = deepMerge({}, prev);
       next.services.cards = moveArrayItem(next.services.cards, index, direction);
+      return next;
+    });
+  };
+
+  // ── Home helpers ──────────────────────────────────────────────────────────
+  const updateHomeStat = (index, field, value) => {
+    setContent(prev => {
+      const next = deepMerge({}, prev);
+      next.home.stats[index][field] = value;
+      return next;
+    });
+  };
+
+  const updateHomeStep = (index, field, value) => {
+    setContent(prev => {
+      const next = deepMerge({}, prev);
+      next.home.steps[index][field] = value;
+      return next;
+    });
+  };
+
+  const updateHomeTestimonial = (index, field, value) => {
+    setContent(prev => {
+      const next = deepMerge({}, prev);
+      next.home.testimonials[index][field] = value;
       return next;
     });
   };
@@ -467,31 +552,45 @@ export const SiteProvider = ({ children }) => {
     });
   };
 
-  // ── Auth helpers ────────────────────────────────────────────────────────
+  // ── Auth helpers (localStorage-based) ──────────────────────────────────
+  const ADMIN_KEY = 'site_admin_v1';
+
+  const getAdminUser = () => {
+    try {
+      const stored = localStorage.getItem(ADMIN_KEY);
+      if (stored) return JSON.parse(stored);
+      // Default admin user on first run
+      const defaultUser = { email: 'admin@admin.com', password: 'admin123' };
+      localStorage.setItem(ADMIN_KEY, JSON.stringify(defaultUser));
+      return defaultUser;
+    } catch {
+      return { email: 'admin@admin.com', password: 'admin123' };
+    }
+  };
+
   const login = async (email, pass) => {
-    try {
-      await signInWithEmailAndPassword(auth, email, pass);
+    const admin = getAdminUser();
+    if (email === admin.email && pass === admin.password) {
+      localStorage.setItem('site_session_v1', 'active');
+      setIsAuthenticated(true);
       return true;
-    } catch {
-      return false;
     }
+    return false;
   };
+
   const logout = async () => {
-    await signOut(auth);
+    localStorage.removeItem('site_session_v1');
+    setIsAuthenticated(false);
   };
+
   const changePassword = async (oldPass, newPass) => {
-    try {
-      const user = auth.currentUser;
-      if (user) {
-        const credential = EmailAuthProvider.credential(user.email, oldPass);
-        await reauthenticateWithCredential(user, credential);
-        await updatePassword(user, newPass);
-        return true;
-      }
-      return false;
-    } catch {
-      return false;
+    const admin = getAdminUser();
+    if (oldPass === admin.password) {
+      const updated = { ...admin, password: newPass };
+      localStorage.setItem(ADMIN_KEY, JSON.stringify(updated));
+      return true;
     }
+    return false;
   };
 
   // ── Inbox helpers ───────────────────────────────────────────────────────
@@ -535,25 +634,11 @@ export const SiteProvider = ({ children }) => {
   };
   const removeImage = (key, index = null) => updateImage(key, null, index);
 
-  // ── Persist ───────────────────────────────────────────────────────────────
+  // ── Persist (localStorage only) ───────────────────────────────────────
   const saveContent = async () => {
     try {
       setSaveStatus('saving');
       
-      // Save to Firebase
-      const dataToSave = {
-        content,
-        images,
-        theme,
-        blogPosts,
-        pages,
-        products,
-        analytics,
-        inbox
-      };
-      await setDoc(doc(db, 'site_data', 'main'), dataToSave);
-
-      // Save to localStorage as backup/cache
       localStorage.setItem(CONTENT_KEY, JSON.stringify(content));
       localStorage.setItem(IMAGES_KEY,  JSON.stringify(images));
       localStorage.setItem(THEME_KEY,   JSON.stringify(theme));
@@ -561,10 +646,11 @@ export const SiteProvider = ({ children }) => {
       localStorage.setItem(PAGES_KEY,   JSON.stringify(pages));
       localStorage.setItem(PRODS_KEY,   JSON.stringify(products));
       localStorage.setItem(ANALYTICS_KEY,JSON.stringify(analytics));
-      
+      localStorage.setItem(INBOX_KEY,   JSON.stringify(inbox));
+
       setSaveStatus('saved');
     } catch (error) {
-      console.error("Error saving to Firebase:", error);
+      console.error("Error saving to localStorage:", error);
       setSaveStatus('error');
     } finally {
       setTimeout(() => setSaveStatus(null), 3000);
@@ -586,6 +672,7 @@ export const SiteProvider = ({ children }) => {
   return (
     <SiteContext.Provider value={{
       content, updateContent, updateServiceCard, moveServiceCard,
+      updateHomeStat, updateHomeStep, updateHomeTestimonial,
       images,  updateImage, removeImage,
       theme,   updateTheme, resetTheme,
       blogPosts, createBlogPost, updateBlogPost, deleteBlogPost, duplicateBlogPost,

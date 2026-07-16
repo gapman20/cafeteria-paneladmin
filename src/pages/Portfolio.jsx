@@ -1,49 +1,118 @@
 import React from 'react';
-import { ExternalLink } from 'lucide-react';
+import { Camera, Coffee, ArrowUpRight } from 'lucide-react';
+import { useSite } from '../context/SiteContext';
+import SEO from '../components/SEO';
 
 const Portfolio = () => {
-  const cases = [
-    { title: 'E-commerce Élite', cat: 'Desarrollo Web', img: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80', gradient: 'from-[#3b82f6] to-[#8b5cf6]' },
-    { title: 'Plataforma FinTech', cat: 'App React Native', img: 'https://images.unsplash.com/photo-1512428559087-560fa5ceab42?auto=format&fit=crop&q=80', gradient: 'from-[#10b981] to-[#3b82f6]' },
-    { title: 'Portal Inmobiliario', cat: 'UI/UX Design', img: 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&q=80', gradient: 'from-[#f59e0b] to-[#ef4444]' },
-    { title: 'Dashboard Inteligente', cat: 'Sistemas a Medida', img: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&q=80', gradient: 'from-[#3b82f6] to-[#0ea5e9]' }
+  const { content } = useSite();
+
+  const gallery = [
+    { title: 'Nuestro Tostador Artisan', cat: 'Proceso', img: 'https://images.unsplash.com/photo-1447933601403-0c6688de566e?auto=format&fit=crop&q=80', gradient: 'from-[#8B4513] to-[#D2691E]' },
+    { title: 'Latte Art Perfecto', cat: 'Barismo', img: 'https://images.unsplash.com/photo-1541167760496-1628856ab772?auto=format&fit=crop&q=80', gradient: 'from-[#D2691E] to-[#8B4513]' },
+    { title: 'Orígenes Seleccionados', cat: 'Materia Prima', img: 'https://images.unsplash.com/photo-1559056199-641a0ac8b55e?auto=format&fit=crop&q=80', gradient: 'from-[#6B4C3B] to-[#8B4513]' },
+    { title: 'Nuestro Espacio', cat: 'Ambiente', img: 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&q=80', gradient: 'from-[#8B4513] to-[#6B4C3B]' },
+    { title: 'Pour Over en Acción', cat: 'Métodos', img: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&q=80', gradient: 'from-[#D2691E] to-[#A0522D]' },
+    { title: 'Repostería Artesanal', cat: 'Panadería', img: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&q=80', gradient: 'from-[#8B4513] to-[#D2691E]' },
   ];
 
   return (
     <div className="page" style={{ position: 'relative', zIndex: 1 }}>
-      
-      <div style={{ position: 'absolute', top: '40%', right: '10%', width: '600px', height: '600px', background: 'var(--accent-primary)', filter: 'blur(250px)', opacity: '0.08', borderRadius: '50%', zIndex: -1 }}></div>
+      <SEO
+        title={`Galería | ${content.siteName}`}
+        description="Descubre el mundo de Café Aromático: nuestro proceso, nuestro espacio y la pasión en cada detalle."
+      />
 
-      <header style={{ textAlign: 'center', marginBottom: '5rem', marginTop: '2rem' }}>
+      {/* Subtle background glow */}
+      <div style={{ position: 'absolute', top: '20%', left: '50%', transform: 'translate(-50%, -50%)', width: '700px', height: '500px', background: 'var(--accent-primary)', filter: 'blur(200px)', opacity: '0.06', borderRadius: '50%', zIndex: -1 }}></div>
+
+      <header style={{ textAlign: 'center', marginBottom: '4rem', marginTop: '2rem' }}>
         <div className="animate-fade-up">
-           <div style={{ display: 'inline-block', padding: '8px 16px', borderRadius: '50px', background: 'rgba(59, 130, 246, 0.1)', border: '1px solid rgba(59, 130, 246, 0.2)', color: 'var(--accent-primary)', fontSize: '0.9rem', fontWeight: '600', marginBottom: '1.5rem', letterSpacing: '1px' }}>
-              NUESTROS RESULTADOS
+           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'var(--color-accent-subtle)', border: '1px solid var(--color-accent-border)', padding: '8px 18px', borderRadius: '30px', marginBottom: '1.5rem' }}>
+              <Camera size={16} color="var(--accent-primary)" />
+              <span style={{ fontSize: '0.8rem', fontWeight: '700', color: 'var(--accent-primary)', letterSpacing: '1px', textTransform: 'uppercase' }}>Nuestro Mundo</span>
            </div>
-           <h1 className="h1-premium mb-4">Portafolio Destacado</h1>
-           <p className="subtitle">Explora los últimos productos digitales que hemos llevado al mercado, superando consistentemente las expectativas de facturación de nuestros clientes.</p>
+           <h1 className="h1-premium mb-4">
+             Galería <span className="text-gradient">Cafetera</span>
+           </h1>
+           <p className="subtitle" style={{ maxWidth: '650px', margin: '0 auto' }}>
+             Imágenes que capturan la esencia de Café Aromático: pasión, arte y la mejor materia prima.
+           </p>
         </div>
       </header>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '3rem' }}>
-        {cases.map((project, i) => (
-          <div key={i} className={`glass-card animate-fade-up delay-${(i+1)*100}`} style={{ padding: '0', overflow: 'hidden', display: 'flex', flexDirection: 'column', cursor: 'grab' }}>
-            
-            <div style={{ height: '300px', width: '100%', overflow: 'hidden', position: 'relative' }}>
-              <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'linear-gradient(to top, var(--bg-secondary) 0%, transparent 50%)', zIndex: 1 }}></div>
-              <img src={project.img} alt={project.title} style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.7s cubic-bezier(0.16, 1, 0.3, 1)', ':hover': { transform: 'scale(1.1)' } }} />
-              
-              <div style={{ position: 'absolute', top: '20px', right: '20px', zIndex: 2, background: 'rgba(5, 5, 5, 0.5)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255, 255, 255, 0.2)', padding: '8px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                 <ExternalLink size={20} color="white" />
+      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 2rem 6rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '2rem' }}>
+          {gallery.map((item, i) => (
+            <div key={i} className={`glass-card animate-fade-up delay-${(i+1)*100}`} style={{ padding: '0', overflow: 'hidden', display: 'flex', flexDirection: 'column', cursor: 'pointer' }}>
+
+              <div style={{ height: '220px', width: '100%', overflow: 'hidden', position: 'relative' }}>
+                <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'linear-gradient(to top, var(--bg-secondary) 0%, transparent 60%)', zIndex: 1 }}></div>
+                <img
+                  src={item.img}
+                  alt={item.title}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.7s cubic-bezier(0.16, 1, 0.3, 1)' }}
+                  onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.08)'}
+                  onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+                />
+
+                {/* Category Badge */}
+                <div style={{
+                  position: 'absolute', top: '14px', left: '14px', zIndex: 2,
+                  background: 'var(--accent-primary)',
+                  color: 'var(--btn-text, #FAFAFA)',
+                  padding: '5px 12px',
+                  borderRadius: '20px',
+                  fontSize: '0.7rem',
+                  fontWeight: '700',
+                  letterSpacing: '0.5px',
+                  textTransform: 'uppercase'
+                }}>
+                  {item.cat}
+                </div>
+
+                {/* Icon */}
+                <div style={{
+                  position: 'absolute', top: '14px', right: '14px', zIndex: 2,
+                  background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(8px)',
+                  border: '1px solid rgba(255,255,255,0.15)',
+                  padding: '8px', borderRadius: '50%',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  transition: 'all 0.3s'
+                }}>
+                   <ArrowUpRight size={16} color="white" />
+                </div>
+              </div>
+
+              <div style={{ padding: '1.5rem', flex: 1, display: 'flex', flexDirection: 'column' }}>
+                <h3 style={{
+                  fontFamily: 'var(--font-display)',
+                  fontSize: '1.25rem',
+                  fontWeight: '700',
+                  color: 'var(--text-card-primary)',
+                  marginBottom: '0.6rem',
+                  lineHeight: '1.3'
+                }}>
+                  {item.title}
+                </h3>
+                <p style={{ color: 'var(--text-card-secondary)', fontSize: '0.88rem', lineHeight: '1.6', flex: 1 }}>
+                  Detrás de cada taza hay historia, técnica y dedicación. Descubre nuestro mundo cafetero.
+                </p>
+                <div style={{ marginTop: '1rem', paddingTop: '0.8rem', borderTop: '1px solid var(--glass-border)' }}>
+                  <span style={{
+                    color: 'var(--accent-primary)',
+                    fontWeight: '600',
+                    fontSize: '0.85rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px'
+                  }}>
+                    Ver más <ArrowUpRight size={14} />
+                  </span>
+                </div>
               </div>
             </div>
-
-            <div style={{ padding: '2rem', flex: 1, position: 'relative', zIndex: 2, marginTop: '-3rem' }}>
-              <span className="text-gradient" style={{ fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '1.5px', fontWeight: '800' }}>{project.cat}</span>
-              <h3 className="h2-premium" style={{ fontSize: '1.8rem', marginTop: '0.5rem', marginBottom: '1rem', letterSpacing: '-0.02em', color: 'white' }}>{project.title}</h3>
-              <p style={{ color: 'var(--text-secondary)' }}>Visita el detalle técnico, la solución del problema de negocio y el impacto real medido en el ROI del cliente tras 6 meses.</p>
-            </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </div>
   );

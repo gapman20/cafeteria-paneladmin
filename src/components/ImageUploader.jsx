@@ -68,7 +68,7 @@ const ImageUploader = ({ label, description, value, onChange, maxMB = 2 }) => {
           >
             <button
               onClick={() => inputRef.current?.click()}
-              style={{ opacity: 0, background: 'rgba(59,130,246,0.9)', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '8px', cursor: 'pointer', fontFamily: 'var(--font-heading)', fontWeight: '700', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '6px', transition: 'opacity 0.2s' }}
+              style={{ opacity: 0, background: 'var(--accent-primary)', color: 'var(--btn-text, #FAFAFA)', border: 'none', padding: '10px 20px', borderRadius: '8px', cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: '700', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '6px', transition: 'opacity 0.2s' }}
               onMouseEnter={e => { e.currentTarget.style.opacity = 1; }}
               onFocus={e => { e.currentTarget.style.opacity = 1; }}
             >
@@ -96,17 +96,17 @@ const ImageUploader = ({ label, description, value, onChange, maxMB = 2 }) => {
           onDragOver={e => { e.preventDefault(); setDrag(true); }}
           onDrop={handleDrop}
           style={{
-            border: `2px dashed ${drag ? 'var(--accent-primary)' : 'var(--glass-border)'}`,
+            border: `2px dashed ${drag ? 'var(--color-accent)' : 'var(--color-border)'}`,
             borderRadius: '12px',
             padding: '2.5rem 2rem',
             textAlign: 'center',
             cursor: 'pointer',
-            background: drag ? 'rgba(59,130,246,0.06)' : 'rgba(255,255,255,0.02)',
+            background: drag ? 'rgba(245,158,11,0.06)' : 'rgba(255,255,255,0.02)',
             transition: 'all 0.2s',
           }}
         >
-          <div style={{ width: '56px', height: '56px', borderRadius: '12px', background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem' }}>
-            <ImageIcon size={28} color="var(--accent-primary)" />
+          <div style={{ width: '56px', height: '56px', borderRadius: '12px', background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem' }}>
+            <ImageIcon size={28} color="var(--color-accent)" />
           </div>
           <p style={{ color: 'var(--text-primary)', fontWeight: '600', fontFamily: 'var(--font-heading)', marginBottom: '0.4rem' }}>
             Arrastra una imagen aquí o <span style={{ color: 'var(--accent-primary)' }}>selecciona un archivo</span>

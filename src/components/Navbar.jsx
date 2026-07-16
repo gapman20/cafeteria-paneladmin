@@ -1,21 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, memo } from 'react';
 import { Link } from 'react-router-dom';
 import { Menu, X, Hexagon } from 'lucide-react';
-import { useSite } from '../context/SiteContext';
+import { useContent, usePages } from '../hooks';
 
-const Navbar = () => {
+const Navbar = memo(() => {
   const [isOpen, setIsOpen] = useState(false);
-  const { content, pages } = useSite();
+  const { content } = useContent();
+  const { pages } = usePages();
 
   return (
     <nav className="navbar">
       <div className="navbar-container">
         <Link to="/" className="navbar-logo" onClick={() => setIsOpen(false)}>
-          <Hexagon fill="url(#blue-grad)" color="transparent" size={32} />
+          <Hexagon fill="url(#coffee-grad)" color="transparent" size={28} />
           <svg width="0" height="0">
-            <linearGradient id="blue-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop stopColor="#3b82f6" offset="0%" />
-              <stop stopColor="#8b5cf6" offset="100%" />
+            <linearGradient id="coffee-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop stopColor="#8B4513" offset="0%" />
+              <stop stopColor="#D2691E" offset="100%" />
             </linearGradient>
           </svg>
           {content.siteName}
@@ -40,6 +41,8 @@ const Navbar = () => {
       </div>
     </nav>
   );
-};
+});
+
+Navbar.displayName = 'Navbar';
 
 export default Navbar;

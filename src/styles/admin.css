@@ -1,0 +1,485 @@
+/* ═══════════════════════════════════════════════════════════════════════════════
+   ADMIN PANEL — Themeable via CSS variables from SiteContext
+   Follows the public site theme (light / dark)
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+/* ─── Admin Layout ──────────────────────────────────────────────────────────── */
+.admin-layout {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  min-height: calc(100vh - var(--nav-height));
+}
+
+.admin-sidebar {
+  background: var(--color-surface);
+  border-right: 1px solid var(--color-border);
+  padding: var(--space-6) 0;
+  position: sticky;
+  top: var(--nav-height);
+  height: calc(100vh - var(--nav-height));
+  overflow-y: auto;
+}
+
+.admin-content {
+  padding: var(--space-8);
+  max-width: 1040px;
+}
+
+/* ─── Section Title ─────────────────────────────────────────────────────────── */
+.admin-section-title {
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-bottom: var(--space-6);
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  letter-spacing: -0.01em;
+}
+
+/* ─── Inputs ────────────────────────────────────────────────────────────────── */
+.admin-input {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: 0.8125rem;
+  outline: none;
+  resize: vertical;
+  transition: border-color var(--duration-fast) var(--ease-out);
+  line-height: 1.5;
+}
+
+.admin-input:hover { border-color: var(--color-border-hover); }
+
+.admin-input:focus {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 2px var(--color-accent-subtle);
+}
+
+.admin-input::placeholder { color: var(--color-text-muted); }
+
+/* ─── Labels ────────────────────────────────────────────────────────────────── */
+.admin-label {
+  display: block;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.375rem;
+}
+
+.admin-hint {
+  font-size: 0.6875rem;
+  color: var(--color-text-muted);
+  margin-bottom: 0.375rem;
+  line-height: 1.4;
+}
+
+/* ─── Cards ─────────────────────────────────────────────────────────────────── */
+.admin-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 1rem;
+  transition: border-color var(--duration-fast) var(--ease-out);
+}
+
+.admin-card:hover { border-color: var(--color-border-hover); }
+
+.admin-card-active {
+  background: var(--color-surface);
+  border: 1px solid var(--color-accent);
+  border-radius: var(--radius-lg);
+  padding: 1rem;
+}
+
+/* ─── Stat Cards ────────────────────────────────────────────────────────────── */
+.admin-stat-card {
+  padding: 1rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  transition: border-color var(--duration-fast) var(--ease-out);
+}
+
+.admin-stat-card:hover { border-color: var(--color-border-hover); }
+
+/* ─── Buttons ───────────────────────────────────────────────────────────────── */
+.admin-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.4375rem 0.875rem;
+  background: var(--color-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text-secondary);
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.admin-btn:hover {
+  border-color: var(--color-accent);
+  color: var(--color-text);
+}
+
+.admin-btn-danger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.375rem 0.75rem;
+  background: transparent;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: var(--radius-md);
+  color: #EF4444;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.admin-btn-danger:hover {
+  background: rgba(239, 68, 68, 0.06);
+  border-color: rgba(239, 68, 68, 0.35);
+}
+
+.admin-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  padding: 0.5rem 1rem;
+  background: var(--color-accent);
+  border: none;
+  border-radius: var(--radius-md);
+  color: var(--btn-text, #FAFAFA);
+  font-family: var(--font-display);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.admin-btn-primary:hover {
+  background: var(--color-accent-hover);
+}
+
+/* ─── Grids ─────────────────────────────────────────────────────────────────── */
+.admin-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--space-4);
+}
+
+.admin-grid-2col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+}
+
+.admin-grid-3col {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--space-4);
+}
+
+/* ─── Toggle ────────────────────────────────────────────────────────────────── */
+.admin-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+  font-weight: 500;
+  transition: color var(--duration-fast) var(--ease-out);
+}
+
+.admin-toggle:hover { color: var(--color-text); }
+
+.admin-toggle input[type="checkbox"] {
+  width: 14px;
+  height: 14px;
+  cursor: pointer;
+  accent-color: var(--color-accent);
+}
+
+/* ─── Move Buttons ──────────────────────────────────────────────────────────── */
+.admin-move-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: transparent;
+  border: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.admin-move-btn:hover {
+  border-color: var(--color-accent);
+  color: var(--color-text);
+}
+
+/* ─── Info Banners ──────────────────────────────────────────────────────────── */
+.admin-info-banner {
+  padding: 0.75rem 0.875rem;
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-6);
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.admin-info-banner--blue {
+  background: rgba(37, 99, 235, 0.05);
+  border: 1px solid rgba(37, 99, 235, 0.1);
+}
+
+.admin-info-banner--green {
+  background: rgba(16, 185, 129, 0.05);
+  border: 1px solid rgba(16, 185, 129, 0.1);
+}
+
+.admin-info-banner--red {
+  background: rgba(239, 68, 68, 0.05);
+  border: 1px solid rgba(239, 68, 68, 0.1);
+}
+
+/* ─── Badge ─────────────────────────────────────────────────────────────────── */
+.admin-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.5625rem;
+  font-weight: 600;
+  padding: 0.125rem 0.375rem;
+  border-radius: var(--radius-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.admin-badge--custom {
+  background: rgba(200, 149, 108, 0.1);
+  color: #C8956C;
+  border: 1px solid rgba(200, 149, 108, 0.15);
+}
+
+.admin-badge--built-in {
+  background: rgba(37, 99, 235, 0.1);
+  color: #60A5FA;
+  border: 1px solid rgba(37, 99, 235, 0.15);
+}
+
+.admin-badge--active {
+  background: rgba(16, 185, 129, 0.1);
+  color: #34D399;
+  border: 1px solid rgba(16, 185, 129, 0.15);
+}
+
+.admin-badge--inactive {
+  background: rgba(113, 113, 122, 0.1);
+  color: var(--color-text-muted);
+  border: 1px solid rgba(113, 113, 122, 0.15);
+}
+
+/* ─── Toast ─────────────────────────────────────────────────────────────────── */
+.admin-toast-container {
+  position: fixed;
+  top: calc(var(--nav-height) + 0.75rem);
+  right: 0.75rem;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.admin-toast {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.625rem 0.875rem;
+  border-radius: var(--radius-md);
+  font-size: 0.75rem;
+  font-weight: 500;
+  box-shadow: var(--shadow-lg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  animation: toastSlideIn 0.2s var(--ease-out) forwards;
+}
+
+.admin-toast--success {
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.15);
+  color: #34D399;
+}
+
+.admin-toast--error {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.15);
+  color: #F87171;
+}
+
+@keyframes toastSlideIn {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+/* ─── Security Section ──────────────────────────────────────────────────────── */
+.admin-security-section {
+  margin-top: 2rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.admin-security-title {
+  font-family: var(--font-display);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  margin-bottom: var(--space-3);
+  color: #EF4444;
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.admin-security-btn {
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-md);
+  background: rgba(239, 68, 68, 0.05);
+  border: 1px solid rgba(239, 68, 68, 0.15);
+  color: #EF4444;
+  font-weight: 600;
+  font-size: 0.8125rem;
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.admin-security-btn:hover {
+  background: rgba(239, 68, 68, 0.08);
+  border-color: rgba(239, 68, 68, 0.25);
+}
+
+/* ─── Quick Links ───────────────────────────────────────────────────────────── */
+.admin-quick-link {
+  padding: 0.5rem 0.75rem;
+  background: transparent;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text-secondary);
+  text-align: left;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  transition: all var(--duration-fast) var(--ease-out);
+  width: 100%;
+}
+
+.admin-quick-link:hover {
+  border-color: var(--color-accent);
+  color: var(--color-text);
+}
+
+/* ─── Preset Buttons ────────────────────────────────────────────────────────── */
+.admin-preset-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.4375rem 0.75rem;
+  background: var(--color-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.admin-preset-btn:hover {
+  border-color: var(--color-border-hover);
+  color: var(--color-text);
+}
+
+.admin-preset-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--color-border);
+}
+
+/* ─── Google Preview ────────────────────────────────────────────────────────── */
+.admin-google-preview {
+  margin-top: var(--space-6);
+  padding: 1rem;
+  background: #fff;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+}
+
+.admin-google-preview-title {
+  color: #1A0DAB;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  font-family: Arial, sans-serif;
+  margin-bottom: 0.125rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-google-preview-url {
+  color: #006621;
+  font-size: 0.6875rem;
+  font-family: Arial, sans-serif;
+  margin-bottom: 0.125rem;
+}
+
+.admin-google-preview-desc {
+  color: #545454;
+  font-size: 0.75rem;
+  font-family: Arial, sans-serif;
+  line-height: 1.4;
+}
+
+/* ─── Responsive ────────────────────────────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .admin-layout { grid-template-columns: 1fr; }
+
+  .admin-sidebar {
+    position: relative;
+    top: 0;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--color-border);
+    padding: var(--space-3);
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    justify-content: center;
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-grid-2col { grid-template-columns: 1fr; }
+  .admin-grid-3col { grid-template-columns: 1fr; }
+  .admin-content { padding: var(--space-4); }
+  .admin-section-title { font-size: 1rem; }
+}
