@@ -11,12 +11,9 @@ import ScrollToTop from './components/ScrollToTop';
 const Home = React.lazy(() => import('./pages/Home'));
 const About = React.lazy(() => import('./pages/About'));
 const Services = React.lazy(() => import('./pages/Services'));
-const Products = React.lazy(() => import('./pages/Products'));
 const ServiceDetail1 = React.lazy(() => import('./pages/ServiceDetail1'));
 const ServiceDetail2 = React.lazy(() => import('./pages/ServiceDetail2'));
 const Portfolio = React.lazy(() => import('./pages/Portfolio'));
-const Blog = React.lazy(() => import('./pages/Blog'));
-const BlogPost = React.lazy(() => import('./pages/BlogPost'));
 const Contact = React.lazy(() => import('./pages/Contact'));
 const Admin = React.lazy(() => import('./pages/Admin'));
 const CustomPage = React.lazy(() => import('./pages/CustomPage'));
@@ -28,9 +25,7 @@ const AppContent = () => {
     home: <Home />,
     about: <About />,
     services: <Services />,
-    products: <Products />,
     portfolio: <Portfolio />,
-    blog: <Blog />
   };
 
   return (
@@ -53,9 +48,8 @@ const AppContent = () => {
               />
             ))}
             {/* Static Sub-routes */}
-            <Route path="/servicios/1" element={<ServiceDetail1 />} />
-            <Route path="/servicios/2" element={<ServiceDetail2 />} />
-            <Route path="/blog/:id" element={<BlogPost />} />
+            <Route path="/menu/1" element={<ServiceDetail1 />} />
+            <Route path="/menu/2" element={<ServiceDetail2 />} />
             <Route path="/contacto" element={<Contact />} />
             <Route path="/admin" element={isAuthenticated ? <Admin /> : <Login />} />
           </Routes>

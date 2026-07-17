@@ -1,8 +1,9 @@
 import React, { useState, useEffect, memo } from 'react';
 import {
-  useContent, useImages, useTheme, useBlog,
-  usePages, useProducts, useInbox, useAuth, useAnalytics,
+  useContent, useImages, useTheme,
+  usePages, useInbox, useAuth, useAnalytics, useMenu,
 } from '../hooks';
+import { SECTION_ICON_MAP, SECTION_ICON_OPTIONS } from '../context/SiteContext';
 import ImageUploader from '../components/ImageUploader';
 import '../styles/admin.css';
 import {
@@ -12,7 +13,7 @@ import {
   MessageSquare, Zap, Users, TrendingUp, Monitor,
   ToggleLeft, ToggleRight, RefreshCw, Plus, Trash2, Package,
   Columns, ArrowUp, ArrowDown, Bold, List, BarChart, Lock, Search,
-  Download, Upload, Copy
+  Download, Upload, Copy, Utensils
 } from 'lucide-react';
 
 
@@ -29,6 +30,15 @@ const inputSt = {
 };
 const focus = e => (e.target.style.borderColor = 'var(--accent-primary)');
 const blur = e => (e.target.style.borderColor = 'var(--glass-border)');
+
+const labelSt = {
+  display: 'block',
+  fontSize: '0.75rem',
+  fontWeight: '700',
+  color: 'var(--color-text-secondary)',
+  textTransform: 'uppercase',
+  marginBottom: '0.3rem',
+};
 
 const sectionTitle = {
   fontFamily: 'var(--font-heading)', fontSize: '1.15rem', fontWeight: '800',
@@ -155,14 +165,12 @@ const sections = [
   { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard size={17} /> },
   { id: 'inbox', label: 'Bandeja de Entrada', icon: <Mail size={17} /> },
   { id: 'pages', label: 'Páginas & Menú', icon: <FileText size={17} /> },
-  { id: 'products', label: 'Productos', icon: <Package size={17} /> },
   { id: 'theme', label: 'Colores & Tema', icon: <Palette size={17} /> },
   { id: 'general', label: 'General', icon: <Settings size={17} /> },
   { id: 'seo', label: 'SEO', icon: <Globe size={17} /> },
   { id: 'home', label: 'Inicio', icon: <Monitor size={17} /> },
   { id: 'about', label: 'Nosotros', icon: <Info size={17} /> },
-  { id: 'services', label: 'Servicios', icon: <Zap size={17} /> },
-  { id: 'blog', label: 'Blog', icon: <FileText size={17} /> },
+  { id: 'menu', label: 'Menú', icon: <Utensils size={17} /> },
   { id: 'contact', label: 'Contacto', icon: <Mail size={17} /> },
   { id: 'social', label: 'Redes Sociales', icon: <Globe size={17} /> },
   { id: 'whatsapp', label: 'WhatsApp', icon: <MessageSquare size={17} /> },
@@ -175,20 +183,17 @@ const Admin = memo(() => {
   const { content, updateContent, updateServiceCard, moveServiceCard, saveContent, resetContent, saveStatus, updateHomeStat, updateHomeStep, updateHomeTestimonial } = useContent();
   const { images, updateImage } = useImages();
   const { theme, updateTheme, resetTheme } = useTheme();
-  const { blogPosts, createBlogPost, updateBlogPost, deleteBlogPost, duplicateBlogPost } = useBlog();
   const { pages, createPage, updatePage, deletePage, movePage } = usePages();
-  const { products, createProduct, updateProduct, deleteProduct, moveProduct } = useProducts();
   const { inbox, markMessageRead, deleteMessage } = useInbox();
   const { logout } = useAuth();
   const { analytics } = useAnalytics();
+  const { menuSections, updateMenuSection, updateMenuItem, addMenuItem, removeMenuItem, addMenuSection, removeMenuSection, moveMenuSection, moveMenuItem } = useMenu();
 
   const [active, setActive] = useState('dashboard');
-  const [editPost, setEditPost] = useState(null);
   const [splitView, setSplitView] = useState(false);
   const [toasts, setToasts] = useState([]);
   const [oldPass, setOldPass] = useState('');
   const [newPass, setNewPass] = useState('');
-  const [adminSearch, setAdminSearch] = useState('');
 
   const onChange = (path, val) => updateContent(path, val);
 
@@ -212,7 +217,6 @@ const Admin = memo(() => {
       // ── Dashboard ─────────────────────────────────────────────────────────
       case 'dashboard':
         const activePages = pages.filter(p => p.active).length;
-        const activeProds = products.filter(p => p.active).length;
         const totalImages = [images.logo, images.heroBg, images.aboutHero, ...(images.portfolio || [])].filter(Boolean).length;
         
         return (
@@ -222,7 +226,6 @@ const Admin = memo(() => {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem' }}>
               <StatCard label="Clics WhatsApp" val={analytics.whatsapp_clicks || 0} sub="+3% vs sem. ant." color="#25d366" Icon={MessageSquare} />
               <StatCard label="Páginas Activas" val={activePages} sub={`de ${pages.length} totales`} color="var(--accent-primary)" Icon={FileText} />
-              <StatCard label="Productos en Catálogo" val={activeProds} sub={`${products.length - activeProds} ocultos`} color="var(--accent-primary)" Icon={Package} />
               <StatCard label="Imágenes Subidas" val={`${totalImages}/9`} sub="Formatos óptimos" color="#10b981" Icon={ImageIcon} />
             </div>
 
@@ -236,7 +239,6 @@ const Admin = memo(() => {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
                   {[
                     { label: '📄 Menú & Páginas', section: 'pages' },
-                    { label: '📦 Productos', section: 'products' },
                     { label: '🎨 Cambiar Colores', section: 'theme' },
                     { label: '🏠 Editar Inicio', section: 'home' },
                     { label: '📱 Configurar WhatsApp', section: 'whatsapp' },
@@ -367,82 +369,6 @@ const Admin = memo(() => {
           </div>
         );
 
-      // ── Products ─────────────────────────────────────────────────────────
-      case 'products':
-        const filteredProducts = products.filter(p =>
-          !adminSearch ||
-          p.name.toLowerCase().includes(adminSearch.toLowerCase()) ||
-          (p.description || '').toLowerCase().includes(adminSearch.toLowerCase())
-        );
-        return (
-          <div>
-            <h3 style={sectionTitle}><Package size={20} color="var(--accent-primary)" /> Catálogo de Productos</h3>
-            
-            <div style={{ marginBottom: '2rem', paddingBottom: '1.5rem', borderBottom: '1px solid var(--glass-border)' }}>
-              <p style={{ fontSize: '0.85rem', fontWeight: '700', color: 'var(--accent-primary)', fontFamily: 'var(--font-heading)', marginBottom: '1rem' }}>📝 TEXTOS DE LA PÁGINA</p>
-              <Field label="Título de la página" path="products.title" value={content.products?.title || ''} onChange={onChange} />
-              <Field label="Subtítulo / Descripción" path="products.subtitle" value={content.products?.subtitle || ''} onChange={onChange} type="textarea" />
-            </div>
-
-            <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>Gestiona los productos que se mostrarán en la página.</p>
-            
-            <div style={{ position: 'relative', marginBottom: '1.5rem' }}>
-              <Search size={14} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-secondary)', pointerEvents: 'none' }} />
-              <input
-                type="text"
-                placeholder="Buscar productos..."
-                value={adminSearch}
-                onChange={e => setAdminSearch(e.target.value)}
-                style={{ ...inputSt, paddingLeft: '32px', fontSize: '0.85rem' }}
-              />
-            </div>
-            
-            <button className="btn-primary" onClick={() => createProduct()} style={{ marginBottom: '2.5rem', display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 18px', fontSize: '0.9rem' }}>
-              <Plus size={16} /> Añadir Producto
-            </button>
-            
-            <div style={{ display: 'grid', gridTemplateColumns: splitView ? '1fr' : 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.5rem' }}>
-              {filteredProducts.map((prod, i) => (
-                <div key={prod.id} style={{ padding: '1.5rem', background: 'var(--glass-bg)', border: `1px solid ${prod.active ? 'var(--accent-primary)' : 'var(--glass-border)'}`, borderRadius: '12px' }}>
-                  
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', borderBottom: '1px solid var(--color-border)', paddingBottom: '1rem' }}>
-                    <div style={{ display: 'flex', gap: '4px' }}>
-                      <button onClick={() => moveProduct(i, 'up')} style={{ background: 'transparent', border: '1px solid var(--glass-border)', color: 'var(--color-text-secondary)', padding: '4px', borderRadius: '4px', cursor: 'pointer' }}><ArrowUp size={14} /></button>
-                      <button onClick={() => moveProduct(i, 'down')} style={{ background: 'transparent', border: '1px solid var(--glass-border)', color: 'var(--color-text-secondary)', padding: '4px', borderRadius: '4px', cursor: 'pointer' }}><ArrowDown size={14} /></button>
-                    </div>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', color: 'var(--color-text-secondary)', fontSize: '0.8rem', fontWeight: 'bold' }}>
-                      <input type="checkbox" checked={prod.active} onChange={e => updateProduct(prod.id, 'active', e.target.checked)} style={{ width: '15px', height: '15px', cursor: 'pointer' }} />
-                      Activo (Visible)
-                    </label>
-                    <button onClick={() => { if(confirm('¿Eliminar este producto?')) deleteProduct(prod.id); }} style={{ background: 'transparent', border: '1px solid #ef444455', color: '#ef4444', padding: '4px 8px', borderRadius: '6px', fontSize: '0.75rem', cursor: 'pointer' }}>
-                      Eliminar
-                    </button>
-                  </div>
-                  
-                  <div style={{ marginBottom: '1.2rem' }}>
-                    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '700', color: 'var(--color-text-secondary)', textTransform: 'uppercase', marginBottom: '0.3rem' }}>Nombre</label>
-                    <input value={prod.name} onChange={e => updateProduct(prod.id, 'name', e.target.value)} style={{ ...inputSt, padding: '8px 12px', fontSize: '0.9rem' }} />
-                  </div>
-                  
-                  <div style={{ marginBottom: '1.2rem' }}>
-                    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '700', color: 'var(--color-text-secondary)', textTransform: 'uppercase', marginBottom: '0.3rem' }}>Precio (opcional)</label>
-                    <input value={prod.price} onChange={e => updateProduct(prod.id, 'price', e.target.value)} style={{ ...inputSt, padding: '8px 12px', fontSize: '0.9rem' }} placeholder="Ej: $120.00" />
-                  </div>
-
-                  <div style={{ marginBottom: '1.2rem' }}>
-                    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '700', color: 'var(--color-text-secondary)', textTransform: 'uppercase', marginBottom: '0.3rem' }}>Descripción</label>
-                    <Toolbar onFormat={(t) => insertFormat(prod.id, prod.description, t, (p,v) => updateProduct(p, 'description', v))} />
-                    <textarea value={prod.description} onChange={e => updateProduct(prod.id, 'description', e.target.value)} rows={3} style={{ ...inputSt, padding: '8px 12px', fontSize: '0.85rem' }} />
-                  </div>
-                  
-                  <ImageUploader label="Foto del Producto" description="Cuadrada (ej: 600x600)" value={prod.image} onChange={val => updateProduct(prod.id, 'image', val)} />
-                </div>
-              ))}
-              {filteredProducts.length === 0 && <p style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)' }}>{adminSearch ? 'No se encontraron productos.' : 'No hay productos registrados.'}</p>}
-            </div>
-          </div>
-        );
-
       // ── Theme / Colors ────────────────────────────────────────────────────
       case 'theme': {
         const FONT_OPTIONS = [
@@ -486,6 +412,7 @@ const Admin = memo(() => {
 
         const PRESET_THEMES = [
           { name: '☕ Café (default)', p: '#8B4513', s: '#D2691E', bg: '#FAF6F1', bgS: '#F5EDE4', bgT: '#EDE3D5', tP: '#2C1810', tS: '#6B4C3B', nav: '#FAF6F1', card: '#FFFFFF', rm: 1.25, go: 0.03, gi: 0.5 },
+          { name: '🍫 Moka', p: '#C8956C', s: '#A67B5B', bg: '#1A1410', bgS: '#231C15', bgT: '#2C2318', tP: '#F5EDE4', tS: '#A89888', nav: '#1A1410', card: '#231C15', rm: 1, go: 0.04, gi: 0.3 },
           { name: 'Amber Oscuro', p: '#f59e0b', s: '#d97706', bg: '#09090B', bgS: '#18181B', bgT: '#27272A', tP: '#FAFAFA', tS: '#A1A1AA', nav: '#09090B', card: '#18181B', rm: 1, go: 0.06, gi: 1 },
           { name: 'Esmeralda', p: '#10b981', s: '#06b6d4', bg: '#050a08', bgS: '#0a1a12', bgT: '#12291e', tP: '#FAFAFA', tS: '#A1A1AA', nav: '#050a08', card: '#0a1a12', rm: 1, go: 0.06, gi: 1 },
           { name: 'Rojo & Fuego', p: '#ef4444', s: '#f97316', bg: '#080505', bgS: '#1a0c0c', bgT: '#2a1515', tP: '#FAFAFA', tS: '#A1A1AA', nav: '#080505', card: '#1a0c0c', rm: 1, go: 0.06, gi: 1 },
@@ -1002,156 +929,143 @@ const Admin = memo(() => {
           </div>
         );
 
-      case 'blog':
-        const filteredBlogPosts = blogPosts.filter(p =>
-          !adminSearch ||
-          p.title.toLowerCase().includes(adminSearch.toLowerCase()) ||
-          (p.tags || '').toLowerCase().includes(adminSearch.toLowerCase())
-        );
+      case 'menu':
         return (
           <div>
-            <h3 style={sectionTitle}><FileText size={20} color="var(--accent-primary)" /> Entradas de Blog</h3>
-
-            {!editPost ? (
-              <div style={{ display: 'grid', gridTemplateColumns: 'minmax(250px, 300px) 1fr', gap: '2rem' }}>
-                {/* LIST */}
-                <div style={{ borderRight: '1px solid var(--glass-border)', paddingRight: '2rem' }}>
-                  <div style={{ position: 'relative', marginBottom: '1rem' }}>
-                    <Search size={14} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-secondary)', pointerEvents: 'none' }} />
-                    <input
-                      type="text"
-                      placeholder="Buscar artículos..."
-                      value={adminSearch}
-                      onChange={e => setAdminSearch(e.target.value)}
-                      style={{ ...inputSt, paddingLeft: '32px', fontSize: '0.85rem' }}
-                    />
-                  </div>
-                  <button className="btn-primary" onClick={() => { setAdminSearch(''); setEditPost(createBlogPost()); }} style={{ width: '100%', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '12px' }}>
-                    + Nuevo Artículo
-                  </button>
-
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
-                    {filteredBlogPosts.map(post => (
-                      <div key={post.id}
-                        onClick={() => setEditPost(post.id)}
-                        style={{ padding: '12px 14px', background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', borderRadius: '8px', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', transition: 'all 0.2s', borderLeft: post.published ? '3px solid #10b981' : '3px solid var(--accent-primary)' }}
-                        onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--accent-primary)'}
-                        onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--glass-border)'}
-                      >
-                        <div style={{ overflow: 'hidden' }}>
-                          <h5 style={{ fontFamily: 'var(--font-heading)', fontSize: '0.9rem', color: 'var(--color-text)', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden', marginBottom: '4px' }}>{post.title || 'Sin Título'}</h5>
-                          <p style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)' }}>{post.date} • {post.published ? 'Público' : 'Borrador'}</p>
-                        </div>
-                      </div>
-                    ))}
-                    {filteredBlogPosts.length === 0 && <p style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)', textAlign: 'center', marginTop: '1rem' }}>{adminSearch ? 'No se encontraron artículos.' : 'No hay artículos aún.'}</p>}
-                  </div>
-                </div>
-                {/* STATS/PLACEHOLDER */}
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--color-text-secondary)', textAlign: 'center' }}>
-                  <FileText size={48} color="var(--glass-border)" style={{ marginBottom: '1rem' }} />
-                  <p style={{ fontSize: '1.1rem', marginBottom: '0.5rem', fontFamily: 'var(--font-heading)' }}>Selecciona un artículo para editar</p>
-                  <p style={{ fontSize: '0.85rem' }}>o crea uno nuevo para empezar a escribir.</p>
-                </div>
-              </div>
-            ) : (
-              // EDITOR
-              <div style={{ border: '1px solid var(--glass-border)', borderRadius: '12px', background: 'var(--glass-bg)', overflow: 'hidden' }}>
-                <div style={{ padding: '14px 20px', background: 'var(--color-elevated)', borderBottom: '1px solid var(--color-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <button onClick={() => setEditPost(null)} style={{ background: 'transparent', border: 'none', color: 'var(--color-text-secondary)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', fontWeight: 'bold' }}>
-                    ← Volver a la lista
-                  </button>
-                  <div style={{ display: 'flex', gap: '10px' }}>
-                    <button onClick={() => { duplicateBlogPost(editPost); setEditPost(null); }} style={{ background: 'var(--glass-bg)', border: '1px solid var(--color-border)', color: 'var(--color-text)', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', fontSize: '0.8rem' }}>Duplicar</button>
-                    <button onClick={() => { if (confirm('¿Seguro que deseas eliminar este artículo?')) { deleteBlogPost(editPost); setEditPost(null); } }} style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', color: '#ef4444', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', fontSize: '0.8rem' }}>Eliminar</button>
-                  </div>
-                </div>
-
-                {blogPosts.filter(p => p.id === editPost).map(post => (
-                  <div key={post.id} style={{ display: 'grid', gridTemplateColumns: 'minmax(300px, 1fr) 300px' }}>
-
-                    {/* Main Editor Fields */}
-                    <div style={{ padding: '2rem', borderRight: '1px solid var(--glass-border)' }}>
-                      <div style={{ marginBottom: '1.5rem' }}>
-                        <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: '700', color: 'var(--color-text-secondary)', textTransform: 'uppercase', marginBottom: '0.4rem' }}>Título del Artículo</label>
-                        <input value={post.title} onChange={e => updateBlogPost(post.id, 'title', e.target.value)} style={{ ...inputSt, fontSize: '1.2rem', padding: '14px', fontFamily: 'var(--font-heading)', fontWeight: 'bold' }} />
-                      </div>
-
-                      <div style={{ marginBottom: '1.5rem' }}>
-                        <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: '700', color: 'var(--color-text-secondary)', textTransform: 'uppercase', marginBottom: '0.4rem' }}>Extracto (Resumen corto)</label>
-                        <textarea value={post.excerpt} onChange={e => updateBlogPost(post.id, 'excerpt', e.target.value)} rows={2} style={inputSt} />
-                      </div>
-
-                      <div style={{ marginBottom: '1.5rem' }}>
-                        <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: '700', color: 'var(--color-text-secondary)', textTransform: 'uppercase', marginBottom: '0.4rem' }}>Contenido Completo (Markdown / Texto)</label>
-                        <div style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', marginBottom: '0.5rem' }}>💡 Tip: Presiona Enter dos veces para crear un nuevo párrafo.</div>
-                        <textarea value={post.content} onChange={e => updateBlogPost(post.id, 'content', e.target.value)} rows={15} style={{ ...inputSt, fontFamily: 'monospace', lineHeight: '1.6', fontSize: '0.9rem' }} />
-                      </div>
-                    </div>
-
-                    {/* Meta Sidebar */}
-                    <div style={{ padding: '2rem', background: 'var(--color-elevated)' }}>
-                      <div style={{ marginBottom: '2rem', padding: '1rem', background: post.published ? 'rgba(16,185,129,0.1)' : 'rgba(245,158,11,0.1)', border: `1px solid ${post.published ? 'rgba(16,185,129,0.3)' : 'rgba(245,158,11,0.3)'}`, borderRadius: '8px' }}>
-                        <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', color: 'var(--color-text)', fontWeight: 'bold', fontSize: '0.9rem' }}>
-                          <input type="checkbox" checked={post.published} onChange={e => updateBlogPost(post.id, 'published', e.target.checked)} style={{ width: '18px', height: '18px', cursor: 'pointer' }} />
-                          {post.published ? '🟢 Estado: Publicado (Visible)' : '🟡 Estado: Borrador (Oculto)'}
-                        </label>
-                      </div>
-
-                      <div style={{ marginBottom: '1.5rem' }}>
-                        <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: '700', color: 'var(--color-text-secondary)', textTransform: 'uppercase', marginBottom: '0.4rem' }}>Autor</label>
-                        <input value={post.author} onChange={e => updateBlogPost(post.id, 'author', e.target.value)} style={inputSt} />
-                      </div>
-
-                      <div style={{ marginBottom: '1.5rem' }}>
-                        <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: '700', color: 'var(--color-text-secondary)', textTransform: 'uppercase', marginBottom: '0.4rem' }}>Fecha de Publicación</label>
-                        <input value={post.date} onChange={e => updateBlogPost(post.id, 'date', e.target.value)} style={inputSt} />
-                      </div>
-
-                      <div style={{ marginBottom: '2rem' }}>
-                        <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: '700', color: 'var(--color-text-secondary)', textTransform: 'uppercase', marginBottom: '0.4rem' }}>Etiquetas (Tags)</label>
-                        <input value={post.tags} onChange={e => updateBlogPost(post.id, 'tags', e.target.value)} placeholder="Ej: diseño, marketing, tips" style={inputSt} />
-                      </div>
-
-                      <ImageUploader label="Imagen de Portada (Opcional)" description="Recomendado: 1200x630 px. Máx 2MB" value={post.image} onChange={val => updateBlogPost(post.id, 'image', val)} />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        );
-
-      case 'services':
-        return (
-          <div>
-            <h3 style={sectionTitle}><Zap size={20} color="var(--accent-primary)" /> Editor de Servicios</h3>
-            <Field label="Título de la sección" path="services.title" value={content.services.title} onChange={onChange} />
+            <h3 style={sectionTitle}><Utensils size={20} color="var(--accent-primary)" /> Editor de Menú</h3>
+            <Field label="Título de la página" path="services.title" value={content.services.title} onChange={onChange} />
             <Field label="Subtítulo" path="services.subtitle" value={content.services.subtitle} onChange={onChange} type="textarea" />
 
-            <div style={{ marginTop: '2rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-              {(content.services?.cards || []).map((card, i) => (
-                <div key={i} style={{ padding: '1.5rem', background: `rgba(245,158,11,0.04)`, border: '1px solid var(--glass-border)', borderRadius: '12px', borderLeft: '4px solid var(--accent-primary)' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                    <span style={{ fontFamily: 'var(--font-heading)', fontWeight: '700', color: 'var(--accent-primary)', fontSize: '0.85rem' }}>SERVICIO #{i + 1}</span>
-                    <div style={{ display: 'flex', gap: '4px' }}>
-                      <button onClick={() => moveServiceCard(i, 'up')} style={{ background: 'transparent', border: '1px solid var(--glass-border)', color: 'var(--color-text-secondary)', padding: '4px', borderRadius: '4px', cursor: 'pointer' }}><ArrowUp size={14} /></button>
-                      <button onClick={() => moveServiceCard(i, 'down')} style={{ background: 'transparent', border: '1px solid var(--glass-border)', color: 'var(--color-text-secondary)', padding: '4px', borderRadius: '4px', cursor: 'pointer' }}><ArrowDown size={14} /></button>
+            <div style={{ marginTop: '2rem', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+              {menuSections.map((section, sIdx) => {
+                const IconComp = SECTION_ICON_MAP[section.icon] || SECTION_ICON_MAP.coffee;
+                return (
+                  <div key={section.id} style={{ padding: '1.5rem', background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', borderRadius: '12px', borderLeft: `4px solid ${section.color}` }}>
+                    {/* Section Header */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.2rem', borderBottom: '1px solid var(--color-border)', paddingBottom: '1rem' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <span style={{ color: section.color, display: 'flex' }}><IconComp size={20} /></span>
+                        <span style={{ fontFamily: 'var(--font-heading)', fontWeight: '700', color: 'var(--color-text)', fontSize: '1rem' }}>SECCIÓN #{sIdx + 1}</span>
+                      </div>
+                      <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+                        <button onClick={() => moveMenuSection(sIdx, 'up')} style={{ background: 'transparent', border: '1px solid var(--glass-border)', color: 'var(--color-text-secondary)', padding: '4px', borderRadius: '4px', cursor: 'pointer' }}><ArrowUp size={14} /></button>
+                        <button onClick={() => moveMenuSection(sIdx, 'down')} style={{ background: 'transparent', border: '1px solid var(--glass-border)', color: 'var(--color-text-secondary)', padding: '4px', borderRadius: '4px', cursor: 'pointer' }}><ArrowDown size={14} /></button>
+                        <button onClick={() => { if (confirm(`¿Eliminar la sección "${section.title}" y todos sus ítems?`)) removeMenuSection(section.id); }} style={{ background: 'transparent', border: '1px solid #ef444455', color: '#ef4444', padding: '4px 8px', borderRadius: '6px', fontSize: '0.75rem', cursor: 'pointer', marginLeft: '4px' }}>
+                          <Trash2 size={14} style={{ display: 'inline', verticalAlign: 'middle' }} />
+                        </button>
+                      </div>
                     </div>
+
+                    {/* Section fields */}
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 120px 140px', gap: '1rem', marginBottom: '1.5rem' }}>
+                      <div>
+                        <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '700', color: 'var(--color-text-secondary)', textTransform: 'uppercase', marginBottom: '0.3rem' }}>Título</label>
+                        <input value={section.title} onChange={e => updateMenuSection(section.id, 'title', e.target.value)} style={inputSt} />
+                      </div>
+                      <div>
+                        <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '700', color: 'var(--color-text-secondary)', textTransform: 'uppercase', marginBottom: '0.3rem' }}>Ícono</label>
+                        <select value={section.icon} onChange={e => updateMenuSection(section.id, 'icon', e.target.value)} style={{ ...inputSt, padding: '8px 10px', cursor: 'pointer', fontSize: '0.85rem' }}>
+                          {SECTION_ICON_OPTIONS.map(opt => <option key={opt.key} value={opt.key}>{opt.label}</option>)}
+                        </select>
+                      </div>
+                      <div>
+                        <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '700', color: 'var(--color-text-secondary)', textTransform: 'uppercase', marginBottom: '0.3rem' }}>Color</label>
+                        <input type="color" value={section.color} onChange={e => updateMenuSection(section.id, 'color', e.target.value)} style={{ width: '100%', height: '42px', border: '1px solid var(--color-border)', borderRadius: '8px', cursor: 'pointer', padding: '4px', background: 'var(--color-elevated)' }} />
+                      </div>
+                    </div>
+
+                    {/* Items */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
+                      {section.items.map((item, iIdx) => (
+                        <div key={iIdx} style={{ padding: '1rem', background: 'var(--color-elevated)', border: '1px solid var(--glass-border)', borderRadius: '8px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.6rem' }}>
+                            <span style={{ fontSize: '0.7rem', fontWeight: '700', color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Ítem #{iIdx + 1}</span>
+                            <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+                              <button onClick={() => moveMenuItem(section.id, iIdx, 'up')} style={{ background: 'transparent', border: '1px solid var(--glass-border)', color: 'var(--color-text-secondary)', padding: '2px', borderRadius: '4px', cursor: 'pointer' }}><ArrowUp size={12} /></button>
+                              <button onClick={() => moveMenuItem(section.id, iIdx, 'down')} style={{ background: 'transparent', border: '1px solid var(--glass-border)', color: 'var(--color-text-secondary)', padding: '2px', borderRadius: '4px', cursor: 'pointer' }}><ArrowDown size={12} /></button>
+                              <button onClick={() => removeMenuItem(section.id, iIdx)} style={{ background: 'transparent', border: '1px solid #ef444444', color: '#ef4444', padding: '2px 6px', borderRadius: '4px', cursor: 'pointer', marginLeft: '2px' }}><Trash2 size={12} /></button>
+                            </div>
+                          </div>
+                          
+                          {/* Compact image upload */}
+                          <div style={{ marginBottom: '0.8rem' }}>
+                            {item.image ? (
+                              <div style={{ position: 'relative', borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--glass-border)' }}>
+                                <img src={item.image} alt={item.name} style={{ width: '100%', height: '100px', objectFit: 'cover', display: 'block' }} />
+                                <div style={{ position: 'absolute', top: '4px', right: '4px', display: 'flex', gap: '4px' }}>
+                                  <button
+                                    onClick={() => updateMenuItem(section.id, iIdx, 'image', null)}
+                                    style={{ background: 'rgba(239,68,68,0.9)', color: 'white', border: 'none', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer', fontSize: '0.7rem', fontWeight: '600' }}
+                                  >
+                                    ✕ Quitar
+                                  </button>
+                                </div>
+                              </div>
+                            ) : (
+                              <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', padding: '0.8rem', background: 'var(--color-elevated)', border: '1px dashed var(--color-border)', borderRadius: '8px', cursor: 'pointer', fontSize: '0.8rem', color: 'var(--color-text-secondary)', transition: 'all 0.2s' }}
+                                onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--accent-primary)'}
+                                onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--color-border)'}
+                              >
+                                <ImageIcon size={14} />
+                                <span>Subir imagen</span>
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  onChange={(e) => {
+                                    const file = e.target.files?.[0];
+                                    if (!file) return;
+                                    if (file.size > 2 * 1024 * 1024) {
+                                      alert('Máximo 2MB');
+                                      return;
+                                    }
+                                    const reader = new FileReader();
+                                    reader.onload = (ev) => updateMenuItem(section.id, iIdx, 'image', ev.target.result);
+                                    reader.readAsDataURL(file);
+                                  }}
+                                  style={{ display: 'none' }}
+                                />
+                              </label>
+                            )}
+                          </div>
+
+                          {/* Fields */}
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 80px', gap: '0.6rem' }}>
+                            <div>
+                              <label style={labelSt}>Nombre</label>
+                              <input value={item.name} onChange={e => updateMenuItem(section.id, iIdx, 'name', e.target.value)} style={{ ...inputSt, padding: '6px 10px', fontSize: '0.85rem' }} />
+                            </div>
+                            <div>
+                              <label style={labelSt}>Descripción</label>
+                              <input value={item.desc} onChange={e => updateMenuItem(section.id, iIdx, 'desc', e.target.value)} style={{ ...inputSt, padding: '6px 10px', fontSize: '0.85rem' }} />
+                            </div>
+                            <div>
+                              <label style={labelSt}>Precio</label>
+                              <input value={item.price} onChange={e => updateMenuItem(section.id, iIdx, 'price', e.target.value)} style={{ ...inputSt, padding: '6px 10px', fontSize: '0.85rem' }} placeholder="$0" />
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Add item button */}
+                    <button onClick={() => addMenuItem(section.id)} style={{ marginTop: '0.8rem', display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 14px', background: 'transparent', border: '1px dashed var(--glass-border)', borderRadius: '8px', color: 'var(--color-text-secondary)', cursor: 'pointer', fontSize: '0.82rem', fontWeight: '600', width: '100%', justifyContent: 'center', transition: 'all 0.2s' }}
+                      onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--accent-primary)'}
+                      onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--glass-border)'}
+                    >
+                      <Plus size={14} /> Agregar Ítem
+                    </button>
                   </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '1rem' }}>
-                    <div>
-                      <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: '700', color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '0.4rem' }}>Título</label>
-                      <input value={card.title} onChange={e => updateServiceCard(i, 'title', e.target.value)} style={inputSt} onFocus={focus} onBlur={blur} />
-                    </div>
-                    <div>
-                      <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: '700', color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '0.4rem' }}>Descripción</label>
-                      <textarea value={card.desc} rows={2} onChange={e => updateServiceCard(i, 'desc', e.target.value)} style={inputSt} onFocus={focus} onBlur={blur} />
-                    </div>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
+
+            {/* Add section button */}
+            <button onClick={addMenuSection} style={{ marginTop: '1.5rem', display: 'flex', alignItems: 'center', gap: '8px', padding: '12px 20px', background: 'var(--glass-bg)', border: '1px dashed var(--glass-border)', borderRadius: '12px', color: 'var(--color-text)', cursor: 'pointer', fontSize: '0.95rem', fontWeight: 'bold', width: '100%', justifyContent: 'center', transition: 'all 0.2s' }}
+              onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--accent-primary)'}
+              onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--glass-border)'}
+            >
+              <Plus size={18} /> Agregar Nueva Sección
+            </button>
           </div>
         );
 
