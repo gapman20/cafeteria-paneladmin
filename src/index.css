@@ -5,6 +5,8 @@
    Signature: Deep moody espresso tones, caramel accents, steam animation
    ═══════════════════════════════════════════════════════════════════════════════ */
 
+@import './styles/home-sections.css';
+
 /* ─── Design Tokens ─────────────────────────────────────────────────────────── */
 :root {
   /* Base Scale — Deep espresso */
