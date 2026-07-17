@@ -5,6 +5,7 @@ import {
   Gift, Truck, Star,
 } from 'lucide-react';
 import { useContent } from '../hooks';
+import { useScrollReveal } from '../hooks/useScrollReveal';
 import SEO from '../components/SEO';
 import RomaBrewHero from '../components/RomaBrewHero';
 
@@ -134,6 +135,15 @@ const Home = memo(() => {
   const h = content.home;
   const [openFaq, setOpenFaq] = useState(null);
 
+  // Scroll reveal hooks — one per section
+  const featuresReveal = useScrollReveal();
+  const shopReveal = useScrollReveal();
+  const historiaReveal = useScrollReveal();
+  const serviciosReveal = useScrollReveal();
+  const testimonialsReveal = useScrollReveal();
+  const faqReveal = useScrollReveal();
+  const premiumReveal = useScrollReveal();
+
   const toggleFaq = useCallback((index) => {
     setOpenFaq((prev) => (prev === index ? null : index));
   }, []);
@@ -149,16 +159,19 @@ const Home = memo(() => {
       <RomaBrewHero />
 
       {/* ── Features — Restyled ───────────────────────────────────────────── */}
-      <section className="home-section home-section--cream">
+      <section
+        className={`home-section home-section--cream sr ${featuresReveal.isVisible ? 'sr--visible' : ''}`}
+        ref={featuresReveal.ref}
+      >
         <div className="lux-container">
-          <h2 className="lux-section-title">Lo Que Nos Hace Únicos</h2>
+          <h2 className={`lux-section-title sr-title ${featuresReveal.isVisible ? 'sr-title--visible' : ''}`}>Lo Que Nos Hace Únicos</h2>
           <p className="lux-section-subtitle">
             No servimos café común. Preparamos experiencias que conectan
             origen, proceso y pasión en cada sorbo.
           </p>
-          <div className="lux-features-grid">
+          <div className={`lux-features-grid sr-stagger ${featuresReveal.isVisible ? 'sr-stagger--visible' : ''}`}>
             {features.map((feat, i) => (
-              <div key={i} className="lux-feature-card">
+              <div key={i} className="lux-feature-card sr-child">
                 <div className="lux-feature-icon">
                   <feat.Icon size={24} />
                 </div>
@@ -171,15 +184,18 @@ const Home = memo(() => {
       </section>
 
       {/* ── Quick Shop — Redesigned ───────────────────────────────────────── */}
-      <section className="home-section home-section--cream">
+      <section
+        className={`home-section home-section--cream sr ${shopReveal.isVisible ? 'sr--visible' : ''}`}
+        ref={shopReveal.ref}
+      >
         <div className="lux-container">
-          <h2 className="lux-section-title">Nuestros Productos Estrella</h2>
+          <h2 className={`lux-section-title sr-title ${shopReveal.isVisible ? 'sr-title--visible' : ''}`}>Nuestros Productos Estrella</h2>
           <p className="lux-section-subtitle">
             Lo mejor de nuestra selección artesanal, listo para llegar a tu puerta.
           </p>
-          <div className="lux-shop-grid">
+          <div className={`lux-shop-grid sr-stagger ${shopReveal.isVisible ? 'sr-stagger--visible' : ''}`}>
             {shopProducts.map((product, i) => (
-              <div key={i} className="lux-shop-card">
+              <div key={i} className="lux-shop-card sr-child">
                 <div className="lux-shop-card-image-wrap">
                   {product.tag && (
                     <span className="lux-shop-badge">{product.tag}</span>
@@ -210,11 +226,14 @@ const Home = memo(() => {
       </section>
 
       {/* ── Nuestra Historia — New (dark) ─────────────────────────────────── */}
-      <section className="home-section home-section--dark">
+      <section
+        className={`home-section home-section--dark sr ${historiaReveal.isVisible ? 'sr--visible' : ''}`}
+        ref={historiaReveal.ref}
+      >
         <div className="lux-container">
           <div className="lux-about-grid">
             <div className="lux-about-text">
-              <h2 className="lux-section-title lux-section-title--light">
+              <h2 className={`lux-section-title lux-section-title--light sr-title ${historiaReveal.isVisible ? 'sr-title--visible' : ''}`}>
                 Nuestra Historia
               </h2>
               <p className="lux-about-paragraph">
@@ -237,7 +256,7 @@ const Home = memo(() => {
                 ciencia detrás de cada sorbo perfecto.
               </p>
             </div>
-            <div className="lux-about-visual">
+            <div className={`lux-about-visual sr-zoom ${historiaReveal.isVisible ? 'sr-zoom--visible' : ''}`}>
               <svg
                 viewBox="0 0 400 500"
                 className="lux-about-svg"
@@ -293,15 +312,18 @@ const Home = memo(() => {
       </section>
 
       {/* ── Servicios — New ───────────────────────────────────────────────── */}
-      <section className="home-section home-section--cream">
+      <section
+        className={`home-section home-section--cream sr ${serviciosReveal.isVisible ? 'sr--visible' : ''}`}
+        ref={serviciosReveal.ref}
+      >
         <div className="lux-container">
-          <h2 className="lux-section-title">Nuestros Servicios</h2>
+          <h2 className={`lux-section-title sr-title ${serviciosReveal.isVisible ? 'sr-title--visible' : ''}`}>Nuestros Servicios</h2>
           <p className="lux-section-subtitle">
             Más que un café, una experiencia completa para tu paladar y tu conocimiento.
           </p>
-          <div className="lux-services-grid">
+          <div className={`lux-services-grid sr-stagger ${serviciosReveal.isVisible ? 'sr-stagger--visible' : ''}`}>
             {services.map((service, i) => (
-              <div key={i} className="lux-service-card">
+              <div key={i} className="lux-service-card sr-child">
                 <div className="lux-service-emoji">{service.emoji}</div>
                 <h3 className="lux-service-title">{service.title}</h3>
                 <p className="lux-service-desc">{service.desc}</p>
@@ -312,17 +334,20 @@ const Home = memo(() => {
       </section>
 
       {/* ── Testimonials — New (dark) ─────────────────────────────────────── */}
-      <section className="home-section home-section--dark">
+      <section
+        className={`home-section home-section--dark sr ${testimonialsReveal.isVisible ? 'sr--visible' : ''}`}
+        ref={testimonialsReveal.ref}
+      >
         <div className="lux-container">
-          <h2 className="lux-section-title lux-section-title--light">
+          <h2 className={`lux-section-title lux-section-title--light sr-title ${testimonialsReveal.isVisible ? 'sr-title--visible' : ''}`}>
             Lo Que Dicen Nuestros Clientes
           </h2>
           <p className="lux-section-subtitle lux-section-subtitle--light">
             Historias reales de personas que encontraron su café perfecto.
           </p>
-          <div className="lux-testimonials-grid">
+          <div className={`lux-testimonials-grid sr-stagger ${testimonialsReveal.isVisible ? 'sr-stagger--visible' : ''}`}>
             {testimonials.map((t, i) => (
-              <div key={i} className="lux-testimonial-card">
+              <div key={i} className="lux-testimonial-card sr-child">
                 <div className="lux-testimonial-quote">&ldquo;</div>
                 <p className="lux-testimonial-text">{t.text}</p>
                 <div className="lux-testimonial-author">
@@ -341,9 +366,12 @@ const Home = memo(() => {
       </section>
 
       {/* ── FAQ — Restyled ────────────────────────────────────────────────── */}
-      <section className="home-section home-section--cream">
+      <section
+        className={`home-section home-section--cream sr ${faqReveal.isVisible ? 'sr--visible' : ''}`}
+        ref={faqReveal.ref}
+      >
         <div className="lux-container lux-container--narrow">
-          <h2 className="lux-section-title">Preguntas Frecuentes</h2>
+          <h2 className={`lux-section-title sr-title ${faqReveal.isVisible ? 'sr-title--visible' : ''}`}>Preguntas Frecuentes</h2>
           <p className="lux-section-subtitle">
             Todo lo que necesitas saber antes de tu primera visita o tu primera
             suscripción.
@@ -382,9 +410,12 @@ const Home = memo(() => {
       </section>
 
       {/* ── Suscripción Premium — Redesigned (darkest) ────────────────────── */}
-      <section className="home-section home-section--darkest">
+      <section
+        className={`home-section home-section--darkest sr ${premiumReveal.isVisible ? 'sr--visible' : ''}`}
+        ref={premiumReveal.ref}
+      >
         <div className="lux-container">
-          <h2 className="lux-section-title lux-section-title--light">
+          <h2 className={`lux-section-title lux-section-title--light sr-title ${premiumReveal.isVisible ? 'sr-title--visible' : ''}`}>
             Suscripción Premium
           </h2>
           <p className="lux-section-subtitle lux-section-subtitle--light">
