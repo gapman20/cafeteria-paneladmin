@@ -1,15 +1,17 @@
 import React, { memo } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Coffee, Leaf, Globe, MapPin, Heart, Clock, ChevronRight } from 'lucide-react';
-import { useContent, useImages } from '../hooks';
+import { Coffee, Leaf, Globe, MapPin, Heart, Clock, ChevronRight } from 'lucide-react';
+import { useContent } from '../hooks';
 import SEO from '../components/SEO';
+import CoffeeCarousel from '../components/CoffeeCarousel';
+
+/* eslint-disable react/prop-types */
 
 const featureIcons = [Coffee, Leaf, Globe];
 const serviceIcons = [Coffee, MapPin, Heart, Clock];
 
 const Home = memo(() => {
   const { content } = useContent();
-  const { images } = useImages();
   const h = content.home;
 
   return (
@@ -19,27 +21,8 @@ const Home = memo(() => {
         description={h.subtitle || "Café de especialidad recién tostado. Espresso, cold brew, pour over y repostería artesanal."} 
       />
 
-      {/* Hero */}
-      <section className="home-hero" style={{ backgroundImage: images.heroBg ? `url(${images.heroBg})` : 'none' }}>
-        {images.heroBg && <div className="hero-overlay"></div>}
-        <div className="animate-fade-up hero-content-wrapper">
-          <div className="hero-badge">{h.badge}</div>
-          <h1 className="h1-premium hero-title">
-            {h.title} <br />
-            <span className="text-gradient">{h.titleAccent}</span>
-          </h1>
-          <p className="subtitle hero-subtitle">{h.subtitle}</p>
-          <div className="hero-buttons">
-            <Link to="/menu" className="btn-primary">
-              {h.ctaText} <ArrowRight size={18} />
-            </Link>
-            <Link to="/about" className="btn-outline">{h.ctaSecondary}</Link>
-          </div>
-        </div>
-        <div className="hero-steam" aria-hidden="true"></div>
-      </section>
-
-
+      {/* Hero — Immersive 3D Coffee Carousel */}
+      <CoffeeCarousel />
 
       {/* Features */}
       <section className="home-features">
@@ -90,6 +73,31 @@ const Home = memo(() => {
         </div>
       </section>
 
+      {/* Gallery / Visual Showcase */}
+      <section className="home-gallery">
+        <div className="container">
+          <div className="gallery-header">
+            <h2 className="h2-premium">Nuestro Espacio</h2>
+            <p className="subtitle">Un ambiente cálido diseñado para que disfrutes cada momento con tu café favorito.</p>
+          </div>
+          <div className="gallery-grid">
+            {[
+              { emoji: '☕', label: 'Espresso Perfecto' },
+              { emoji: '🫘', label: 'Granos Frescos' },
+              { emoji: '🧁', label: 'Repostería Artesanal' },
+              { emoji: '🌿', label: 'Ambiente Acogedor' },
+              { emoji: '📖', label: 'Rincón de Lectura' },
+              { emoji: '🎵', label: 'Música en Vivo' },
+            ].map((item, i) => (
+              <div key={i} className="gallery-item">
+                <div className="gallery-emoji">{item.emoji}</div>
+                <span className="gallery-label">{item.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Process */}
       <section className="home-process">
         <div className="container">
@@ -118,7 +126,7 @@ const Home = memo(() => {
           </div>
           <div className="testimonials-grid">
             {h.testimonials?.map((t, i) => (
-              <div key={i} className="testimonial-card">
+              <div key={i} className={`testimonial-card ${i === 0 ? 'testimonial-featured' : ''}`}>
                 <div className="testimonial-quote">"</div>
                 <p className="testimonial-text">{t.text}</p>
                 <div className="testimonial-author">
@@ -134,12 +142,65 @@ const Home = memo(() => {
         </div>
       </section>
 
+      {/* Location & Hours */}
+      <section className="home-location">
+        <div className="container">
+          <div className="location-grid">
+            <div className="location-info">
+              <h2 className="h2-premium">Encuéntranos</h2>
+              <p className="subtitle" style={{ textAlign: 'left', maxWidth: '100%' }}>Visítanos y descubre por qué somos el lugar favorito de los amantes del café en la ciudad.</p>
+              
+              <div className="location-details">
+                <div className="location-item">
+                  <MapPin size={20} className="location-icon" />
+                  <div>
+                    <strong>Dirección</strong>
+                    <p>{content.contact?.address || 'Calle Principal #123, Colonia Centro, CDMX'}</p>
+                  </div>
+                </div>
+                <div className="location-item">
+                  <Clock size={20} className="location-icon" />
+                  <div>
+                    <strong>Horario</strong>
+                    <p>Lunes a Sábado: 8:00am - 8:00pm</p>
+                    <p>Domingos: 9:00am - 6:00pm</p>
+                  </div>
+                </div>
+                <div className="location-item">
+                  <Coffee size={20} className="location-icon" />
+                  <div>
+                    <strong>Contacto</strong>
+                    <p>{content.contact?.email || 'hola@cafearomatico.com'}</p>
+                    <p>{content.contact?.whatsapp || '+52 (55) 1234-5678'}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="location-map">
+              <div className="map-placeholder">
+                <MapPin size={48} />
+                <p>Mapa interactivo</p>
+                <span>Próximamente con Google Maps</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* CTA Strip */}
       <section className="home-cta-section">
-        <div className="home-cta-card">
-          <h2 className="h2-premium cta-title">{h.ctaSectionTitle}</h2>
-          <p className="subtitle cta-subtitle">{h.ctaSectionSubtitle}</p>
-          <Link to="/menu" className="btn-primary cta-button">Ver Nuestro Menú</Link>
+        <div className="container">
+          <div className="home-cta-card">
+            <h2 className="h2-premium cta-title">{h.ctaSectionTitle}</h2>
+            <p className="subtitle cta-subtitle">{h.ctaSectionSubtitle}</p>
+            <div className="cta-buttons">
+              <Link to="/menu" className="btn-primary cta-button">Ver Nuestro Menú</Link>
+              <a href={`https://wa.me/${(content.contact?.whatsapp || '+525512345678').replace(/[^0-9]/g, '')}`} target="_blank" rel="noopener noreferrer" className="btn-outline cta-button">
+                Reservar por WhatsApp
+              </a>
+            </div>
+          </div>
         </div>
       </section>
     </div>

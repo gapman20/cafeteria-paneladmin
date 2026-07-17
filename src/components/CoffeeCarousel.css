@@ -1,0 +1,606 @@
+/* ═══════════════════════════════════════════════════════════════════
+   CoffeeCarousel — Immersive 3D Hero
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Section shell ─────────────────────────────────────────────────── */
+.coffee-carousel-hero {
+  position: relative;
+  min-height: 96vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: #FAFAFA;
+  padding: 5rem 2rem 4rem;
+}
+
+/* Ambient radial glow that follows cup color */
+.carousel-ambient {
+  position: absolute;
+  width: 600px;
+  height: 600px;
+  border-radius: 50%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0.06;
+  filter: blur(80px);
+  pointer-events: none;
+  transition: background 1.2s ease;
+}
+
+/* ── Floating Coffee Beans ─────────────────────────────────────────── */
+.beans-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.bean-particle {
+  position: absolute;
+  opacity: 0;
+  animation: beanFloat linear infinite both;
+  will-change: transform, opacity;
+}
+
+@keyframes beanFloat {
+  0%   { opacity: 0; transform: translateY(0px) rotate(0deg) scale(0.8); }
+  10%  { opacity: 0.6; }
+  80%  { opacity: 0.4; }
+  100% { opacity: 0; transform: translateY(-80px) rotate(180deg) scale(1.1); }
+}
+
+/* ── Inner layout: info | cup | cards ─────────────────────────────── */
+.carousel-inner {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 1200px;
+  display: grid;
+  grid-template-columns: 1fr 420px 1fr;
+  align-items: center;
+  gap: 2rem;
+}
+
+/* ── Info panel ───────────────────────────────────────────────────── */
+.carousel-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+
+.info-visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.info-hidden {
+  opacity: 0;
+  transform: translateX(-20px);
+}
+
+.carousel-eyebrow {
+  display: inline-block;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--cup-accent);
+  opacity: 0.85;
+  font-family: var(--font-body, 'Outfit', sans-serif);
+}
+
+.carousel-name {
+  font-family: var(--font-display, 'Fraunces', serif);
+  font-size: clamp(1.75rem, 3.5vw, 3rem);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  color: #2C1E16;
+  margin: 0;
+}
+
+.carousel-origin {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: #7A6A58;
+  font-family: var(--font-body, 'Outfit', sans-serif);
+}
+
+.origin-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  transition: background 0.6s ease;
+}
+
+.carousel-notes {
+  font-size: 1rem;
+  color: #5C4A3D;
+  line-height: 1.6;
+  font-family: var(--font-body, 'Outfit', sans-serif);
+  font-style: italic;
+}
+
+.carousel-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.carousel-tag {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  background: rgba(44, 30, 22, 0.05);
+  border: 1px solid rgba(44, 30, 22, 0.1);
+  color: #7A6A58;
+  font-family: var(--font-body, 'Outfit', sans-serif);
+  letter-spacing: 0.04em;
+}
+
+.carousel-tag-accent {
+  background: rgba(200, 149, 108, 0.15);
+  border-color: rgba(200, 149, 108, 0.4);
+  color: var(--cup-accent);
+}
+
+/* Nav controls */
+.carousel-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.carousel-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid rgba(44, 30, 22, 0.15);
+  background: rgba(44, 30, 22, 0.02);
+  color: #2C1E16;
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.carousel-btn:hover {
+  border-color: var(--cup-accent);
+  color: var(--cup-accent);
+  background: rgba(200, 149, 108, 0.1);
+}
+
+.carousel-dots {
+  display: flex;
+  gap: 0.375rem;
+  align-items: center;
+}
+
+.carousel-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(44, 30, 22, 0.15);
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  padding: 0;
+}
+
+.dot-active {
+  width: 20px;
+  border-radius: 3px;
+  background: var(--cup-accent);
+}
+
+/* ── Cup area ─────────────────────────────────────────────────────── */
+.carousel-cup-area {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── Cup scene wrapper ───────────────────────────────────────────── */
+.cup-scene {
+  position: relative;
+  width: 300px;
+  height: 360px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  perspective: 900px;
+}
+
+/* ── Spin on slide change ───────────────────────────────────────── */
+.cup-spinning .cup-wrapper {
+  animation: cupSpin 0.75s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes cupSpin {
+  0%   { transform: rotateY(0deg) scale(1); filter: brightness(1); }
+  40%  { transform: rotateY(90deg) scale(0.88); filter: brightness(0.6); }
+  60%  { transform: rotateY(270deg) scale(0.88); filter: brightness(0.6); }
+  100% { transform: rotateY(360deg) scale(1); filter: brightness(1); }
+}
+
+/* ── Idle float ─────────────────────────────────────────────────── */
+.cup-wrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transform-style: preserve-3d;
+  animation: cupFloat 4s ease-in-out infinite;
+  will-change: transform;
+}
+
+@keyframes cupFloat {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-10px); }
+}
+
+/* ── Latte photo frame ───────────────────────────────────────────── */
+.latte-photo-frame {
+  width: 260px;
+  height: 260px;
+  border-radius: 50%;
+  overflow: hidden;
+  position: relative;
+  box-shadow:
+    0 0 0 4px rgba(255, 255, 255, 1),
+    0 20px 50px rgba(44, 30, 22, 0.15),
+    0 0 40px var(--accent, #C8956C);
+  transition: box-shadow 0.8s ease;
+  z-index: 5;
+}
+
+.latte-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  display: block;
+  animation: latteZoom 8s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+@keyframes latteZoom {
+  from { transform: scale(1.0); }
+  to   { transform: scale(1.06); }
+}
+
+.latte-tint {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  pointer-events: none;
+  transition: background 0.8s ease;
+}
+
+.latte-shimmer {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  pointer-events: none;
+  background: linear-gradient(
+    120deg,
+    transparent 20%,
+    rgba(255, 255, 255, 0.15) 50%,
+    transparent 80%
+  );
+  animation: latteSweep 4s ease-in-out infinite;
+}
+
+@keyframes latteSweep {
+  0%   { transform: translateX(-100%); opacity: 0; }
+  30%  { opacity: 1; }
+  70%  { opacity: 1; }
+  100% { transform: translateX(100%); opacity: 0; }
+}
+
+.latte-glow-ring {
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 2px solid var(--accent, #C8956C);
+  opacity: 0.5;
+  animation: ringPulse 3s ease-in-out infinite;
+  pointer-events: none;
+  transition: border-color 0.8s ease;
+}
+
+@keyframes ringPulse {
+  0%, 100% { opacity: 0.35; transform: scale(1); }
+  50%       { opacity: 0.7;  transform: scale(1.03); }
+}
+
+/* ── Saucer ──────────────────────────────────────────────────────── */
+.latte-saucer {
+  width: 200px;
+  height: 20px;
+  border-radius: 50%;
+  background: linear-gradient(
+    to bottom,
+    rgba(230, 225, 220, 1) 0%,
+    rgba(215, 210, 205, 1) 100%
+  );
+  border-top: 1px solid rgba(255, 255, 255, 0.8);
+  margin-top: -100px;
+  margin-bottom: -10px;
+  box-shadow: 0 8px 24px rgba(44, 30, 22, 0.12);
+  transition: box-shadow 0.8s ease;
+  z-index: 2;
+}
+
+/* ── Steam ──────────────────────────────────────────────────────── */
+.steam-container {
+  position: absolute;
+  top: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 14px;
+  align-items: flex-end;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.steam {
+  width: 4px;
+  border-radius: 999px;
+  background: linear-gradient(to top, rgba(255, 255, 255, 0.8), transparent);
+  animation: steamRise 2s ease-out infinite;
+  transform-origin: bottom center;
+}
+
+.steam-1 { height: 36px; animation-delay: 0s; }
+.steam-2 { height: 52px; animation-delay: 0.6s; }
+.steam-3 { height: 30px; animation-delay: 1.2s; }
+.steam-4 { height: 44px; animation-delay: 1.9s; }
+
+@keyframes steamRise {
+  0%   { opacity: 0; transform: translateY(0) scaleX(1); }
+  20%  { opacity: 0.7; }
+  100% { opacity: 0; transform: translateY(-40px) scaleX(2.5); }
+}
+
+/* ── Floor glow ─────────────────────────────────────────────────── */
+.cup-reflection {
+  position: absolute;
+  bottom: -16px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 140px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--accent, #C8956C);
+  opacity: 0.15;
+  filter: blur(12px);
+  transition: background 0.8s ease;
+  animation: reflectionPulse 4s ease-in-out infinite;
+}
+
+@keyframes reflectionPulse {
+  0%, 100% { opacity: 0.15; transform: translateX(-50%) scaleX(1); }
+  50%       { opacity: 0.25; transform: translateX(-50%) scaleX(1.15); }
+}
+
+/* ── Coffee image cards ───────────────────────────────────────────── */
+.carousel-cards {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  position: relative;
+  height: 380px;
+}
+
+.coffee-card {
+  position: absolute;
+  border-radius: 16px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 2px solid transparent;
+  will-change: transform, opacity;
+  outline: none;
+}
+
+.coffee-card:focus-visible {
+  outline: 2px solid var(--cup-accent);
+  outline-offset: 3px;
+}
+
+.coffee-card-active {
+  width: 180px;
+  height: 220px;
+  top: 50%;
+  transform: translateY(-50%) scale(1);
+  z-index: 3;
+  border-color: var(--cup-accent);
+  box-shadow:
+    0 0 0 1px var(--cup-accent),
+    0 20px 40px rgba(0, 0, 0, 0.5),
+    0 0 30px rgba(200, 149, 108, 0.2);
+}
+
+.coffee-card-next {
+  width: 140px;
+  height: 170px;
+  top: 60%;
+  transform: translateY(-50%) translateX(10px) scale(0.9);
+  z-index: 2;
+  opacity: 0.65;
+}
+
+.coffee-card-prev {
+  width: 140px;
+  height: 170px;
+  top: 40%;
+  transform: translateY(-50%) translateX(10px) scale(0.9);
+  z-index: 2;
+  opacity: 0.65;
+}
+
+.coffee-card-hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-50%) scale(0.7);
+  z-index: 0;
+}
+
+.coffee-card-img-wrap {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+.coffee-card-img-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+  display: block;
+}
+
+.coffee-card-active:hover .coffee-card-img-wrap img {
+  transform: scale(1.05);
+}
+
+.coffee-card-glow {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    transparent 40%,
+    var(--glow-color, #C8956C) 150%
+  );
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+/* ── Progress bar ─────────────────────────────────────────────────── */
+.carousel-progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: rgba(44, 30, 22, 0.08);
+}
+
+.carousel-progress-fill {
+  height: 100%;
+  background: var(--accent, #C8956C);
+  width: 0%;
+  animation: progressFill 5s linear forwards;
+}
+
+@keyframes progressFill {
+  from { width: 0%; }
+  to   { width: 100%; }
+}
+
+/* ── Responsive ──────────────────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .carousel-inner {
+    grid-template-columns: 1fr 360px;
+    grid-template-rows: auto auto;
+  }
+
+  .carousel-cards {
+    grid-column: 1 / -1;
+    flex-direction: row;
+    height: auto;
+    justify-content: center;
+    gap: 0.75rem;
+    position: relative;
+    padding: 1rem 0;
+  }
+
+  .coffee-card {
+    position: relative;
+    top: auto;
+    transform: none !important;
+  }
+
+  .coffee-card-active {
+    width: 140px;
+    height: 180px;
+    transform: scale(1) !important;
+  }
+
+  .coffee-card-next,
+  .coffee-card-prev {
+    width: 110px;
+    height: 140px;
+    transform: scale(0.9) !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .coffee-carousel-hero {
+    padding: 4rem 1.5rem 3rem;
+  }
+
+  .carousel-inner {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .carousel-cup-area { grid-row: 1; }
+
+  .carousel-info {
+    grid-row: 2;
+    text-align: center;
+    align-items: center;
+  }
+
+  .carousel-controls { justify-content: center; }
+
+  .cup-scene {
+    width: 260px;
+    height: 320px;
+  }
+
+  .cup-top-opening { width: 140px; height: 46px; }
+  .cup-body        { width: 140px; height: 130px; }
+  .cup-saucer      { width: 190px; }
+  .cup-handle      { right: -4px; width: 44px; height: 58px; }
+
+  .carousel-cards { grid-row: 3; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bean-particle,
+  .cup-wrapper,
+  .steam,
+  .cup-reflection,
+  .latte-photo,
+  .latte-shimmer,
+  .latte-glow-ring {
+    animation: none;
+  }
+  .cup-spinning .cup-wrapper {
+    animation: none;
+  }
+}
+
+
+
