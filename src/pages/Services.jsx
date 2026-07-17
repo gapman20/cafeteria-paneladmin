@@ -1,18 +1,71 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { Coffee, FlaskConical, Snowflake, CakeSlice, ArrowRight } from 'lucide-react';
+import { Coffee, Star } from 'lucide-react';
 import SEO from '../components/SEO';
-import { useSite } from '../context/SiteContext';
+import { useSite, SECTION_ICON_MAP } from '../context/SiteContext';
 
-const iconMap = {
-  '1': <Coffee size={36} color="var(--accent-primary)" />,
-  '2': <FlaskConical size={36} color="var(--accent-secondary)" />,
-  '3': <Snowflake size={36} color="var(--accent-primary)" />,
-  '4': <CakeSlice size={36} color="var(--accent-secondary)" />,
+/* ─── Card Style ───────────────────────────────────────────────────────────── */
+const cardStyle = {
+  padding: 0,
+  display: 'flex',
+  flexDirection: 'column',
+  overflow: 'hidden',
+  background: 'var(--glass-bg)',
+  border: '1px solid var(--glass-border)',
+  borderRadius: 'var(--radius-lg)',
+  transition: 'transform 0.2s, box-shadow 0.2s',
 };
 
-const Services = () => {
-  const { content } = useSite();
+const imageStyle = (color) => ({
+  height: '160px',
+  background: `linear-gradient(135deg, ${color}20, ${color}08)`,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  position: 'relative',
+  borderBottom: '1px solid var(--glass-border)',
+});
+
+const priceBadge = {
+  position: 'absolute',
+  bottom: '10px',
+  right: '10px',
+  background: 'var(--accent-gradient)',
+  color: 'var(--btn-text)',
+  padding: '5px 12px',
+  borderRadius: '10px',
+  fontWeight: '800',
+  fontSize: '0.85rem',
+  fontFamily: 'var(--font-heading)',
+  boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+};
+
+const infoStyle = {
+  padding: '1.2rem',
+  flex: 1,
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '0.3rem',
+};
+
+const nameStyle = {
+  fontFamily: 'var(--font-heading)',
+  fontSize: '1rem',
+  fontWeight: '700',
+  color: 'var(--text-card-primary)',
+  margin: 0,
+};
+
+const descStyle = {
+  fontSize: '0.82rem',
+  color: 'var(--text-card-secondary)',
+  margin: 0,
+  lineHeight: '1.5',
+  flex: 1,
+};
+
+/* ─── Component ────────────────────────────────────────────────────────────── */
+const Menu = () => {
+  const { content, products, menuSections } = useSite();
   const services = content.services;
 
   return (
@@ -22,32 +75,87 @@ const Services = () => {
         description={services.subtitle}
       />
 
-      {/* Subtle background glow */}
-      <div style={{ position: 'absolute', top: '20%', left: '50%', transform: 'translate(-50%, -50%)', width: '800px', height: '600px', background: 'var(--accent-secondary)', filter: 'blur(200px)', opacity: '0.08', borderRadius: '50%', zIndex: -1 }}></div>
+      {/* Background glow */}
+      <div style={{ position: 'absolute', top: '15%', left: '50%', transform: 'translate(-50%, -50%)', width: '800px', height: '600px', background: 'var(--accent-secondary)', filter: 'blur(200px)', opacity: '0.06', borderRadius: '50%', zIndex: -1 }}></div>
 
-      <header style={{ textAlign: 'center', marginBottom: '5rem', marginTop: '2rem' }}>
+      {/* Header */}
+      <header style={{ textAlign: 'center', marginBottom: '4rem', marginTop: '2rem' }}>
         <div className="animate-fade-up">
-           <h1 className="h1-premium mb-4">{services.title}</h1>
-           <p className="subtitle">{services.subtitle}</p>
+          <h1 className="h1-premium mb-4">{services.title}</h1>
+          <p className="subtitle" style={{ maxWidth: '550px', margin: '0 auto' }}>
+            Grano de origen único, tueste artesanal y preparación cuidada.
+            <br/>Cada taza es una experiencia.
+          </p>
         </div>
       </header>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '2.5rem' }}>
-        {services.cards.filter(c => c.active).map((srv, index) => (
-          <div key={srv.id} className={`glass-card animate-fade-up delay-${(index+1)*100}`} style={{ display: 'flex', flexDirection: 'column' }}>
-            <div className="icon-wrapper">
-               {iconMap[srv.id] || <Coffee size={36} color="var(--accent-primary)" />}
+      {/* Menu Grid */}
+      <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '0 2rem' }}>
+        {menuSections.map((section, sIdx) => (
+          <section
+            key={section.id}
+            className={`animate-fade-up delay-${(sIdx + 1) * 100}`}
+            style={{ marginBottom: '4rem' }}
+          >
+            {/* Section Header */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1.5rem' }}>
+              <div style={{ color: section.color, display: 'flex' }}>{React.createElement(SECTION_ICON_MAP[section.icon] || SECTION_ICON_MAP.coffee, { size: 18 })}</div>
+              <h2 style={{
+                fontFamily: 'var(--font-heading)',
+                fontSize: '1.4rem',
+                fontWeight: '700',
+                color: 'var(--text-primary)',
+                margin: 0,
+              }}>
+                {section.title}
+              </h2>
+              <div style={{ flex: 1, height: '1px', background: `linear-gradient(90deg, ${section.color}40, transparent)` }}></div>
             </div>
-            <h3 style={{ fontSize: '1.5rem', marginBottom: '1rem' }}>{srv.title}</h3>
-            <p style={{ marginBottom: '2rem', flex: 1 }}>{srv.desc}</p>
-            <Link to={`/menu/${srv.id}`} className="btn-outline" style={{ display: 'inline-flex', padding: '10px 20px', fontSize: '0.95rem', alignSelf: 'flex-start' }}>
-              Ver Detalles <ArrowRight size={18} style={{ marginLeft: '6px' }} />
-            </Link>
-          </div>
+
+            {/* Items Grid */}
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
+              gap: '1.2rem',
+            }}>
+              {section.items.map((item, iIdx) => (
+                <div key={iIdx} className="glass-card" style={cardStyle}>
+                  {/* Image */}
+                  {item.image ? (
+                    <div style={imageStyle(section.color)}>
+                      <img src={item.image} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      <div style={priceBadge}>{item.price}</div>
+                    </div>
+                  ) : (
+                    <div style={{ padding: '1.2rem 1.2rem 0', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                      <h4 style={nameStyle}>{item.name}</h4>
+                      <span style={{
+                        background: 'var(--accent-gradient)',
+                        color: 'var(--btn-text)',
+                        padding: '4px 10px',
+                        borderRadius: '8px',
+                        fontWeight: '800',
+                        fontSize: '0.8rem',
+                        fontFamily: 'var(--font-heading)',
+                        whiteSpace: 'nowrap',
+                      }}>
+                        {item.price}
+                      </span>
+                    </div>
+                  )}
+                  {/* Info */}
+                  <div style={infoStyle}>
+                    {item.image && <h4 style={nameStyle}>{item.name}</h4>}
+                    <p style={descStyle}>{item.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
         ))}
       </div>
     </div>
   );
 };
 
-export default Services;
+export default Menu;

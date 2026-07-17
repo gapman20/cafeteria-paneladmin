@@ -1,4 +1,18 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { Coffee, Snowflake, CakeSlice } from 'lucide-react';
+
+// ─── Section Icon Map ────────────────────────────────────────────────────────
+export const SECTION_ICON_MAP = {
+  coffee: Coffee,
+  snowflake: Snowflake,
+  'cake-slice': CakeSlice,
+};
+
+export const SECTION_ICON_OPTIONS = [
+  { key: 'coffee', label: '☕ Coffee' },
+  { key: 'snowflake', label: '❄️ Snowflake' },
+  { key: 'cake-slice', label: '🍰 Cake' },
+];
 
 // ─── Default Text Content ─────────────────────────────────────────────────────
 const defaultContent = {
@@ -34,6 +48,15 @@ const defaultContent = {
     ctaSecondary:       'Nuestra Historia',
     ctaSectionTitle:    'Visítanos Hoy',
     ctaSectionSubtitle: 'Ambiente acogedor, wifi gratuito y el mejor café de la ciudad. Tu lugar favorito para desconectar.',
+    // Hero quick info card
+    heroCard: {
+      title: 'Tueste Destacado',
+      origin: 'Finca La Esperanza, Colombia',
+      profile: 'Lavado, 1,750 msnm',
+      notes: 'Chocolate oscuro, cereza roja y panela',
+      address: 'Barrio Histórico, CDMX',
+      hours: 'Lun a Sáb: 8:00am - 8:00pm',
+    },
     // Stats
     stats: [
       { number: '500+', label: 'Tazas Diarias' },
@@ -105,50 +128,11 @@ const defaultContent = {
   },
 };
 
-// ─── Default Blog Posts ────────────────────────────────────────────────────────
-const defaultBlogPosts = [
-  {
-    id: 'post-1',
-    title:     'Los Secretos del Tueste Perfecto',
-    excerpt:   'Descubre cómo la temperatura, el tiempo y la humedad transforman un grano verde en una experiencia aromática única.',
-    content:   'El tueste del café es tanto un arte como una ciencia. Cada grano de café verde pasa por una transformación química compleja cuando se expone al calor.\n\nEn Café Aromático, tostamos en un tostador Diedrich de 15kg que nos permite controlar con precisión la temperatura de cada fase del tueste. Desde el punto caramelo hasta el segundo crack, cada segundo cuenta.\n\nLos perfiles de tueste ligero preservan las notas frutales y florales del origen, mientras que un tueste medio desarrolla sabores más balanceados de chocolate y caramelo. El tueste oscuro, por su parte, intensifica los sabores achocolatados pero puede enmascarar las notas sutiles del grano.',
-    author:    'Carlos Mendoza',
-    date:      'Jul 12, 2026',
-    image:     null,
-    tags:      'tueste, café, proceso, artesanal',
-    published: true,
-  },
-  {
-    id: 'post-2',
-    title:     'Guía: Cómo Preparar el Cold Brew Perfecto',
-    excerpt:   'Paso a paso para lograr un cold brew suave, concentrado y lleno de sabor en la comodidad de tu hogar.',
-    content:   'El cold brew se ha convertido en la bebida del verano, pero poca gente sabe prepararlo correctamente. La clave está en la paciencia y la proporción.\n\nNuestra receta: 100g de café molido grueso por cada 700ml de agua fría. Mezcla suavemente, tapa y refrigera durante 12 a 16 horas. No hay atajos aquí.\n\nDespués de la infusión, cuela con un colador fino y un papel de filtro. El resultado es un concentrado que puedes diluir con agua o leche al gusto. Guarda el resto en el refrigerador — dura hasta una semana.',
-    author:    'María López',
-    date:      'Jul 5, 2026',
-    image:     null,
-    tags:      'cold brew, receta, café frío, tutorial',
-    published: true,
-  },
-  {
-    id: 'post-3',
-    title:     'Café de Origen vs Mezcla: ¿Cuál Elegir?',
-    excerpt:   'Entiende las diferencias fundamentales entre un single origin y una mezcla, y cuál se adapta mejor a tu paladar.',
-    content:   'Si alguna vez te has preguntado por qué un café de Etiopía sabe a frutas mientras que uno de Colombia recuerda al chocolate, la respuesta está en el concepto de origen.\n\nUn café de origen único (single origin) proviene de una sola finca, región o país. Esto significa que cada lote tiene un perfil de sabor único determinado por el clima, la altitud, el suelo y el procesamiento del grano.\n\nLas mezclas, por otro lado, combinan granos de diferentes orígenes para crear un perfil de sabor consistente y equilibrado. Un buen master roaster sabe combinar granos para resaltar lo mejor de cada uno.',
-    author:    'Carlos Mendoza',
-    date:      'Jun 28, 2026',
-    image:     null,
-    tags:      'café de origen, mezcla, single origin, guía',
-    published: true,
-  },
-];
-
 // ─── Default Pages ─────────────────────────────────────────────────────────────
 const defaultPages = [
   { id: 'home', name: 'Inicio', path: '/', active: true, isCustom: false },
   { id: 'services', name: 'Menú', path: '/menu', active: true, isCustom: false },
-  { id: 'products', name: 'Cafés', path: '/cafes', active: true, isCustom: false },
   { id: 'portfolio', name: 'Galería', path: '/galeria', active: true, isCustom: false },
-  { id: 'blog', name: 'Noticias', path: '/noticias', active: true, isCustom: false },
 ];
 
 // ─── Default Products ────────────────────────────────────────────────────────
@@ -161,26 +145,26 @@ const defaultProducts = [
 
 // ─── Default Theme ────────────────────────────────────────────────────────────
 const defaultTheme = {
-  accentPrimary:   '#C8956C',  // Caramel/crema — the beautiful layer on espresso
-  accentSecondary: '#A67B5B',  // Muted coffee brown
-  bgPrimary:       '#1A1410',  // Deep espresso (almost black but warm)
-  bgSecondary:     '#231C15',  // Dark roast
-  bgTertiary:      '#2C2318',  // Medium roast
-  textPrimary:     '#F5EDE4',  // Warm cream (like milk in coffee)
-  textSecondary:   '#A89888',  // Dusty brown
-  navbarColor:     '#1A1410',  // Deep espresso
-  cardBg:          '#231C15',  // Dark roast
-  textNavbarPrimary:   '#F5EDE4',
-  textNavbarSecondary: '#A89888',
-  textCardPrimary:     '#F5EDE4',
-  textCardSecondary:   '#A89888',
+  accentPrimary:   '#8B4513',  // Classic coffee brown
+  accentSecondary: '#D2691E',  // Warm chocolate
+  bgPrimary:       '#FAF6F1',  // Warm white (parchment)
+  bgSecondary:     '#F5EDE4',  // Light cream
+  bgTertiary:      '#EDE3D5',  // Subtle warm gray
+  textPrimary:     '#2C1810',  // Dark espresso
+  textSecondary:   '#6B4C3B',  // Muted brown
+  navbarColor:     '#FAF6F1',  // Match bgPrimary
+  cardBg:          '#FFFFFF',  // Pure white cards
+  textNavbarPrimary:   '#2C1810',
+  textNavbarSecondary: '#6B4C3B',
+  textCardPrimary:     '#2C1810',
+  textCardSecondary:   '#6B4C3B',
   // Typography
   fontDisplay: "'Fraunces', Georgia, serif",
   fontBody: "'Outfit', system-ui, sans-serif",
   // Effects
-  radiusMultiplier: 1,      // Tighter, more grounded
-  glassOpacity: 0.04,       // Subtle
-  glowIntensity: 0.3,       // Restrained
+  radiusMultiplier: 1.25,
+  glassOpacity: 0.03,
+  glowIntensity: 0.5,
 };
 
 // ─── Default Images ────────────────────────────────────────────────────────────
@@ -191,17 +175,73 @@ const defaultImages = {
   portfolio: [null, null, null, null, null, null],
 };
 
+// ─── Default Menu Sections ────────────────────────────────────────────────────
+const defaultMenuSections = [
+  {
+    id: 'calientes',
+    title: 'Bebidas Calientes',
+    icon: 'coffee',
+    color: '#C8956C',
+    items: [
+      { name: 'Espresso Doble', desc: 'Doble extracción con granulometría perfecta. Notas intensas de cacao y avellana.', price: '$65', img: '☕' },
+      { name: 'Espresso Singolo', desc: 'Una sola extracción para quienes disfrutan la pureza del grano.', price: '$50', img: '☕' },
+      { name: 'Americano', desc: 'Espresso suavizado con agua caliente. Corporoso pero equilibrado.', price: '$60', img: '☕' },
+      { name: 'Cappuccino Clásico', desc: 'Espresso con espuma de leche sedosa. Balance perfecto entre café y cremosidad.', price: '$85', img: '☕' },
+      { name: 'Cortado', desc: 'Espresso con un toque de leche caliente. Intensidad con suavidad.', price: '$70', img: '☕' },
+      { name: 'Flat White', desc: 'Doble espresso con microespuma de leche. Cremoso y potente.', price: '$95', img: '☕' },
+      { name: 'Café Vainilla', desc: 'Espresso con jarabe de vainilla artesanal y leche texturizada.', price: '$90', img: '☕' },
+      { name: 'Caramelo Macchiato', desc: 'Capa de leche, caramelo casero y espresso. Dulce pero no empalagoso.', price: '$95', img: '☕' },
+      { name: 'Mocha Oscuro', desc: 'Espresso, chocolate belga 70% y leche. Para los amantes del cacao.', price: '$100', img: '☕' },
+      { name: 'Chai Latte', desc: 'Té chai especiado con leche de avena. Canela, jengibre y cardamomo.', price: '$85', img: '🍵' },
+      { name: 'Pour Over V60', desc: 'Café de origen único con notas de arándano, jazmín y final cítrico.', price: '$120', img: '☕' },
+      { name: 'Chemex', desc: 'Filtrado en papel doble. Taza limpia, dulce y aromática.', price: '$130', img: '☕' },
+      { name: 'Aeropress', desc: 'Extracción por presión. Concentrada, versátil, con cuerpo medio.', price: '$110', img: '☕' },
+      { name: 'Sifón Hario', desc: 'Preparación teatral. Taza brillante con textura de seda.', price: '$150', img: '☕' },
+    ],
+  },
+  {
+    id: 'frias',
+    title: 'Bebidas Frías',
+    icon: 'snowflake',
+    color: '#6CB4C8',
+    items: [
+      { name: 'Cold Brew Clásico', desc: '12 horas de infusión en frío. Suave, refrescante y con sabor que conquista.', price: '$95', img: '🧊' },
+      { name: 'Cold Brew Vainilla', desc: 'Nuestro cold brew con jarabe de vainilla artesanal y hielo.', price: '$105', img: '🧊' },
+      { name: 'Cold Brew Drip', desc: 'Infusión lenta de 12 horas. Suave, refrescante, baja acidez.', price: '$110', img: '🧊' },
+      { name: 'Affogato Artesanal', desc: 'Espresso caliente sobre helado de vainilla hecho en casa.', price: '$95', img: '🍨' },
+      { name: 'Frappe Espresso', desc: 'Espresso, hielo, leche y jarabe. Batido hasta quedar espumoso.', price: '$110', img: '🥤' },
+      { name: 'Té Hielo Japonés', desc: 'Té verde matcha servido sobre hielo. Refrescante y antioxidante.', price: '$90', img: '🍵' },
+      { name: 'Limonada de Café', desc: 'Cold brew con limón fresco, hielo y un toque de miel.', price: '$100', img: '🍋' },
+    ],
+  },
+  {
+    id: 'reposteria',
+    title: 'Postres & Repostería',
+    icon: 'cake-slice',
+    color: '#C86C8E',
+    items: [
+      { name: 'Croissant de Mantequilla', desc: 'Hojarasca crujiente, mantequilla francesa. Recién horneado.', price: '$55', img: '🥐' },
+      { name: 'Muffin de Arándanos', desc: 'Esponjoso, con arándanos frescos y crumble de canela.', price: '$50', img: '🧁' },
+      { name: 'Brownie de Chocolate', desc: 'Denso, 70% cacao, con nuez pecana tostada.', price: '$65', img: '🍫' },
+      { name: 'Tarta de Zanahoria', desc: 'Hojaldre, crema de queso, zanahoria rallada y nuez.', price: '$75', img: '🥧' },
+      { name: 'Scone de Limón', desc: 'Mantequilloso con glaseado de limón fresco.', price: '$50', img: '🍪' },
+      { name: 'Galleta Choco Chip', desc: 'Grande, crujiente por fuera, suave por dentro. Receta de la casa.', price: '$40', img: '🍪' },
+      { name: 'Pan de Banano', desc: 'Banano maduro, canela y un toque de nuez. Pura ternura.', price: '$45', img: '🍞' },
+    ],
+  },
+];
+
 // ─── Storage Keys ──────────────────────────────────────────────────────────────
 const CONTENT_KEY = 'site_content_v1';
 const IMAGES_KEY  = 'site_images_v1';
 const THEME_KEY   = 'site_theme_v1';
-const BLOG_KEY    = 'site_blog_v1';
 const PAGES_KEY   = 'site_pages_v1';
 const PRODS_KEY   = 'site_products_v1';
 const ANALYTICS_KEY = 'site_analytics_v1';
 const AUTH_KEY    = 'site_auth_v1';
 const PASS_KEY    = 'site_pass_v1';
 const INBOX_KEY   = 'site_inbox_v1';
+const MENU_KEY    = 'site_menu_v1';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function deepMerge(target, source) {
@@ -305,6 +345,18 @@ function applyTheme(theme) {
       ? 'linear-gradient(180deg, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0.7) 100%)'
       : 'linear-gradient(180deg, rgba(9,9,11,0.5) 0%, rgba(9,9,11,0.85) 100%)');
 
+  // ── Hero card variables ──────────────────────────────────────────────────
+  root.style.setProperty('--hero-overlay-dark',
+    isLight ? 'rgba(255,255,255,0.6)' : 'rgba(26,20,16,0.85)');
+  root.style.setProperty('--hero-overlay-light',
+    isLight ? 'rgba(255,255,255,0.2)' : 'rgba(26,20,16,0.3)');
+  root.style.setProperty('--hero-card-bg',
+    isLight ? 'rgba(255,255,255,0.7)' : 'rgba(35,28,21,0.4)');
+  root.style.setProperty('--hero-card-border',
+    isLight ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.08)');
+  root.style.setProperty('--hero-card-shadow',
+    isLight ? 'rgba(0,0,0,0.15)' : 'rgba(0,0,0,0.5)');
+
   // ── Glow intensity ────────────────────────────────────────────────────────
   const gi = theme.glowIntensity ?? 1;
   const glowAlpha = Math.round(gi * 0.15 * 255).toString(16).padStart(2, '0');
@@ -337,14 +389,6 @@ export const SiteProvider = ({ children }) => {
       if (saved) return { ...defaultTheme, ...JSON.parse(saved) };
     } catch { /* ignore */ }
     return defaultTheme;
-  });
-
-  const [blogPosts, setBlogPosts] = useState(() => {
-    try {
-      const saved = localStorage.getItem(BLOG_KEY);
-      if (saved) return JSON.parse(saved);
-    } catch { /* ignore */ }
-    return defaultBlogPosts;
   });
 
   const [pages, setPages] = useState(() => {
@@ -380,6 +424,14 @@ export const SiteProvider = ({ children }) => {
       if (saved) return JSON.parse(saved);
     } catch { /* ignore */ }
     return [];
+  });
+
+  const [menuSections, setMenuSections] = useState(() => {
+    try {
+      const saved = localStorage.getItem(MENU_KEY);
+      if (saved) return JSON.parse(saved);
+    } catch { /* ignore */ }
+    return defaultMenuSections;
   });
 
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -450,40 +502,6 @@ export const SiteProvider = ({ children }) => {
       const next = deepMerge({}, prev);
       next.home.testimonials[index][field] = value;
       return next;
-    });
-  };
-
-  // ── Blog helpers ──────────────────────────────────────────────────────────
-  const createBlogPost = () => {
-    const newPost = {
-      id:        `post-${Date.now()}`,
-      title:     'Nuevo Artículo',
-      excerpt:   'Escribe aquí un resumen del artículo...',
-      content:   'Escribe el contenido completo del artículo aquí...',
-      author:    'Admin',
-      date:      new Date().toLocaleDateString('es-MX', { year: 'numeric', month: 'short', day: 'numeric' }),
-      image:     null,
-      tags:      '',
-      published: false,
-    };
-    setBlogPosts(prev => [newPost, ...prev]);
-    return newPost.id;
-  };
-
-  const updateBlogPost = (id, field, value) => {
-    setBlogPosts(prev => prev.map(p => p.id === id ? { ...p, [field]: value } : p));
-  };
-
-  const deleteBlogPost = (id) => {
-    setBlogPosts(prev => prev.filter(p => p.id !== id));
-  };
-
-  const duplicateBlogPost = (id) => {
-    setBlogPosts(prev => {
-      const original = prev.find(p => p.id === id);
-      if (!original) return prev;
-      const copy = { ...original, id: `post-${Date.now()}`, title: `${original.title} (copia)`, published: false };
-      return [copy, ...prev];
     });
   };
 
@@ -617,6 +635,61 @@ export const SiteProvider = ({ children }) => {
     });
   };
 
+  // ── Menu helpers ──────────────────────────────────────────────────────
+  const updateMenuSection = (sectionId, field, value) => {
+    setMenuSections(prev => prev.map(s => s.id === sectionId ? { ...s, [field]: value } : s));
+  };
+
+  const updateMenuItem = (sectionId, itemIndex, field, value) => {
+    setMenuSections(prev => prev.map(s =>
+      s.id === sectionId
+        ? { ...s, items: s.items.map((item, i) => i === itemIndex ? { ...item, [field]: value } : item) }
+        : s
+    ));
+  };
+
+  const addMenuItem = (sectionId) => {
+    setMenuSections(prev => prev.map(s =>
+      s.id === sectionId
+        ? { ...s, items: [...s.items, { name: 'Nuevo Plato', desc: 'Descripción del plato.', price: '$0', img: '🍽️' }] }
+        : s
+    ));
+  };
+
+  const removeMenuItem = (sectionId, itemIndex) => {
+    setMenuSections(prev => prev.map(s =>
+      s.id === sectionId
+        ? { ...s, items: s.items.filter((_, i) => i !== itemIndex) }
+        : s
+    ));
+  };
+
+  const addMenuSection = () => {
+    setMenuSections(prev => [...prev, {
+      id: `section-${Date.now()}`,
+      title: 'Nueva Sección',
+      icon: 'coffee',
+      color: '#C8956C',
+      items: [{ name: 'Nuevo Plato', desc: 'Descripción del plato.', price: '$0', img: '🍽️' }],
+    }]);
+  };
+
+  const removeMenuSection = (sectionId) => {
+    setMenuSections(prev => prev.filter(s => s.id !== sectionId));
+  };
+
+  const moveMenuSection = (index, direction) => {
+    setMenuSections(prev => moveArrayItem(prev, index, direction));
+  };
+
+  const moveMenuItem = (sectionId, index, direction) => {
+    setMenuSections(prev => prev.map(s =>
+      s.id === sectionId
+        ? { ...s, items: moveArrayItem(s.items, index, direction) }
+        : s
+    ));
+  };
+
   // ── Theme helpers ─────────────────────────────────────────────────────────
   const updateTheme = (key, value) => setTheme(prev => ({ ...prev, [key]: value }));
   const resetTheme  = () => setTheme(defaultTheme);
@@ -642,11 +715,11 @@ export const SiteProvider = ({ children }) => {
       localStorage.setItem(CONTENT_KEY, JSON.stringify(content));
       localStorage.setItem(IMAGES_KEY,  JSON.stringify(images));
       localStorage.setItem(THEME_KEY,   JSON.stringify(theme));
-      localStorage.setItem(BLOG_KEY,    JSON.stringify(blogPosts));
       localStorage.setItem(PAGES_KEY,   JSON.stringify(pages));
       localStorage.setItem(PRODS_KEY,   JSON.stringify(products));
       localStorage.setItem(ANALYTICS_KEY,JSON.stringify(analytics));
       localStorage.setItem(INBOX_KEY,   JSON.stringify(inbox));
+      localStorage.setItem(MENU_KEY,    JSON.stringify(menuSections));
 
       setSaveStatus('saved');
     } catch (error) {
@@ -658,13 +731,13 @@ export const SiteProvider = ({ children }) => {
   };
 
   const resetContent = () => {
-    [CONTENT_KEY, IMAGES_KEY, THEME_KEY, BLOG_KEY, PAGES_KEY, PRODS_KEY, ANALYTICS_KEY].forEach(k => localStorage.removeItem(k));
+    [CONTENT_KEY, IMAGES_KEY, THEME_KEY, PAGES_KEY, PRODS_KEY, ANALYTICS_KEY, MENU_KEY].forEach(k => localStorage.removeItem(k));
     setContent(defaultContent);
     setImages(defaultImages);
     setTheme(defaultTheme);
-    setBlogPosts(defaultBlogPosts);
     setPages(defaultPages);
     setProducts(defaultProducts);
+    setMenuSections(defaultMenuSections);
     setSaveStatus('saved');
     setTimeout(() => setSaveStatus(null), 3000);
   };
@@ -675,10 +748,10 @@ export const SiteProvider = ({ children }) => {
       updateHomeStat, updateHomeStep, updateHomeTestimonial,
       images,  updateImage, removeImage,
       theme,   updateTheme, resetTheme,
-      blogPosts, createBlogPost, updateBlogPost, deleteBlogPost, duplicateBlogPost,
       pages, createPage, updatePage, deletePage, movePage,
       products, createProduct, updateProduct, deleteProduct, moveProduct,
       analytics, trackAnalytics,
+      menuSections, updateMenuSection, updateMenuItem, addMenuItem, removeMenuItem, addMenuSection, removeMenuSection, moveMenuSection, moveMenuItem,
       inbox, addMessage, markMessageRead, deleteMessage,
       isAuthenticated, login, logout, changePassword,
       saveContent, resetContent, saveStatus, loadingDb,
