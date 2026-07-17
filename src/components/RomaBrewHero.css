@@ -1,0 +1,276 @@
+/* ═══════════════════════════════════════════════════════════════════
+   RomaBrewHero — Cinematic 3D Landing for Roma Brew
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Shell ──────────────────────────────────────────────────────── */
+.roma-hero {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: linear-gradient(160deg, #0A0706 0%, #1A1410 40%, #231C15 70%, #0E0B09 100%);
+}
+
+/* ── Studio Glow ────────────────────────────────────────────────── */
+.roma-glow {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.roma-glow--emerald {
+  width: 600px;
+  height: 600px;
+  top: 15%;
+  right: 10%;
+  background: radial-gradient(circle, rgba(200, 149, 108, 0.15) 0%, transparent 70%);
+  filter: blur(60px);
+}
+
+.roma-glow--amber {
+  width: 400px;
+  height: 400px;
+  bottom: 10%;
+  left: 5%;
+  background: radial-gradient(circle, rgba(139, 69, 19, 0.12) 0%, transparent 70%);
+  filter: blur(50px);
+}
+
+.roma-glow--center {
+  width: 300px;
+  height: 300px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.04) 0%, transparent 70%);
+  filter: blur(40px);
+}
+
+/* ── Beans Layer ────────────────────────────────────────────────── */
+.roma-beans-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.roma-bean {
+  position: absolute;
+  animation: romaBeanRise linear infinite both;
+  will-change: transform, opacity;
+}
+
+@keyframes romaBeanRise {
+  0%   { opacity: 0; transform: translateY(0) rotate(0deg) scale(0.85); }
+  8%   { opacity: 1; }
+  50%  { transform: translateY(-50px) rotate(90deg) scale(1); }
+  88%  { opacity: 1; }
+  100% { opacity: 0; transform: translateY(-100px) rotate(180deg) scale(0.9); }
+}
+
+/* ── Content Grid ───────────────────────────────────────────────── */
+.roma-content {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 1200px;
+  padding: 0 3rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  gap: 4rem;
+}
+
+/* ── Text (Left) ────────────────────────────────────────────────── */
+.roma-text {
+  transition: transform 0.15s ease-out;
+  will-change: transform;
+}
+
+.roma-eyebrow {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(200, 149, 108, 0.8);
+  margin-bottom: 1.5rem;
+  font-family: var(--font-body, 'Outfit', sans-serif);
+}
+
+.roma-headline {
+  font-family: var(--font-display, 'Fraunces', serif);
+  font-size: clamp(3rem, 6vw, 5.5rem);
+  font-weight: 800;
+  line-height: 0.92;
+  letter-spacing: -0.03em;
+  color: #F5EDE4;
+  margin: 0 0 1.5rem 0;
+}
+
+.roma-headline-accent {
+  color: #C8956C;
+  font-style: italic;
+}
+
+.roma-subtitle {
+  font-family: var(--font-body, 'Outfit', sans-serif);
+  font-size: 1.125rem;
+  color: rgba(168, 152, 136, 0.85);
+  line-height: 1.65;
+  max-width: 400px;
+  margin: 0 0 2.5rem 0;
+}
+
+/* ── CTAs ───────────────────────────────────────────────────────── */
+.roma-cta-group {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.roma-cta-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.875rem 2rem;
+  background: linear-gradient(135deg, #C8956C 0%, #A67B5B 100%);
+  color: #FAF6F1;
+  border: none;
+  border-radius: 999px;
+  font-family: var(--font-body, 'Outfit', sans-serif);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 20px rgba(200, 149, 108, 0.3);
+}
+
+.roma-cta-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(200, 149, 108, 0.45);
+}
+
+.roma-cta-primary:active {
+  transform: translateY(0);
+}
+
+.roma-cta-secondary {
+  padding: 0.875rem 2rem;
+  background: transparent;
+  color: rgba(245, 237, 228, 0.65);
+  border: 1px solid rgba(245, 237, 228, 0.18);
+  border-radius: 999px;
+  font-family: var(--font-body, 'Outfit', sans-serif);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.roma-cta-secondary:hover {
+  border-color: rgba(200, 149, 108, 0.5);
+  color: #C8956C;
+}
+
+/* ── Cup (Right) ────────────────────────────────────────────────── */
+.roma-cup-area {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.15s ease-out;
+  will-change: transform;
+}
+
+.roma-cup-glow {
+  position: absolute;
+  width: 380px;
+  height: 380px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(200, 149, 108, 0.12) 0%, transparent 70%);
+  filter: blur(40px);
+  pointer-events: none;
+}
+
+.roma-cup-float {
+  position: relative;
+  animation: romaCupBob 5s ease-in-out infinite;
+  will-change: transform;
+}
+
+@keyframes romaCupBob {
+  0%, 100% { transform: translateY(0) rotate(-1.5deg); }
+  50%      { transform: translateY(-14px) rotate(0deg); }
+}
+
+.roma-cup-img {
+  width: 100%;
+  max-width: 480px;
+  height: auto;
+  border-radius: 24px;
+  box-shadow:
+    0 40px 80px rgba(0, 0, 0, 0.5),
+    0 0 60px rgba(200, 149, 108, 0.12),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.roma-cup-img:hover {
+  transform: scale(1.02);
+}
+
+/* ── Bottom Fade ────────────────────────────────────────────────── */
+.roma-bottom-fade {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 120px;
+  background: linear-gradient(to bottom, transparent, #1A1410);
+  z-index: 3;
+  pointer-events: none;
+}
+
+/* ── Responsive ─────────────────────────────────────────────────── */
+@media (max-width: 968px) {
+  .roma-content {
+    grid-template-columns: 1fr;
+    text-align: center;
+    padding: 0 2rem;
+    gap: 2.5rem;
+  }
+
+  .roma-text { order: 2; }
+  .roma-cup-area { order: 1; }
+
+  .roma-subtitle {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .roma-cta-group { justify-content: center; }
+
+  .roma-cup-img { max-width: 360px; }
+}
+
+@media (max-width: 480px) {
+  .roma-content { padding: 0 1.25rem; }
+  .roma-cup-img { max-width: 280px; }
+  .roma-headline { font-size: clamp(2.5rem, 10vw, 3.5rem); }
+  .roma-cta-group { flex-direction: column; }
+}
+
+/* ── Reduced Motion ─────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .roma-bean,
+  .roma-cup-float {
+    animation: none;
+  }
+  .roma-text,
+  .roma-cup-area {
+    transition: none;
+  }
+}

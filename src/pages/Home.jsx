@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Coffee, Leaf, Globe, MapPin, Heart, Clock, ChevronRight } from 'lucide-react';
 import { useContent } from '../hooks';
 import SEO from '../components/SEO';
-import CoffeeCarousel from '../components/CoffeeCarousel';
+import RomaBrewHero from '../components/RomaBrewHero';
 
 /* eslint-disable react/prop-types */
 
@@ -21,8 +21,8 @@ const Home = memo(() => {
         description={h.subtitle || "Café de especialidad recién tostado. Espresso, cold brew, pour over y repostería artesanal."} 
       />
 
-      {/* Hero — Immersive 3D Coffee Carousel */}
-      <CoffeeCarousel />
+      {/* Hero — Cinematic 3D Landing */}
+      <RomaBrewHero />
 
       {/* Features */}
       <section className="home-features">
