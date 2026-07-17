@@ -73,52 +73,56 @@ export default memo(function RomaBrewHero() {
 
   return (
     <section className="roma-hero" ref={containerRef}>
-      {/* Studio glow orbs */}
+      {/* Background glow orbs */}
       <div className="roma-glow roma-glow--emerald" />
       <div className="roma-glow roma-glow--amber" />
       <div className="roma-glow roma-glow--center" />
 
-      {/* Floating beans */}
+      {/* Floating beans layer (parallax) */}
       <div className="roma-beans-layer" aria-hidden="true">
         {BEANS.map((b, i) => (
           <CoffeeBean key={i} bean={b} />
         ))}
       </div>
 
-      {/* Parallax content */}
+      {/* Main content */}
       <div className="roma-content">
-        {/* Left — Typography */}
         <div
           className="roma-text"
           style={{ transform: `translate(${px * -6}px, ${py * -4}px)` }}
         >
-          <span className="roma-eyebrow">Especialidad Premium</span>
+          <span className="roma-eyebrow roma-word--reveal">ESPECIALIDAD PREMIUM</span>
           <h1 className="roma-headline">
-            CAFÉ<br />
-            <span className="roma-headline-accent">CON</span><br />
-            ALMA
+            <span className="roma-word roma-word--reveal">CAF&Eacute;</span>{' '}
+            <span className="roma-headline-accent roma-word--reveal">CON</span>{' '}
+            <span className="roma-word roma-word--reveal">ALMA</span>
           </h1>
           <p className="roma-subtitle">
-            Granos de origen único, tostados artesanalmente. Creado para quienes no se conforman con lo ordinary.
+            Granos de origen &uacute;nico, tostados artesanalmente. Creado para quienes no se conforman con lo ordinary.
           </p>
           <div className="roma-cta-group">
             <button className="roma-cta-primary">
-              Explorar Nuestro Menú <ArrowRight size={18} />
+              Explorar Nuestro Men&uacute; <ArrowRight size={18} />
             </button>
             <button className="roma-cta-secondary">Nuestra Historia</button>
           </div>
         </div>
 
-        {/* Right — Cup */}
         <div
           className="roma-cup-area"
           style={{ transform: `translate(${px * 10}px, ${py * 7}px)` }}
         >
+          {/* Vapor particles */}
+          <div className="roma-vapor" aria-hidden="true">
+            {[...Array(8)].map((_, i) => (
+              <span key={i} className="roma-vapor-particle" />
+            ))}
+          </div>
           <div className="roma-cup-glow" />
           <div className="roma-cup-float">
             <img
               src="/still-life-with-iced-coffee-beverage-removebg-preview.png"
-              alt="Frappé de café helado con crema batida y salsa de caramelo"
+              alt="Frapp&eacute; de caf&eacute; helado con crema batida y salsa de caramelo"
               className="roma-cup-img"
               draggable={false}
             />
