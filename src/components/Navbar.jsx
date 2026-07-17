@@ -8,10 +8,15 @@ const Navbar = memo(() => {
   const { content } = useContent();
   const { pages } = usePages();
 
+  const scrollToTop = () => {
+    setIsOpen(false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   return (
     <nav className="navbar">
       <div className="navbar-container">
-        <Link to="/" className="navbar-logo" onClick={() => setIsOpen(false)}>
+        <Link to="/" className="navbar-logo" onClick={scrollToTop}>
           <Hexagon fill="url(#coffee-grad)" color="transparent" size={28} />
           <svg width="0" height="0">
             <linearGradient id="coffee-grad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -29,7 +34,7 @@ const Navbar = memo(() => {
         <ul className={isOpen ? 'nav-menu active' : 'nav-menu'}>
           {pages.filter(p => p.active).map(page => (
             <li key={page.id}>
-              <Link to={page.path} className="nav-links" onClick={() => setIsOpen(false)}>{page.name}</Link>
+              <Link to={page.path} className="nav-links" onClick={page.path === '/' ? scrollToTop : () => setIsOpen(false)}>{page.name}</Link>
             </li>
           ))}
           <li style={{ marginLeft: isOpen ? '0' : '1rem' }}>
