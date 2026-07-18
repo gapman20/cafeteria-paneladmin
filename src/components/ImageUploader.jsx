@@ -16,7 +16,7 @@ const ImageUploader = ({ label, description, value, onChange, maxMB = 2 }) => {
   const [drag, setDrag] = useState(false);
   const [error, setError] = useState(null);
 
-  const processFile = (file) => {
+  const processFile = async (file) => {
     setError(null);
     if (!file) return;
 
@@ -24,14 +24,36 @@ const ImageUploader = ({ label, description, value, onChange, maxMB = 2 }) => {
       setError('El archivo debe ser una imagen (JPG, PNG, WebP, GIF).');
       return;
     }
-    if (file.size > maxMB * 1024 * 1024) {
-      setError(`La imagen excede el límite de ${maxMB} MB.`);
-      return;
-    }
 
-    const reader = new FileReader();
-    reader.onload = (e) => onChange(e.target.result);
-    reader.readAsDataURL(file);
+    // Compress: resize to max 600px, JPEG 0.75 quality
+    try {
+      const compressed = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const maxDim = 600;
+            let w = img.width, h = img.height;
+            if (w > maxDim || h > maxDim) {
+              if (w > h) { h = Math.round((h / w) * maxDim); w = maxDim; }
+              else { w = Math.round((w / h) * maxDim); h = maxDim; }
+            }
+            canvas.width = w;
+            canvas.height = h;
+            canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+            resolve(canvas.toDataURL('image/jpeg', 0.75));
+          };
+          img.onerror = reject;
+          img.src = e.target.result;
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+      onChange(compressed);
+    } catch {
+      setError('Error al procesar la imagen.');
+    }
   };
 
   const handleInputChange = (e) => processFile(e.target.files?.[0]);

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, memo } from 'react';
+import React, { useState, useEffect, useRef, memo } from 'react';
 import {
   useContent, useImages, useTheme,
   usePages, useInbox, useAuth, useAnalytics, useMenu,
@@ -151,10 +151,9 @@ const sidebarCategories = [
   {
     label: 'CONTENIDO',
     items: [
-      { id: 'pages', label: 'Páginas & Menú', icon: <FileText size={17} /> },
+      { id: 'pages', label: 'Páginas', icon: <FileText size={17} /> },
       { id: 'images', label: 'Imágenes & Galería', icon: <ImageIcon size={17} /> },
       { id: 'home', label: 'Inicio', icon: <Monitor size={17} /> },
-      { id: 'about', label: 'Nosotros', icon: <Info size={17} /> },
       { id: 'menu', label: 'Menú', icon: <Utensils size={17} /> },
       { id: 'contact', label: 'Contacto', icon: <Mail size={17} /> },
       { id: 'footer', label: 'Footer', icon: <FileText size={17} /> },
@@ -177,6 +176,73 @@ const sidebarCategories = [
     ],
   },
 ];
+
+// ─── Default Data Arrays for Home Editor ──────────────────────────────────────
+const defaultFeatures = [
+  { title: 'Café de Especialidad', desc: 'Solo los mejores granos de origen único, seleccionados directamente en fincas de Colombia, Etiopía y Guatemala.' },
+  { title: 'Tueste Artesanal', desc: 'Tostamos en pequeños lotes cada semana para garantizar frescura y resaltar las notas únicas de cada origen.' },
+  { title: 'Baristas Certificados', desc: 'Nuestro equipo domina cada método de preparación: espresso, pour over, cold brew, Aeropress y más.' },
+];
+
+const defaultShopProducts = [
+  { name: 'Café de Origen Premium', price: '285', tag: 'Edición Limitada', image: '' },
+  { name: 'Prensa Francesa', price: '450', tag: 'Más Vendido', image: '' },
+  { name: 'Granos Artesanales Tostados', price: '195', tag: '', image: '' },
+  { name: 'Molino de Precisión', price: '680', tag: 'Nuevo', image: '' },
+];
+
+const defaultServices = [
+  { icon: '☕', title: 'Cata de Origen', desc: 'Degusta cafés de diferentes regiones y descubre perfiles de sabor únicos en sesiones guiadas por expertos.' },
+  { icon: '🎓', title: 'Taller de Barismo', desc: 'Aprende técnicas profesionales de preparación: latte art, pour over, espresso y más.' },
+  { icon: '📦', title: 'Suscripción Mensual', desc: 'Recibe café fresco tostado cada mes directamente en tu puerta con selecciones curadas.' },
+];
+
+const defaultTestimonials = [
+  { name: 'María García', role: 'Chef Pastelera', text: 'El mejor café que he probado en la ciudad. Cada visita es una experiencia única que conecta todos los sentidos.' },
+  { name: 'Carlos Mendoza', role: 'Diseñador Gráfico', text: 'La suscripción Premium cambió mi rutina matutina. Recibir café fresco cada mes es un regalo que no me cambio por nada.' },
+  { name: 'Ana Rodríguez', role: 'Barista Profesional', text: 'Los talleres de barismo son transformadores. Aprender a preparar mi propio café en casa me dio una nueva perspectiva.' },
+];
+
+const defaultFaqs = [
+  { q: '¿Cuál es el tiempo de entrega?', a: 'Realizamos entregas de lunes a sábado en la CDMX y área metropolitana. Los pedidos realizados antes de las 2:00 PM se entregan al día siguiente.' },
+  { q: '¿Cómo puedo reservar una mesa?', a: 'Puedes reservar directamente por WhatsApp o a través de nuestra página de contacto. Aceptamos reservaciones para grupos de hasta 12 personas.' },
+  { q: '¿De dónde viene su café?', a: 'Trabajamos directamente con fincas en Colombia, Etiopía, Guatemala y México. Cada origen se selecciona por su perfil de sabor único.' },
+  { q: '¿Qué incluye la Suscripción Premium?', a: 'La suscripción incluye mensualmente una bolsa de café de origen rotatorio, acceso a catas exclusivas, preventas de ediciones limitadas, envío gratuito y puntos de fidelidad.' },
+  { q: '¿Puedo cancelar o pausar mi suscripción?', a: 'Sí, puedes pausar o cancelar en cualquier momento desde tu cuenta o contactándonos por WhatsApp. No hay penalizaciones.' },
+  { q: '¿Ofrecen capacitación para baristas?', a: 'Sí, organizamos talleres mensuales de preparación de café: latte art, pour over, cold brew y más. También ofrecemos certificaciones.' },
+];
+
+const defaultSubBenefits = [
+  { icon: '☕', title: 'Catas Mensuales', desc: 'Degusta orígenes exclusivos antes que nadie en sesiones privadas con nuestro master roaster.' },
+  { icon: '🎁', title: 'Preventas VIP', desc: 'Acceso anticipado a ediciones limitadas y lotes especiales con precio preferente.' },
+  { icon: '🚀', title: 'Envío Gratuito', desc: 'Recibe tu café en la puerta de tu casa sin costo en todos los pedidos mensuales.' },
+  { icon: '⭐', title: 'Puntos de Fidelidad', desc: 'Acumula puntos canjeables por productos, experiencias y eventos exclusivos.' },
+];
+
+// ─── Image compression utility ────────────────────────────────────────────────
+function compressImage(file, maxDimension = 400, quality = 0.7) {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let w = img.width;
+        let h = img.height;
+        if (w > maxDimension || h > maxDimension) {
+          if (w > h) { h = Math.round((h / w) * maxDimension); w = maxDimension; }
+          else { w = Math.round((w / h) * maxDimension); h = maxDimension; }
+        }
+        canvas.width = w;
+        canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
 
 // ─── Main Admin Component ─────────────────────────────────────────────────────
 const Admin = memo(() => {
@@ -390,16 +456,14 @@ const Admin = memo(() => {
         );
 
       // ── Pages / Menu ──────────────────────────────────────────────────────
-      case 'pages':
-      case 'menu': {
+      case 'pages': {
         const activePages = pages.filter(p => p.active).length;
         const customPages = pages.filter(p => p.isCustom).length;
 
         return (
           <div>
-            <h3 className="admin-section-title"><FileText size={20} color="var(--admin-accent)" /> Gestión de Páginas y Menú</h3>
+            <h3 className="admin-section-title"><FileText size={20} color="var(--admin-accent)" /> Gestión de Páginas</h3>
             
-            {/* ═══ PART 1: Pages Table + Quick Action ═══ */}
             <div className="admin-pages-layout">
               {/* Table */}
               <div className="admin-card" style={{ padding: 0, overflow: 'hidden' }}>
@@ -484,106 +548,121 @@ const Admin = memo(() => {
                 </div>
               </div>
             </div>
+          </div>
+        );
+      }
 
-            {/* ═══ PART 2: Menu by Categories ═══ */}
-            <div style={{ marginTop: '1rem', marginBottom: '2rem' }}>
-              <h3 className="admin-section-title" style={{ marginTop: '1rem' }}><Utensils size={20} color="var(--admin-accent)" /> Gestión de la Carta</h3>
-              
-              <div className="admin-menu-columns">
-                {menuSections.map((section, sIdx) => {
-                  const IconComp = SECTION_ICON_MAP[section.icon] || SECTION_ICON_MAP.coffee;
-                  return (
-                    <div key={section.id} className="admin-menu-column">
-                      {/* Column Header */}
-                      <div className="admin-menu-column-header">
-                        <span style={{ color: section.color, display: 'flex' }}><IconComp size={18} /></span>
-                        <span className="admin-menu-column-title">{section.title}</span>
-                        <span className="admin-menu-column-count">{section.items.length}</span>
-                        <div style={{ marginLeft: 'auto', display: 'flex', gap: '2px' }}>
-                          <button onClick={() => moveMenuSection(sIdx, 'up')} className="admin-move-btn" style={{ width: '22px', height: '22px' }}><ArrowUp size={11} /></button>
-                          <button onClick={() => moveMenuSection(sIdx, 'down')} className="admin-move-btn" style={{ width: '22px', height: '22px' }}><ArrowDown size={11} /></button>
-                          <button onClick={() => { if (confirm(`¿Eliminar sección "${section.title}"?`)) removeMenuSection(section.id); }} style={{ background: 'transparent', border: 'none', color: 'var(--admin-text-muted)', cursor: 'pointer', padding: '2px' }}><Trash2 size={12} /></button>
-                        </div>
+      // ── Menu / Carta ────────────────────────────────────────────────────────
+      case 'menu': {
+        return (
+          <div>
+            <h3 className="admin-section-title"><Utensils size={20} color="var(--admin-accent)" /> Gestión de la Carta</h3>
+            
+            <div className="admin-menu-columns">
+              {menuSections.map((section, sIdx) => {
+                const IconComp = SECTION_ICON_MAP[section.icon] || SECTION_ICON_MAP.coffee;
+                return (
+                  <div key={section.id} className="admin-menu-column">
+                    {/* Column Header */}
+                    <div className="admin-menu-column-header">
+                      <span style={{ color: section.color, display: 'flex' }}><IconComp size={18} /></span>
+                      <span className="admin-menu-column-title">{section.title}</span>
+                      <span className="admin-menu-column-count">{section.items.length}</span>
+                      <div style={{ marginLeft: 'auto', display: 'flex', gap: '2px' }}>
+                        <button onClick={() => moveMenuSection(sIdx, 'up')} className="admin-move-btn" style={{ width: '22px', height: '22px' }}><ArrowUp size={11} /></button>
+                        <button onClick={() => moveMenuSection(sIdx, 'down')} className="admin-move-btn" style={{ width: '22px', height: '22px' }}><ArrowDown size={11} /></button>
+                        <button onClick={() => { if (confirm(`¿Eliminar sección "${section.title}"?`)) removeMenuSection(section.id); }} style={{ background: 'transparent', border: 'none', color: 'var(--admin-text-muted)', cursor: 'pointer', padding: '2px' }}><Trash2 size={12} /></button>
                       </div>
-
-                      {/* Section Config (compact) */}
-                      <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.75rem' }}>
-                        <input value={section.title} onChange={e => updateMenuSection(section.id, 'title', e.target.value)} className="admin-input" style={{ flex: 1, padding: '6px 8px', fontSize: '0.8125rem' }} placeholder="Título" />
-                        <input type="color" value={section.color} onChange={e => updateMenuSection(section.id, 'color', e.target.value)} style={{ width: '32px', height: '32px', border: '1px solid var(--admin-border)', borderRadius: '6px', cursor: 'pointer', padding: '2px' }} />
-                        <select value={section.icon} onChange={e => updateMenuSection(section.id, 'icon', e.target.value)} className="admin-input" style={{ width: '80px', padding: '4px 6px', fontSize: '0.75rem' }}>
-                          {SECTION_ICON_OPTIONS.map(opt => <option key={opt.key} value={opt.key}>{opt.label}</option>)}
-                        </select>
-                      </div>
-
-                      {/* Product Cards */}
-                      {section.items.map((item, iIdx) => (
-                        <div key={iIdx} className="admin-menu-product">
-                          {/* Image thumbnail if exists */}
-                          {item.image && (
-                            <img src={item.image} alt={item.name} style={{ width: '100%', height: '80px', objectFit: 'cover', borderRadius: '6px', marginBottom: '0.5rem' }} />
-                          )}
-                          <div className="admin-menu-product-name">{item.name || 'Sin nombre'}</div>
-                          <div className="admin-menu-product-desc">{item.desc || 'Sin descripción'}</div>
-                          <div className="admin-menu-product-footer">
-                            <span className="admin-menu-product-price">{item.price || '$0'}</span>
-                            <div 
-                              className={`admin-menu-availability ${item.available !== false ? 'admin-menu-availability--available' : 'admin-menu-availability--unavailable'}`}
-                              style={{ cursor: 'pointer' }}
-                              onClick={() => updateMenuItem(section.id, iIdx, 'available', item.available === false ? true : false)}
-                            >
-                              <span className="admin-menu-availability-dot"></span>
-                              {item.available !== false ? 'Disponible' : 'Agotado'}
-                            </div>
-                          </div>
-                          <div className="admin-menu-product-actions">
-                            <button onClick={() => moveMenuItem(section.id, iIdx, 'up')} className="admin-move-btn" style={{ width: '22px', height: '22px' }}><ArrowUp size={11} /></button>
-                            <button onClick={() => moveMenuItem(section.id, iIdx, 'down')} className="admin-move-btn" style={{ width: '22px', height: '22px' }}><ArrowDown size={11} /></button>
-                            <button onClick={() => removeMenuItem(section.id, iIdx)} style={{ background: 'transparent', border: 'none', color: 'var(--admin-text-muted)', cursor: 'pointer', padding: '2px' }}><Trash2 size={11} /></button>
-                            
-                            {/* Inline edit fields (hidden by default, shown on click) */}
-                            <input value={item.name} onChange={e => updateMenuItem(section.id, iIdx, 'name', e.target.value)} className="admin-input" style={{ flex: 1, marginLeft: '4px', padding: '3px 6px', fontSize: '0.75rem' }} placeholder="Nombre" />
-                            <input value={item.price} onChange={e => updateMenuItem(section.id, iIdx, 'price', e.target.value)} className="admin-input" style={{ width: '60px', padding: '3px 6px', fontSize: '0.75rem' }} placeholder="$0" />
-                          </div>
-
-                          {/* Image upload */}
-                          <div style={{ marginTop: '0.4rem' }}>
-                            {item.image ? (
-                              <button onClick={() => updateMenuItem(section.id, iIdx, 'image', null)} style={{ fontSize: '0.65rem', color: 'var(--admin-danger)', background: 'transparent', border: 'none', cursor: 'pointer', padding: 0 }}>Quitar imagen</button>
-                            ) : (
-                              <label style={{ fontSize: '0.65rem', color: 'var(--admin-text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '3px' }}>
-                                <ImageIcon size={10} /> Subir imagen
-                                <input type="file" accept="image/*" onChange={e => {
-                                  const file = e.target.files?.[0];
-                                  if (!file || file.size > 2 * 1024 * 1024) return;
-                                  const reader = new FileReader();
-                                  reader.onload = ev => updateMenuItem(section.id, iIdx, 'image', ev.target.result);
-                                  reader.readAsDataURL(file);
-                                }} style={{ display: 'none' }} />
-                              </label>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-
-                      {/* Add Item Button */}
-                      <button className="admin-menu-add-btn" onClick={() => addMenuItem(section.id)}>
-                        <Plus size={14} /> Añadir Ítem
-                      </button>
                     </div>
-                  );
-                })}
 
-                {/* Add Category Column */}
-                <div className="admin-menu-column" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', borderStyle: 'dashed', minHeight: '200px' }}>
-                  <button className="admin-menu-add-btn" onClick={addMenuSection} style={{ border: 'none', width: 'auto', padding: '1rem' }}>
-                    <Plus size={18} /> Nueva Categoría
-                  </button>
-                </div>
+                    {/* Section Config (compact) */}
+                    <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.75rem' }}>
+                      <input value={section.title} onChange={e => updateMenuSection(section.id, 'title', e.target.value)} className="admin-input" style={{ flex: 1, padding: '6px 8px', fontSize: '0.8125rem' }} placeholder="Título" />
+                      <input type="color" value={section.color} onChange={e => updateMenuSection(section.id, 'color', e.target.value)} style={{ width: '32px', height: '32px', border: '1px solid var(--admin-border)', borderRadius: '6px', cursor: 'pointer', padding: '2px' }} />
+                      <select value={section.icon} onChange={e => updateMenuSection(section.id, 'icon', e.target.value)} className="admin-input" style={{ width: '80px', padding: '4px 6px', fontSize: '0.75rem' }}>
+                        {SECTION_ICON_OPTIONS.map(opt => <option key={opt.key} value={opt.key}>{opt.label}</option>)}
+                      </select>
+                    </div>
+
+                    {/* Product Cards */}
+                    {section.items.map((item, iIdx) => (
+                      <div key={iIdx} className="admin-menu-product">
+                        {/* Image thumbnail if exists */}
+                        {item.image && (
+                          <img src={item.image} alt={item.name} style={{ width: '100%', height: '80px', objectFit: 'cover', borderRadius: '6px', marginBottom: '0.5rem' }} />
+                        )}
+                        <div className="admin-menu-product-name">{item.name || 'Sin nombre'}</div>
+                        <div className="admin-menu-product-desc">{item.desc || 'Sin descripción'}</div>
+                        <div className="admin-menu-product-footer">
+                          <span className="admin-menu-product-price">{item.price || '$0'}</span>
+                          <div 
+                            className={`admin-menu-availability ${item.available !== false ? 'admin-menu-availability--available' : 'admin-menu-availability--unavailable'}`}
+                            style={{ cursor: 'pointer' }}
+                            onClick={() => updateMenuItem(section.id, iIdx, 'available', item.available === false ? true : false)}
+                          >
+                            <span className="admin-menu-availability-dot"></span>
+                            {item.available !== false ? 'Disponible' : 'Agotado'}
+                          </div>
+                        </div>
+                        <div className="admin-menu-product-actions">
+                          <button onClick={() => moveMenuItem(section.id, iIdx, 'up')} className="admin-move-btn" style={{ width: '22px', height: '22px' }}><ArrowUp size={11} /></button>
+                          <button onClick={() => moveMenuItem(section.id, iIdx, 'down')} className="admin-move-btn" style={{ width: '22px', height: '22px' }}><ArrowDown size={11} /></button>
+                          <button onClick={() => removeMenuItem(section.id, iIdx)} style={{ background: 'transparent', border: 'none', color: 'var(--admin-text-muted)', cursor: 'pointer', padding: '2px' }}><Trash2 size={11} /></button>
+                          
+                          {/* Inline edit fields (hidden by default, shown on click) */}
+                          <input value={item.name} onChange={e => updateMenuItem(section.id, iIdx, 'name', e.target.value)} className="admin-input" style={{ flex: 1, marginLeft: '4px', padding: '3px 6px', fontSize: '0.75rem' }} placeholder="Nombre" />
+                          <input value={item.price} onChange={e => updateMenuItem(section.id, iIdx, 'price', e.target.value)} className="admin-input" style={{ width: '60px', padding: '3px 6px', fontSize: '0.75rem' }} placeholder="$0" />
+                        </div>
+
+                        {/* Image upload */}
+                        <div style={{ marginTop: '0.4rem' }}>
+                          {item.image ? (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                              <img src={item.image} alt="" style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '4px' }} />
+                              <button onClick={() => updateMenuItem(section.id, iIdx, 'image', null)} style={{ fontSize: '0.65rem', color: 'var(--admin-danger)', background: 'transparent', border: 'none', cursor: 'pointer', padding: 0 }}>Quitar imagen</button>
+                            </div>
+                          ) : (
+                            <div
+                              style={{ fontSize: '0.65rem', color: 'var(--admin-text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '3px' }}
+                              onClick={() => document.getElementById(`menu-file-${section.id}-${iIdx}`)?.click()}
+                            >
+                              <ImageIcon size={10} /> Subir imagen
+                            </div>
+                          )}
+                          <input
+                            id={`menu-file-${section.id}-${iIdx}`}
+                            type="file"
+                            accept="image/*"
+                            style={{ display: 'none' }}
+                            onChange={async e => {
+                              const file = e.target.files?.[0];
+                              if (!file) return;
+                              const compressed = await compressImage(file);
+                              updateMenuItem(section.id, iIdx, 'image', compressed);
+                            }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+
+                    {/* Add Item Button */}
+                    <button className="admin-menu-add-btn" onClick={() => addMenuItem(section.id)}>
+                      <Plus size={14} /> Añadir Ítem
+                    </button>
+                  </div>
+                );
+              })}
+
+              {/* Add Category Column */}
+              <div className="admin-menu-column" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', borderStyle: 'dashed', minHeight: '200px' }}>
+                <button className="admin-menu-add-btn" onClick={addMenuSection} style={{ border: 'none', width: 'auto', padding: '1rem' }}>
+                  <Plus size={18} /> Nueva Categoría
+                </button>
               </div>
             </div>
 
-            {/* ═══ PART 3: Mobile Preview ═══ */}
-            <div style={{ marginTop: '1rem', paddingTop: '2rem', borderTop: '2px solid var(--admin-border)' }}>
+            {/* ═══ Mobile Preview ═══ */}
+            <div style={{ marginTop: '2rem', paddingTop: '2rem', borderTop: '2px solid var(--admin-border)' }}>
               <h3 className="admin-section-title"><Monitor size={20} color="var(--admin-accent)" /> Previsualización en Vivo</h3>
               <div className="admin-mobile-preview">
                 <div className="admin-phone-frame">
@@ -1353,105 +1432,103 @@ const Admin = memo(() => {
         return (
           <div>
             <h3 className="admin-section-title"><Monitor size={20} color="var(--admin-accent)" /> Página de Inicio</h3>
-            <Field label="Badge (texto pequeño arriba del título)" path="home.badge" value={content.home.badge} onChange={onChange} />
-            <Field label="Título Principal" path="home.title" value={content.home.title} onChange={onChange} />
-            <Field label="Título Acento (con gradiente de color)" path="home.titleAccent" value={content.home.titleAccent} onChange={onChange} />
-            <Field label="Subtítulo" path="home.subtitle" value={content.home.subtitle} onChange={onChange} type="textarea" />
-            <Field label="Botón Primario" path="home.ctaText" value={content.home.ctaText} onChange={onChange} />
-            <Field label="Botón Secundario" path="home.ctaSecondary" value={content.home.ctaSecondary} onChange={onChange} />
-            <div className="admin-section-divider">
-              <Field label="Título sección Features" path="home.featuresTitle" value={content.home.featuresTitle} onChange={onChange} />
-              <Field label="Subtítulo sección Features" path="home.featuresSubtitle" value={content.home.featuresSubtitle} onChange={onChange} type="textarea" />
-            </div>
-            <div className="admin-section-divider">
-              <Field label="Título CTA Final" path="home.ctaSectionTitle" value={content.home.ctaSectionTitle} onChange={onChange} />
-              <Field label="Subtítulo CTA Final" path="home.ctaSectionSubtitle" value={content.home.ctaSectionSubtitle} onChange={onChange} type="textarea" />
-            </div>
-            <div className="admin-section-divider">
-              <p className="admin-section-subtitle">📊 ESTADÍSTICAS (Barra de números)</p>
-              {(content.home.stats || []).map((stat, i) => (
-                <div key={i} className="admin-card" style={{ padding: '1rem', marginBottom: '1rem', display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '1rem' }}>
-                  <div>
-                    <label className="admin-label">Número</label>
-                    <input className="admin-input" value={stat.number} onChange={e => updateHomeStat(i, 'number', e.target.value)} placeholder="Ej: 150+" />
-                  </div>
-                  <div>
-                    <label className="admin-label">Etiqueta</label>
-                    <input className="admin-input" value={stat.label} onChange={e => updateHomeStat(i, 'label', e.target.value)} placeholder="Ej: Proyectos Entregados" />
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div className="admin-section-divider">
-              <p className="admin-section-subtitle">⚙️ PROCESO (Cómo Trabajamos)</p>
-              <Field label="Título sección Proceso" path="home.processTitle" value={content.home.processTitle} onChange={onChange} />
-              <Field label="Subtítulo sección Proceso" path="home.processSubtitle" value={content.home.processSubtitle} onChange={onChange} type="textarea" />
-              {(content.home.steps || []).map((step, i) => (
+
+            {/* Section 1: Features */}
+            <div className="admin-card" style={{ padding: '1.5rem', marginBottom: '1.5rem' }}>
+              <h4 className="admin-card-title">✨ Lo Que Nos Hace Únicos</h4>
+              {(content.home?.features || defaultFeatures).map((f, i) => (
                 <div key={i} className="admin-card" style={{ padding: '1rem', marginBottom: '1rem' }}>
-                  <p className="admin-card-subtitle">PASO #{i + 1}</p>
-                  <div style={{ display: 'grid', gridTemplateColumns: '80px 1fr', gap: '1rem' }}>
-                    <div>
-                      <label className="admin-label">Número</label>
-                      <input className="admin-input" value={step.number} onChange={e => updateHomeStep(i, 'number', e.target.value)} placeholder="01" />
-                    </div>
-                    <div>
-                      <label className="admin-label">Título</label>
-                      <input className="admin-input" value={step.title} onChange={e => updateHomeStep(i, 'title', e.target.value)} />
-                    </div>
+                  <p className="admin-card-subtitle">FEATURE #{i + 1}</p>
+                  <Field label="Título" path={`home.features.${i}.title`} value={f.title} onChange={onChange} />
+                  <Field label="Descripción" path={`home.features.${i}.desc`} value={f.desc} onChange={onChange} type="textarea" />
+                </div>
+              ))}
+            </div>
+
+            {/* Section 2: Quick Shop Products */}
+            <div className="admin-card" style={{ padding: '1.5rem', marginBottom: '1.5rem' }}>
+              <h4 className="admin-card-title">🛍️ Tienda Rápida</h4>
+              {(content.home?.shopProducts || defaultShopProducts).map((p, i) => (
+                <div key={i} className="admin-card" style={{ padding: '1rem', marginBottom: '1rem' }}>
+                  <p className="admin-card-subtitle">PRODUCTO #{i + 1}</p>
+                  <div className="admin-grid-2">
+                    <Field label="Nombre" path={`home.shopProducts.${i}.name`} value={p.name} onChange={onChange} />
+                    <Field label="Precio" path={`home.shopProducts.${i}.price`} value={p.price} onChange={onChange} />
                   </div>
-                  <div style={{ marginTop: '0.8rem' }}>
-                    <label className="admin-label">Descripción</label>
-                    <textarea className="admin-input" value={step.desc} rows={2} onChange={e => updateHomeStep(i, 'desc', e.target.value)} />
+                  <div className="admin-grid-2">
+                    <Field label="Etiqueta (badge)" path={`home.shopProducts.${i}.tag`} value={p.tag || ''} onChange={onChange} hint="Ej: Edición Limitada, Más Vendido, Nuevo" />
+                    <Field label="URL de imagen" path={`home.shopProducts.${i}.image`} value={p.image} onChange={onChange} />
                   </div>
                 </div>
               ))}
             </div>
-            <div className="admin-section-divider">
-              <p className="admin-section-subtitle">💬 TESTIMONIOS</p>
-              <Field label="Título sección Testimonios" path="home.testimonialsTitle" value={content.home.testimonialsTitle} onChange={onChange} />
-              <Field label="Subtítulo sección Testimonios" path="home.testimonialsSubtitle" value={content.home.testimonialsSubtitle} onChange={onChange} type="textarea" />
-              {(content.home.testimonials || []).map((t, i) => (
+
+            {/* Section 3: Nuestra Historia */}
+            <div className="admin-card" style={{ padding: '1.5rem', marginBottom: '1.5rem' }}>
+              <h4 className="admin-card-title">📖 Nuestra Historia</h4>
+              <Field label="Título" path="home.storyTitle" value={content.home?.storyTitle || ''} onChange={onChange} />
+              <Field label="Párrafo 1" path="home.storyP1" value={content.home?.storyP1 || ''} onChange={onChange} type="textarea" />
+              <Field label="Párrafo 2" path="home.storyP2" value={content.home?.storyP2 || ''} onChange={onChange} type="textarea" />
+            </div>
+
+            {/* Section 4: Servicios */}
+            <div className="admin-card" style={{ padding: '1.5rem', marginBottom: '1.5rem' }}>
+              <h4 className="admin-card-title">🎯 Servicios</h4>
+              {(content.home?.services || defaultServices).map((s, i) => (
+                <div key={i} className="admin-card" style={{ padding: '1rem', marginBottom: '1rem' }}>
+                  <p className="admin-card-subtitle">SERVICIO #{i + 1}</p>
+                  <div className="admin-grid-2">
+                    <Field label="Icono (emoji)" path={`home.services.${i}.icon`} value={s.icon} onChange={onChange} hint="Usa un emoji: ☕ 🎓 📦" />
+                    <Field label="Título" path={`home.services.${i}.title`} value={s.title} onChange={onChange} />
+                  </div>
+                  <Field label="Descripción" path={`home.services.${i}.desc`} value={s.desc} onChange={onChange} type="textarea" />
+                </div>
+              ))}
+            </div>
+
+            {/* Section 5: Testimonials */}
+            <div className="admin-card" style={{ padding: '1.5rem', marginBottom: '1.5rem' }}>
+              <h4 className="admin-card-title">💬 Testimonios</h4>
+              {(content.home?.testimonials || defaultTestimonials).map((t, i) => (
                 <div key={i} className="admin-card" style={{ padding: '1rem', marginBottom: '1rem' }}>
                   <p className="admin-card-subtitle">TESTIMONIO #{i + 1}</p>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                    <div>
-                      <label className="admin-label">Nombre</label>
-                      <input className="admin-input" value={t.name} onChange={e => updateHomeTestimonial(i, 'name', e.target.value)} />
-                    </div>
-                    <div>
-                      <label className="admin-label">Rol / Empresa</label>
-                      <input className="admin-input" value={t.role} onChange={e => updateHomeTestimonial(i, 'role', e.target.value)} />
-                    </div>
-                  </div>
-                  <div style={{ marginTop: '0.8rem' }}>
-                    <label className="admin-label">Texto del testimonio</label>
-                    <textarea className="admin-input" value={t.text} rows={2} onChange={e => updateHomeTestimonial(i, 'text', e.target.value)} />
-                  </div>
+                  <Field label="Nombre" path={`home.testimonials.${i}.name`} value={t.name} onChange={onChange} />
+                  <Field label="Rol / Empresa" path={`home.testimonials.${i}.role`} value={t.role} onChange={onChange} />
+                  <Field label="Texto del testimonio" path={`home.testimonials.${i}.text`} value={t.text} onChange={onChange} type="textarea" />
                 </div>
               ))}
             </div>
-            <div className="admin-section-divider">
-              <p className="admin-section-subtitle">🛠️ TECNOLOGÍAS</p>
-              <Field label="Título sección Tech" path="home.techTitle" value={content.home.techTitle} onChange={onChange} />
-              <Field label="Subtítulo sección Tech" path="home.techSubtitle" value={content.home.techSubtitle} onChange={onChange} type="textarea" />
-            </div>
-          </div>
-        );
 
-      case 'about':
-        return (
-          <div>
-            <h3 className="admin-section-title"><Info size={20} color="var(--admin-accent)" /> Página Nosotros</h3>
-            <Field label="Título" path="about.title" value={content.about.title} onChange={onChange} />
-            <Field label="Subtítulo" path="about.subtitle" value={content.about.subtitle} onChange={onChange} type="textarea" />
-            <div className="admin-grid-2">
-              <div>
-                <Field label="Título Misión" path="about.misionTitle" value={content.about.misionTitle} onChange={onChange} />
-                <Field label="Texto Misión" path="about.misionText" value={content.about.misionText} onChange={onChange} type="textarea" />
-              </div>
-              <div>
-                <Field label="Título Visión" path="about.visionTitle" value={content.about.visionTitle} onChange={onChange} />
-                <Field label="Texto Visión" path="about.visionText" value={content.about.visionText} onChange={onChange} type="textarea" />
+            {/* Section 6: FAQ */}
+            <div className="admin-card" style={{ padding: '1.5rem', marginBottom: '1.5rem' }}>
+              <h4 className="admin-card-title">❓ Preguntas Frecuentes</h4>
+              {(content.home?.faqs || defaultFaqs).map((faq, i) => (
+                <div key={i} className="admin-card" style={{ padding: '1rem', marginBottom: '1rem' }}>
+                  <p className="admin-card-subtitle">FAQ #{i + 1}</p>
+                  <Field label="Pregunta" path={`home.faqs.${i}.q`} value={faq.q} onChange={onChange} />
+                  <Field label="Respuesta" path={`home.faqs.${i}.a`} value={faq.a} onChange={onChange} type="textarea" />
+                </div>
+              ))}
+            </div>
+
+            {/* Section 7: Suscripción Premium */}
+            <div className="admin-card" style={{ padding: '1.5rem', marginBottom: '1.5rem' }}>
+              <h4 className="admin-card-title">⭐ Suscripción Premium</h4>
+              {(content.home?.subBenefits || defaultSubBenefits).map((b, i) => (
+                <div key={i} className="admin-card" style={{ padding: '1rem', marginBottom: '1rem' }}>
+                  <p className="admin-card-subtitle">BENEFICIO #{i + 1}</p>
+                  <div className="admin-grid-2">
+                    <Field label="Icono (emoji)" path={`home.subBenefits.${i}.icon`} value={b.icon} onChange={onChange} hint="Usa un emoji: ☕ 🎁 🚀 ⭐" />
+                    <Field label="Título" path={`home.subBenefits.${i}.title`} value={b.title} onChange={onChange} />
+                  </div>
+                  <Field label="Descripción" path={`home.subBenefits.${i}.desc`} value={b.desc} onChange={onChange} type="textarea" />
+                </div>
+              ))}
+              <div className="admin-section-divider">
+                <div className="admin-grid-2">
+                  <Field label="Precio" path="home.subPrice" value={content.home?.subPrice || '299'} onChange={onChange} />
+                  <Field label="Texto del botón CTA" path="home.subCtaText" value={content.home?.subCtaText || 'Suscribirme Ahora'} onChange={onChange} />
+                </div>
               </div>
             </div>
           </div>
@@ -1670,18 +1747,15 @@ const Admin = memo(() => {
         const maxSlots = 9;
         const usagePercent = Math.round((totalUsed / maxSlots) * 100);
 
-        const handleFileUpload = (file, slot) => {
-          if (!file || file.size > 2 * 1024 * 1024) { alert('Máximo 2 MB por imagen'); return; }
-          const reader = new FileReader();
-          reader.onload = (ev) => {
-            if (slot.key.startsWith('portfolio.')) {
-              const idx = parseInt(slot.key.split('.')[1]);
-              updateImage('portfolio', ev.target.result, idx);
-            } else {
-              updateImage(slot.key, ev.target.result);
-            }
-          };
-          reader.readAsDataURL(file);
+        const handleFileUpload = async (file, slot) => {
+          if (!file) { return; }
+          const compressed = await compressImage(file, 600, 0.75);
+          if (slot.key.startsWith('portfolio.')) {
+            const idx = parseInt(slot.key.split('.')[1]);
+            updateImage('portfolio', compressed, idx);
+          } else {
+            updateImage(slot.key, compressed);
+          }
         };
 
         return (
