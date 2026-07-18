@@ -1,16 +1,97 @@
-# React + Vite
+# Café Aromático — Panel Admin + Sitio Público
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Panel de administración CMS y sitio público para **Café Aromático**, una marca de café premium artesanal.
 
-Currently, two official plugins are available:
+## Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Frontend**: React 19 + Vite
+- **Estilos**: CSS custom properties + diseño modular
+- **Estado**: React Context (SiteContext)
+- **Persistencia**: localStorage
+- **Compresión de imágenes**: Canvas API (JPEG, max 600px)
 
-## React Compiler
+## Estructura del proyecto
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+```
+src/
+├── components/
+│   ├── RomaBrewHero.jsx / .css    — Hero cinemático (vapor, parallax, shimmer)
+│   ├── ImageUploader.jsx          — Upload compartido con compresión automática
+│   ├── Navbar.jsx                 — Navegación responsive
+│   ├── Footer.jsx                 — Footer
+│   ├── LoginModal.jsx             — Modal de autenticación
+│   └── ScrollReveal.jsx           — Animaciones de entrada
+├── context/
+│   └── SiteContext.jsx            — Estado global, tema, contenido, menú
+├── hooks/
+│   ├── useScrollReveal.js         — IntersectionObserver personalizado
+│   ├── useContent.js              — Hook de contenido
+│   ├── useImages.js               — Hook de imágenes
+│   ├── useTheme.js                — Hook de tema
+│   ├── useMenu.js                 — Hook de menú
+│   ├── usePages.js                — Hook de páginas
+│   ├── useInbox.js                — Hook de bandeja de entrada
+│   ├── useAnalytics.js            — Hook de analytics
+│   └── useAuth.js                 — Hook de autenticación
+├── pages/
+│   ├── Admin.jsx                  — Panel de administración completo
+│   ├── Home.jsx                   — Página principal pública
+│   ├── Services.jsx               — Página de menú/servicios
+│   ├── Contact.jsx                — Página de contacto
+│   └── Login.jsx                  — Página de login
+├── styles/
+│   ├── index.css                  — Tokens globales de diseño
+│   ├── admin.css                  — Sistema de diseño del admin
+│   └── home-sections.css          — Estilos de secciones Home
+└── App.jsx                        — Router principal
+```
 
-## Expanding the ESLint configuration
+## Sistema de Temas
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+El admin expone un editor de temas completo (`Colores & Tema`) con:
+
+- **8 presets**: Clásico, Moderno, Rústico, Moka, Amber Oscuro, Esmeralda, Rojo & Fuego, Claro
+- **Colores personalizados**: Color primario, secundario, fondos, textos
+- **Tipografía**: 10 fuentes predefinidas + personalizada
+- **Efectos**: Opacidad de vidrio, intensidad de brillo, radio de bordes
+
+El tema se aplica via ~40 CSS custom properties en `:root`. Todos los componentes (Home, Hero, Contact, Services) derivan de estas variables — los cambios en admin se reflejan en vivo en todo el sitio.
+
+## Panel de Administración
+
+Secciones del admin:
+
+| Categoría | Secciones |
+|-----------|-----------|
+| Dashboard | Resumen general |
+| **Contenido** | Páginas, Imágenes, Inicio, Menú, Contacto, Footer |
+| **Marketing** | Bandeja de Entrada, WhatsApp, Redes Sociales |
+| **Configuración** | Colores & Tema, SEO, General |
+
+### Compresión de imágenes
+
+Todas las subidas de imágenes se comprimen automáticamente antes de guardarse en localStorage:
+- **Menú**: max 400px, JPEG 0.7
+- **General**: max 600px, JPEG 0.75
+
+Esto previene el error `QuotaExceededError` de localStorage.
+
+## Desarrollo
+
+```bash
+# Instalar dependencias
+npm install
+
+# Desarrollo
+npm run dev
+
+# Build producción
+npm run build
+```
+
+## Deploy
+
+```bash
+npm run build
+# Los archivos estáticos quedan en dist/
+```
