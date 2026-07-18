@@ -6,9 +6,10 @@
 
 /* ── Custom Properties ───────────────────────────────────────────── */
 :root {
-  --roma-bg: #1A0F0D;
-  --roma-caramel: #8D5524;
-  --roma-cream: #FFF8F3;
+  /* Hero dark theme — derives from theme system */
+  --roma-bg: color-mix(in srgb, var(--text-primary, #2C1810) 120%, black);
+  --roma-caramel: var(--accent-primary, #8D5524);
+  --roma-cream: var(--bg-primary, #FFF8F3);
 }
 
 /* ── Shell ──────────────────────────────────────────────────────── */
@@ -34,7 +35,7 @@
   height: 600px;
   top: 15%;
   right: 10%;
-  background: radial-gradient(circle, rgba(141, 85, 36, 0.15) 0%, transparent 70%);
+  background: radial-gradient(circle, color-mix(in srgb, var(--accent-primary, #8D5524) 15%, transparent) 0%, transparent 70%);
   filter: blur(60px);
 }
 
@@ -43,7 +44,7 @@
   height: 400px;
   bottom: 10%;
   left: 5%;
-  background: radial-gradient(circle, rgba(141, 85, 36, 0.12) 0%, transparent 70%);
+  background: radial-gradient(circle, color-mix(in srgb, var(--accent-primary, #8D5524) 12%, transparent) 0%, transparent 70%);
   filter: blur(50px);
 }
 
@@ -53,7 +54,7 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background: radial-gradient(circle, rgba(255, 248, 243, 0.04) 0%, transparent 70%);
+  background: radial-gradient(circle, color-mix(in srgb, var(--bg-primary, #FFF8F3) 4%, transparent) 0%, transparent 70%);
   filter: blur(40px);
 }
 
@@ -160,7 +161,7 @@
 /* ── Eyebrow ────────────────────────────────────────────────────── */
 .roma-eyebrow {
   display: inline-block;
-  font-family: 'Work Sans', sans-serif;
+  font-family: var(--font-body, 'Work Sans');
   font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.25em;
@@ -171,7 +172,7 @@
 
 /* ── Headline ───────────────────────────────────────────────────── */
 .roma-headline {
-  font-family: 'Source Serif 4', serif;
+  font-family: var(--font-display, 'Source Serif 4');
   font-size: clamp(3rem, 6vw, 5.5rem);
   font-weight: 800;
   line-height: 0.92;
@@ -203,9 +204,9 @@
   background: linear-gradient(
     90deg,
     transparent 0%,
-    rgba(255, 248, 243, 0.15) 40%,
-    rgba(255, 248, 243, 0.35) 50%,
-    rgba(255, 248, 243, 0.15) 60%,
+    color-mix(in srgb, var(--bg-primary, #FFF8F3) 15%, transparent) 40%,
+    color-mix(in srgb, var(--bg-primary, #FFF8F3) 35%, transparent) 50%,
+    color-mix(in srgb, var(--bg-primary, #FFF8F3) 15%, transparent) 60%,
     transparent 100%
   );
   animation: romaShimmer 5s cubic-bezier(0.16, 1, 0.3, 1) infinite;
@@ -239,9 +240,9 @@
 
 /* ── Subtitle ───────────────────────────────────────────────────── */
 .roma-subtitle {
-  font-family: 'Work Sans', sans-serif;
+  font-family: var(--font-body, 'Work Sans');
   font-size: 1.125rem;
-  color: rgba(255, 248, 243, 0.7);
+  color: color-mix(in srgb, var(--bg-primary, #FFF8F3) 70%, transparent);
   line-height: 1.65;
   max-width: 400px;
   margin: 0 0 2.5rem 0;
@@ -263,17 +264,17 @@
   color: var(--roma-cream);
   border: none;
   border-radius: 999px;
-  font-family: 'Work Sans', sans-serif;
+  font-family: var(--font-body, 'Work Sans');
   font-size: 0.9375rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 4px 20px rgba(141, 85, 36, 0.3);
+  box-shadow: 0 4px 20px color-mix(in srgb, var(--accent-primary, #8D5524) 30%, transparent);
 }
 
 .roma-cta-primary:hover {
   transform: scale(1.03);
-  box-shadow: 0 8px 40px rgba(141, 85, 36, 0.5), 0 0 60px rgba(141, 85, 36, 0.15);
+  box-shadow: 0 8px 40px color-mix(in srgb, var(--accent-primary, #8D5524) 50%, transparent), 0 0 60px color-mix(in srgb, var(--accent-primary, #8D5524) 15%, transparent);
 }
 
 .roma-cta-primary:active {
@@ -284,9 +285,9 @@
   padding: 0.875rem 2rem;
   background: transparent;
   color: var(--roma-cream);
-  border: 1px solid rgba(255, 248, 243, 0.3);
+  border: 1px solid color-mix(in srgb, var(--bg-primary, #FFF8F3) 30%, transparent);
   border-radius: 999px;
-  font-family: 'Work Sans', sans-serif;
+  font-family: var(--font-body, 'Work Sans');
   font-size: 0.9375rem;
   font-weight: 500;
   cursor: pointer;
@@ -294,8 +295,8 @@
 }
 
 .roma-cta-secondary:hover {
-  background: rgba(141, 85, 36, 0.25);
-  border-color: rgba(141, 85, 36, 0.5);
+  background: color-mix(in srgb, var(--accent-primary, #8D5524) 25%, transparent);
+  border-color: color-mix(in srgb, var(--accent-primary, #8D5524) 50%, transparent);
   color: var(--roma-cream);
 }
 
@@ -314,7 +315,7 @@
   width: 380px;
   height: 380px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(141, 85, 36, 0.12) 0%, transparent 70%);
+  background: radial-gradient(circle, color-mix(in srgb, var(--accent-primary, #8D5524) 12%, transparent) 0%, transparent 70%);
   filter: blur(40px);
   pointer-events: none;
 }
@@ -361,7 +362,7 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: rgba(255, 248, 243, 0.25);
+  background: color-mix(in srgb, var(--bg-primary, #FFF8F3) 25%, transparent);
   filter: blur(4px);
   opacity: 0;
   animation: romaVaporRise var(--vapor-duration, 3s) ease-out infinite;

@@ -6,20 +6,21 @@
 
 /* ─── Luxury Design Tokens ──────────────────────────────────────────────────── */
 .home-luxury {
-  --lux-cream: #FFF8F3;
-  --lux-brown: #4E342E;
-  --lux-brown-dark: #3E2723;
-  --lux-caramel: #8D5524;
-  --lux-caramel-dark: #7A4820;
-  --lux-caramel-glow: rgba(141, 85, 36, 0.35);
-  --lux-text: #2C1810;
-  --lux-text-muted: #6B5B4E;
-  --lux-text-light: #FFF8F3;
-  --lux-text-light-muted: rgba(255, 248, 243, 0.7);
-  --lux-font-display: 'Source Serif 4', Georgia, serif;
-  --lux-font-body: 'Work Sans', system-ui, sans-serif;
-  --lux-shadow-soft: 0 20px 60px rgba(0, 0, 0, 0.08);
-  --lux-shadow-hover: 0 28px 80px rgba(0, 0, 0, 0.12);
+  /* Derived from theme system — updated by applyTheme() */
+  --lux-cream: var(--bg-primary, #FFF8F3);
+  --lux-brown: var(--text-primary, #4E342E);
+  --lux-brown-dark: color-mix(in srgb, var(--text-primary, #4E342E) 85%, black);
+  --lux-caramel: var(--accent-primary, #8D5524);
+  --lux-caramel-dark: color-mix(in srgb, var(--accent-primary, #8D5524) 90%, black);
+  --lux-caramel-glow: color-mix(in srgb, var(--accent-primary, #8D5524) 35%, transparent);
+  --lux-text: var(--text-primary, #2C1810);
+  --lux-text-muted: var(--text-secondary, #6B5B4E);
+  --lux-text-light: var(--bg-primary, #FFF8F3);
+  --lux-text-light-muted: color-mix(in srgb, var(--bg-primary, #FFF8F3) 70%, transparent);
+  --lux-font-display: var(--font-display, 'Source Serif 4');
+  --lux-font-body: var(--font-body, 'Work Sans');
+  --lux-shadow-soft: 0 20px 60px color-mix(in srgb, var(--text-primary, #000) 8%, transparent);
+  --lux-shadow-hover: 0 28px 80px color-mix(in srgb, var(--text-primary, #000) 12%, transparent);
   --lux-radius: 24px;
   --lux-radius-sm: 16px;
   --lux-transition: 0.5s cubic-bezier(0.16, 1, 0.3, 1);
@@ -95,7 +96,7 @@
   gap: 0.5rem;
   padding: 1rem 2.5rem;
   background: var(--lux-caramel);
-  color: #ffffff;
+  color: var(--btn-text, #ffffff);
   font-family: var(--lux-font-display);
   font-weight: 600;
   font-size: 1rem;
@@ -110,7 +111,7 @@
 .lux-btn:hover {
   transform: scale(1.02);
   background: var(--lux-caramel-dark);
-  box-shadow: 0 8px 32px rgba(141, 85, 36, 0.4);
+  box-shadow: 0 8px 32px var(--lux-caramel-glow);
 }
 
 .lux-btn:active {
@@ -119,14 +120,14 @@
 
 .lux-btn--glow {
   box-shadow:
-    0 4px 30px rgba(141, 85, 36, 0.4),
-    0 0 60px rgba(141, 85, 36, 0.15);
+    0 4px 30px var(--lux-caramel-glow),
+    0 0 60px color-mix(in srgb, var(--accent-primary, #8D5524) 15%, transparent);
 }
 
 .lux-btn--glow:hover {
   box-shadow:
-    0 8px 40px rgba(141, 85, 36, 0.5),
-    0 0 80px rgba(141, 85, 36, 0.2);
+    0 8px 40px color-mix(in srgb, var(--accent-primary, #8D5524) 50%, transparent),
+    0 0 80px color-mix(in srgb, var(--accent-primary, #8D5524) 20%, transparent);
 }
 
 /* ─── Features ──────────────────────────────────────────────────────────────── */
@@ -137,7 +138,7 @@
 }
 
 .lux-feature-card {
-  background: #ffffff;
+  background: var(--glass-bg, #ffffff);
   border-radius: var(--lux-radius);
   padding: 2.5rem;
   box-shadow: var(--lux-shadow-soft);
@@ -153,7 +154,7 @@
   width: 56px;
   height: 56px;
   border-radius: 16px;
-  background: rgba(141, 85, 36, 0.08);
+  background: color-mix(in srgb, var(--accent-primary, #8D5524) 8%, transparent);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -185,7 +186,7 @@
 }
 
 .lux-shop-card {
-  background: #ffffff;
+  background: var(--glass-bg, #ffffff);
   border-radius: var(--lux-radius);
   overflow: hidden;
   box-shadow: var(--lux-shadow-soft);
@@ -221,7 +222,7 @@
   left: 1rem;
   padding: 0.35rem 1rem;
   background: var(--lux-caramel);
-  color: #ffffff;
+  color: var(--btn-text, #ffffff);
   font-family: var(--lux-font-body);
   font-size: 0.7rem;
   font-weight: 600;
@@ -299,7 +300,7 @@
 }
 
 .lux-service-card {
-  background: #ffffff;
+  background: var(--glass-bg, #ffffff);
   border-radius: var(--lux-radius);
   padding: 2.5rem;
   text-align: center;
@@ -341,8 +342,8 @@
 }
 
 .lux-testimonial-card {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: color-mix(in srgb, var(--bg-primary, #fff) 6%, transparent);
+  border: 1px solid color-mix(in srgb, var(--bg-primary, #fff) 8%, transparent);
   border-radius: var(--lux-radius);
   padding: 2.5rem;
   position: relative;
@@ -350,7 +351,7 @@
 }
 
 .lux-testimonial-card:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: color-mix(in srgb, var(--bg-primary, #fff) 10%, transparent);
   transform: translateY(-4px);
 }
 
@@ -388,7 +389,7 @@
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background: rgba(141, 85, 36, 0.2);
+  background: color-mix(in srgb, var(--accent-primary, #8D5524) 20%, transparent);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -422,14 +423,14 @@
 }
 
 .lux-faq-item {
-  background: #ffffff;
+  background: var(--glass-bg, #ffffff);
   border-radius: var(--lux-radius-sm);
   overflow: hidden;
   transition: box-shadow 0.3s ease;
 }
 
 .lux-faq-item--open {
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 8px 32px color-mix(in srgb, var(--text-primary, #000) 6%, transparent);
 }
 
 .lux-faq-question {
@@ -447,7 +448,7 @@
 }
 
 .lux-faq-question:hover {
-  background-color: rgba(141, 85, 36, 0.03);
+  background-color: color-mix(in srgb, var(--accent-primary, #8D5524) 3%, transparent);
 }
 
 .lux-faq-question-text {
@@ -493,8 +494,8 @@
 
 /* ─── Suscripción Premium ───────────────────────────────────────────────────── */
 .lux-sub-card {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: color-mix(in srgb, var(--bg-primary, #fff) 5%, transparent);
+  border: 1px solid color-mix(in srgb, var(--bg-primary, #fff) 8%, transparent);
   border-radius: var(--lux-radius);
   padding: 3rem;
   display: grid;
@@ -520,7 +521,7 @@
   height: 48px;
   flex-shrink: 0;
   border-radius: 14px;
-  background: rgba(141, 85, 36, 0.15);
+  background: color-mix(in srgb, var(--accent-primary, #8D5524) 15%, transparent);
   display: flex;
   align-items: center;
   justify-content: center;

@@ -41,10 +41,10 @@ function CoffeeBean({ bean }) {
       }}
     >
       <svg viewBox="0 0 30 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <ellipse cx="15" cy="10" rx="14" ry="9" fill="#3D2B1F" />
-        <ellipse cx="15" cy="10" rx="11" ry="6" fill="#5C3A28" />
-        <path d="M15 2 Q17 10 15 18" stroke="#2A1A0E" strokeWidth="1.5" strokeLinecap="round" fill="none" />
-        <ellipse cx="11" cy="7" rx="4" ry="2.5" fill="rgba(255,255,255,0.06)" />
+        <ellipse cx="15" cy="10" rx="14" ry="9" style={{ fill: 'var(--text-primary, #3D2B1F)' }} />
+        <ellipse cx="15" cy="10" rx="11" ry="6" style={{ fill: 'color-mix(in srgb, var(--text-primary, #5C3A28) 80%, var(--accent-primary, #8D5524))' }} />
+        <path d="M15 2 Q17 10 15 18" style={{ stroke: 'color-mix(in srgb, var(--text-primary, #2A1A0E) 100%, black)', fill: 'none' }} strokeWidth="1.5" strokeLinecap="round" />
+        <ellipse cx="11" cy="7" rx="4" ry="2.5" style={{ fill: 'color-mix(in srgb, var(--bg-primary, #fff) 6%, transparent)' }} />
       </svg>
     </div>
   );

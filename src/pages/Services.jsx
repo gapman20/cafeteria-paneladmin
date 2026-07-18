@@ -35,7 +35,7 @@ const priceBadge = {
   borderRadius: '10px',
   fontWeight: '800',
   fontSize: '0.85rem',
-  fontFamily: 'var(--font-heading)',
+  fontFamily: 'var(--font-display)',
   boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
 };
 
@@ -48,7 +48,7 @@ const infoStyle = {
 };
 
 const nameStyle = {
-  fontFamily: 'var(--font-heading)',
+  fontFamily: 'var(--font-display)',
   fontSize: '1rem',
   fontWeight: '700',
   color: 'var(--text-card-primary)',
@@ -101,7 +101,7 @@ const Menu = () => {
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1.5rem' }}>
               <div style={{ color: section.color, display: 'flex' }}>{React.createElement(SECTION_ICON_MAP[section.icon] || SECTION_ICON_MAP.coffee, { size: 18 })}</div>
               <h2 style={{
-                fontFamily: 'var(--font-heading)',
+                fontFamily: 'var(--font-display)',
                 fontSize: '1.4rem',
                 fontWeight: '700',
                 color: 'var(--text-primary)',
@@ -136,7 +136,7 @@ const Menu = () => {
                         borderRadius: '8px',
                         fontWeight: '800',
                         fontSize: '0.8rem',
-                        fontFamily: 'var(--font-heading)',
+                        fontFamily: 'var(--font-display)',
                         whiteSpace: 'nowrap',
                       }}>
                         {item.price}

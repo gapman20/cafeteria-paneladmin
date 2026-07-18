@@ -265,44 +265,44 @@ const Home = memo(() => {
                 {/* Large coffee bean */}
                 <ellipse
                   cx="200" cy="220" rx="90" ry="140"
-                  fill="rgba(141,85,36,0.12)"
+                  style={{ fill: 'var(--lux-caramel-glow, rgba(141,85,36,0.12))' }}
                   transform="rotate(-25 200 220)"
                 />
                 <ellipse
                   cx="200" cy="220" rx="85" ry="135"
                   fill="none"
-                  stroke="rgba(141,85,36,0.18)"
+                  style={{ stroke: 'color-mix(in srgb, var(--accent-primary, #8D5524) 18%, transparent)' }}
                   strokeWidth="1.5"
                   transform="rotate(-25 200 220)"
                 />
                 <path
                   d="M200 95 Q195 160 200 220 Q205 280 200 345"
                   fill="none"
-                  stroke="rgba(141,85,36,0.15)"
+                  style={{ stroke: 'color-mix(in srgb, var(--accent-primary, #8D5524) 15%, transparent)' }}
                   strokeWidth="1.5"
                   transform="rotate(-25 200 220)"
                 />
                 {/* Small decorative bean */}
                 <ellipse
                   cx="320" cy="120" rx="35" ry="55"
-                  fill="rgba(141,85,36,0.08)"
+                  style={{ fill: 'color-mix(in srgb, var(--accent-primary, #8D5524) 8%, transparent)' }}
                   transform="rotate(15 320 120)"
                 />
                 <ellipse
                   cx="320" cy="120" rx="30" ry="50"
                   fill="none"
-                  stroke="rgba(141,85,36,0.12)"
+                  style={{ stroke: 'color-mix(in srgb, var(--accent-primary, #8D5524) 12%, transparent)' }}
                   strokeWidth="1"
                   transform="rotate(15 320 120)"
                 />
                 {/* Accent circles */}
-                <circle cx="80" cy="400" r="50" fill="rgba(141,85,36,0.05)" />
-                <circle cx="350" cy="380" r="35" fill="rgba(141,85,36,0.04)" />
-                <circle cx="60" cy="150" r="25" fill="rgba(141,85,36,0.06)" />
+                <circle cx="80" cy="400" r="50" style={{ fill: 'color-mix(in srgb, var(--accent-primary, #8D5524) 5%, transparent)' }} />
+                <circle cx="350" cy="380" r="35" style={{ fill: 'color-mix(in srgb, var(--accent-primary, #8D5524) 4%, transparent)' }} />
+                <circle cx="60" cy="150" r="25" style={{ fill: 'color-mix(in srgb, var(--accent-primary, #8D5524) 6%, transparent)' }} />
                 {/* Small bean bottom-left */}
                 <ellipse
                   cx="100" cy="350" rx="28" ry="42"
-                  fill="rgba(141,85,36,0.07)"
+                  style={{ fill: 'color-mix(in srgb, var(--accent-primary, #8D5524) 7%, transparent)' }}
                   transform="rotate(-40 100 350)"
                 />
               </svg>
