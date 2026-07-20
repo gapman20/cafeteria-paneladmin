@@ -1,5 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { Upload, X, Image as ImageIcon, CheckCircle } from 'lucide-react';
+import { compressImage } from '../utils/compressImage';
 
 /**
  * ImageUploader – drag-and-drop + click-to-browse image picker.
@@ -25,32 +26,14 @@ const ImageUploader = ({ label, description, value, onChange, maxMB = 2 }) => {
       return;
     }
 
-    // Compress: resize to max 600px, JPEG 0.75 quality
+    // Compress using shared utility
     try {
-      const compressed = await new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const img = new Image();
-          img.onload = () => {
-            const canvas = document.createElement('canvas');
-            const maxDim = 600;
-            let w = img.width, h = img.height;
-            if (w > maxDim || h > maxDim) {
-              if (w > h) { h = Math.round((h / w) * maxDim); w = maxDim; }
-              else { w = Math.round((w / h) * maxDim); h = maxDim; }
-            }
-            canvas.width = w;
-            canvas.height = h;
-            canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-            resolve(canvas.toDataURL('image/jpeg', 0.75));
-          };
-          img.onerror = reject;
-          img.src = e.target.result;
-        };
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
+      const { dataUrl } = await compressImage(file, {
+        maxWidth: 600,
+        quality: 0.75,
+        preferWebP: true,
       });
-      onChange(compressed);
+      onChange(dataUrl);
     } catch {
       setError('Error al procesar la imagen.');
     }
