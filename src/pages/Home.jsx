@@ -9,8 +9,6 @@ import { useScrollReveal } from '../hooks/useScrollReveal';
 import SEO from '../components/SEO';
 import RomaBrewHero from '../components/RomaBrewHero';
 
-/* eslint-disable react/prop-types */
-
 // ── Data arrays (outside component to avoid re-creation) ─────────────────────
 
 const features = [

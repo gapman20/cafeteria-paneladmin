@@ -8,7 +8,7 @@ Panel de administración CMS y sitio público para **Café Aromático**, una mar
 - **Estilos**: CSS custom properties + diseño modular
 - **Estado**: React Context (SiteContext)
 - **Persistencia**: localStorage
-- **Compresión de imágenes**: Canvas API (JPEG, max 600px)
+- **Compresión de imágenes**: Canvas API (WebP with JPEG fallback, max 800px)
 
 ## Estructura del proyecto
 
