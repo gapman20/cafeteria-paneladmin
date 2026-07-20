@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Check } from 'lucide-react';
+import ImageFallback from '../components/ImageFallback';
 
 const ServiceDetail1 = () => {
   return (
@@ -19,9 +20,10 @@ const ServiceDetail1 = () => {
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '3rem' }}>
         <div style={{ width: '100%', height: '400px', overflow: 'hidden', borderRadius: '12px' }}>
-          <img 
+          <ImageFallback 
             src="https://images.unsplash.com/photo-1510707577719-ae7c14805e3a?auto=format&fit=crop&q=80" 
             alt="Espresso" 
+            loading="lazy"
             style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
           />
         </div>

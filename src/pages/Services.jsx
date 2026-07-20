@@ -2,6 +2,7 @@ import React from 'react';
 import { Coffee, Star } from 'lucide-react';
 import SEO from '../components/SEO';
 import { useSite, SECTION_ICON_MAP } from '../context/SiteContext';
+import ImageFallback from '../components/ImageFallback';
 
 /* ─── Card Style ───────────────────────────────────────────────────────────── */
 const cardStyle = {
@@ -65,7 +66,7 @@ const descStyle = {
 
 /* ─── Component ────────────────────────────────────────────────────────────── */
 const Menu = () => {
-  const { content, products, menuSections } = useSite();
+  const { content, menuSections } = useSite();
   const services = content.services;
 
   return (
@@ -123,7 +124,7 @@ const Menu = () => {
                   {/* Image */}
                   {item.image ? (
                     <div style={imageStyle(section.color)}>
-                      <img src={item.image} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      <ImageFallback src={item.image} alt={item.name} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                       <div style={priceBadge}>{item.price}</div>
                     </div>
                   ) : (

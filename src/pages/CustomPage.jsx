@@ -1,4 +1,5 @@
 import React from 'react';
+import ImageFallback from '../components/ImageFallback';
 
 const parseText = (text) => {
   if (!text) return '';
@@ -32,7 +33,7 @@ const CustomPage = ({ page }) => {
 
         {page.pageImage && (
           <div style={{ marginBottom: '3rem', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 10px 30px rgba(0,0,0,0.3)' }}>
-            <img src={page.pageImage} alt={page.pageTitle || 'Contenido Visual'} style={{ width: '100%', display: 'block', objectFit: 'cover' }} />
+            <ImageFallback src={page.pageImage} alt={page.pageTitle || 'Contenido Visual'} loading="lazy" style={{ width: '100%', display: 'block', objectFit: 'cover' }} />
           </div>
         )}
 

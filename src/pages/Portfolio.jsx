@@ -2,6 +2,7 @@ import React from 'react';
 import { Camera, Coffee, ArrowUpRight } from 'lucide-react';
 import { useSite } from '../context/SiteContext';
 import SEO from '../components/SEO';
+import ImageFallback from '../components/ImageFallback';
 
 const Portfolio = () => {
   const { content } = useSite();
@@ -47,9 +48,10 @@ const Portfolio = () => {
 
               <div style={{ height: '220px', width: '100%', overflow: 'hidden', position: 'relative' }}>
                 <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'linear-gradient(to top, var(--bg-secondary) 0%, transparent 60%)', zIndex: 1 }}></div>
-                <img
+                <ImageFallback
                   src={item.img}
                   alt={item.title}
+                  loading="lazy"
                   style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.7s cubic-bezier(0.16, 1, 0.3, 1)' }}
                   onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.08)'}
                   onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
