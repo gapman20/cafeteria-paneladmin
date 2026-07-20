@@ -4,7 +4,7 @@ import { useSite } from '../context/SiteContext';
 import { Hexagon, Instagram, Youtube, Facebook } from 'lucide-react';
 
 const Footer = () => {
-  const { content } = useSite();
+  const { content, images } = useSite();
   const social = content.social || {};
 
   return (
@@ -14,13 +14,19 @@ const Footer = () => {
         {/* Brand */}
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '0.6rem' }}>
-            <Hexagon fill="url(#footer-grad)" color="transparent" size={22} />
-            <svg width="0" height="0">
-              <linearGradient id="footer-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop stopColor="var(--accent-primary)"   offset="0%" />
-                <stop stopColor="var(--accent-secondary)" offset="100%" />
-              </linearGradient>
-            </svg>
+            {images.logo ? (
+              <img src={images.logo} alt={content.siteName} style={{ height: '22px', width: '22px', objectFit: 'contain', borderRadius: '4px' }} />
+            ) : (
+              <>
+                <Hexagon fill="url(#footer-grad)" color="transparent" size={22} />
+                <svg width="0" height="0">
+                  <linearGradient id="footer-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop stopColor="var(--accent-primary)"   offset="0%" />
+                    <stop stopColor="var(--accent-secondary)" offset="100%" />
+                  </linearGradient>
+                </svg>
+              </>
+            )}
             <span style={{ fontFamily: 'var(--font-heading)', fontWeight: '800', fontSize: '0.95rem' }}>{content.siteName}</span>
           </div>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.78rem', lineHeight: '1.5', marginBottom: '0.7rem' }}>

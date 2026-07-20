@@ -2,8 +2,6 @@ import React, { useRef, useEffect, useState, memo } from 'react';
 import { ArrowRight } from 'lucide-react';
 import './RomaBrewHero.css';
 
-/* eslint-disable react/prop-types */
-
 const BEANS = [
   // Far layer (depth 1 — blurred, smaller, slower)
   { x: 8,  y: 15, depth: 1, size: 26, speed: 7,   delay: 0   },
@@ -44,7 +42,7 @@ function CoffeeBean({ bean }) {
         <ellipse cx="15" cy="10" rx="14" ry="9" style={{ fill: 'var(--text-primary, #3D2B1F)' }} />
         <ellipse cx="15" cy="10" rx="11" ry="6" style={{ fill: 'color-mix(in srgb, var(--text-primary, #5C3A28) 80%, var(--accent-primary, #8D5524))' }} />
         <path d="M15 2 Q17 10 15 18" style={{ stroke: 'color-mix(in srgb, var(--text-primary, #2A1A0E) 100%, black)', fill: 'none' }} strokeWidth="1.5" strokeLinecap="round" />
-        <ellipse cx="11" cy="7" rx="4" ry="2.5" style={{ fill: 'color-mix(in srgb, var(--bg-primary, #fff) 6%, transparent)' }} />
+        <ellipse cx="11" cy="7" rx="4" ry="2.5" style={{ fill: 'color-mix(in srgb, #FFF8F3 6%, transparent)' }} />
       </svg>
     </div>
   );

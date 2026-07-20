@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { SiteProvider, useSite } from './context/SiteContext';
 import ErrorBoundary from './components/ErrorBoundary';
@@ -20,7 +20,19 @@ const CustomPage = React.lazy(() => import('./pages/CustomPage'));
 const Login = React.lazy(() => import('./pages/Login'));
 
 const AppContent = () => {
-  const { pages, isAuthenticated } = useSite();
+  const { pages, isAuthenticated, images } = useSite();
+
+  // Update favicon dynamically when logo is uploaded
+  useEffect(() => {
+    const link = document.querySelector("link[rel='icon']");
+    if (link && images.logo) {
+      link.href = images.logo;
+      link.type = 'image/png';
+    } else if (link) {
+      link.href = '/vite.svg';
+      link.type = 'image/svg+xml';
+    }
+  }, [images.logo]);
   const componentMap = {
     home: <Home />,
     about: <About />,

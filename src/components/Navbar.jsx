@@ -1,12 +1,13 @@
 import React, { useState, memo } from 'react';
 import { Link } from 'react-router-dom';
 import { Menu, X, Hexagon } from 'lucide-react';
-import { useContent, usePages } from '../hooks';
+import { useContent, usePages, useImages } from '../hooks';
 
 const Navbar = memo(() => {
   const [isOpen, setIsOpen] = useState(false);
   const { content } = useContent();
   const { pages } = usePages();
+  const { images } = useImages();
 
   const scrollToTop = () => {
     setIsOpen(false);
@@ -17,13 +18,19 @@ const Navbar = memo(() => {
     <nav className="navbar">
       <div className="navbar-container">
         <Link to="/" className="navbar-logo" onClick={scrollToTop}>
-          <Hexagon fill="url(#coffee-grad)" color="transparent" size={28} />
-          <svg width="0" height="0">
-            <linearGradient id="coffee-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop stopColor="#8B4513" offset="0%" />
-              <stop stopColor="#D2691E" offset="100%" />
-            </linearGradient>
-          </svg>
+          {images.logo ? (
+            <img src={images.logo} alt={content.siteName} style={{ height: '28px', width: '28px', objectFit: 'contain', borderRadius: '6px' }} />
+          ) : (
+            <>
+              <Hexagon fill="url(#coffee-grad)" color="transparent" size={28} />
+              <svg width="0" height="0">
+                <linearGradient id="coffee-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop stopColor="#8B4513" offset="0%" />
+                  <stop stopColor="#D2691E" offset="100%" />
+                </linearGradient>
+              </svg>
+            </>
+          )}
           {content.siteName}
         </Link>
 
