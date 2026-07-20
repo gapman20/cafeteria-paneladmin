@@ -1,4 +1,5 @@
 import React, { useRef, useEffect, useState, memo } from 'react';
+import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import './RomaBrewHero.css';
 
@@ -99,10 +100,10 @@ export default memo(function RomaBrewHero() {
             Granos de origen &uacute;nico, tostados artesanalmente. Creado para quienes no se conforman con lo ordinary.
           </p>
           <div className="roma-cta-group">
-            <button className="roma-cta-primary">
+            <Link to="/menu" className="roma-cta-primary">
               Explorar Nuestro Men&uacute; <ArrowRight size={18} />
-            </button>
-            <button className="roma-cta-secondary">Nuestra Historia</button>
+            </Link>
+            <Link to="/about" className="roma-cta-secondary">Nuestra Historia</Link>
           </div>
         </div>
 

@@ -19,7 +19,7 @@ export const SECTION_ICON_OPTIONS = [
 const defaultContent = {
   siteName:  'Café Aromático',
   tagline:   'El mejor café de especialidad, recién tostado',
-  ctaButton: 'Ordenar Ahora',
+  ctaButton: 'Visítanos',
 
   seo: {
     title:       'Café Aromático | Café de Especialidad',
