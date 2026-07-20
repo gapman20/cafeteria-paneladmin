@@ -2,21 +2,67 @@ import React, { useState } from 'react';
 import LocationMap from '../components/LocationMap';
 import { Mail, Phone, MapPin, Send, MessageSquare } from 'lucide-react';
 import { useSite } from '../context/SiteContext';
+import { validateEmail, validateRequired, validateMinLength } from '../utils/validation';
 
 const Contact = () => {
   const { content, addMessage } = useSite();
   const c = content.contact;
   const [formData, setFormData] = useState({ name: '', email: '', message: '' });
   const [sent, setSent] = useState(false);
+  const [errors, setErrors] = useState({});
+
+  const validate = () => {
+    const newErrors = {};
+    const nameResult = validateRequired(formData.name, 'Nombre');
+    if (!nameResult.valid) newErrors.name = nameResult.error;
+
+    const emailResult = validateEmail(formData.email);
+    if (!emailResult.valid) newErrors.email = emailResult.error;
+
+    const msgResult = validateMinLength(formData.message, 10, 'Mensaje');
+    if (!msgResult.valid) newErrors.message = msgResult.error;
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleBlur = (field) => {
+    const newErrors = { ...errors };
+    if (field === 'name') {
+      const r = validateRequired(formData.name, 'Nombre');
+      if (!r.valid) newErrors.name = r.error; else delete newErrors.name;
+    } else if (field === 'email') {
+      const r = validateEmail(formData.email);
+      if (!r.valid) newErrors.email = r.error; else delete newErrors.email;
+    } else if (field === 'message') {
+      const r = validateMinLength(formData.message, 10, 'Mensaje');
+      if (!r.valid) newErrors.message = r.error; else delete newErrors.message;
+    }
+    setErrors(newErrors);
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if(formData.name && formData.email) {
-      addMessage(formData);
-      setSent(true);
-      setFormData({ name: '', email: '', message: '' });
-      setTimeout(() => setSent(false), 4000);
-    }
+    if (!validate()) return;
+
+    addMessage(formData);
+    setSent(true);
+    setFormData({ name: '', email: '', message: '' });
+    setErrors({});
+    setTimeout(() => setSent(false), 4000);
+  };
+
+  const inputStyle = (hasError) => ({
+    width: '100%', padding: '16px',
+    background: 'var(--glass-bg, rgba(5,5,5,0.5))',
+    border: `1px solid ${hasError ? '#ef4444' : 'var(--glass-border)'}`,
+    color: 'var(--text-primary, white)',
+    borderRadius: '12px', fontFamily: 'var(--font-body)',
+    outline: 'none', transition: 'border-color 0.3s',
+  });
+
+  const errorStyle = {
+    color: '#ef4444', fontSize: '0.82rem', marginTop: '0.3rem',
   };
 
   return (
@@ -71,17 +117,44 @@ const Contact = () => {
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
               <label style={{ fontSize: '0.9rem', fontWeight: '500', color: 'var(--text-card-secondary)' }}>Nombre o Empresa</label>
-              <input required type="text" placeholder="Ej. Juan Pérez" value={formData.name} onChange={e=>setFormData({...formData, name: e.target.value})} style={{ width: '100%', padding: '16px', background: 'var(--glass-bg, rgba(5,5,5,0.5))', border: '1px solid var(--glass-border)', color: 'var(--text-primary, white)', borderRadius: '12px', fontFamily: 'var(--font-body)', outline: 'none', transition: 'border-color 0.3s' }} onFocus={e => e.target.style.borderColor = 'var(--accent-primary)'} onBlur={e => e.target.style.borderColor = 'var(--glass-border)'} />
+              <input
+                type="text"
+                placeholder="Ej. Juan Pérez"
+                value={formData.name}
+                onChange={e => setFormData({ ...formData, name: e.target.value })}
+                onBlur={() => handleBlur('name')}
+                style={inputStyle(errors.name)}
+                onFocus={e => { if (!errors.name) e.target.style.borderColor = 'var(--accent-primary)'; }}
+              />
+              {errors.name && <p style={errorStyle}>{errors.name}</p>}
             </div>
-            
+
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
               <label style={{ fontSize: '0.9rem', fontWeight: '500', color: 'var(--text-card-secondary)' }}>Correo Electrónico</label>
-              <input required type="email" placeholder="correo@empresa.com" value={formData.email} onChange={e=>setFormData({...formData, email: e.target.value})} style={{ width: '100%', padding: '16px', background: 'var(--glass-bg, rgba(5,5,5,0.5))', border: '1px solid var(--glass-border)', color: 'var(--text-primary, white)', borderRadius: '12px', fontFamily: 'var(--font-body)', outline: 'none', transition: 'border-color 0.3s' }} onFocus={e => e.target.style.borderColor = 'var(--accent-primary)'} onBlur={e => e.target.style.borderColor = 'var(--glass-border)'} />
+              <input
+                type="email"
+                placeholder="correo@empresa.com"
+                value={formData.email}
+                onChange={e => setFormData({ ...formData, email: e.target.value })}
+                onBlur={() => handleBlur('email')}
+                style={inputStyle(errors.email)}
+                onFocus={e => { if (!errors.email) e.target.style.borderColor = 'var(--accent-primary)'; }}
+              />
+              {errors.email && <p style={errorStyle}>{errors.email}</p>}
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
               <label style={{ fontSize: '0.9rem', fontWeight: '500', color: 'var(--text-card-secondary)' }}>¿Qué necesitas?</label>
-              <textarea required placeholder="Cuéntanos..." rows="5" value={formData.message} onChange={e=>setFormData({...formData, message: e.target.value})} style={{ width: '100%', padding: '16px', background: 'var(--glass-bg, rgba(5,5,5,0.5))', border: '1px solid var(--glass-border)', color: 'var(--text-primary, white)', borderRadius: '12px', resize: 'vertical', fontFamily: 'var(--font-body)', outline: 'none', transition: 'border-color 0.3s' }} onFocus={e => e.target.style.borderColor = 'var(--accent-primary)'} onBlur={e => e.target.style.borderColor = 'var(--glass-border)'}></textarea>
+              <textarea
+                placeholder="Cuéntanos..."
+                rows="5"
+                value={formData.message}
+                onChange={e => setFormData({ ...formData, message: e.target.value })}
+                onBlur={() => handleBlur('message')}
+                style={{ ...inputStyle(errors.message), resize: 'vertical' }}
+                onFocus={e => { if (!errors.message) e.target.style.borderColor = 'var(--accent-primary)'; }}
+              />
+              {errors.message && <p style={errorStyle}>{errors.message}</p>}
             </div>
 
             <button type="submit" className="btn-primary" style={{ marginTop: '1rem', width: '100%', justifyContent: 'center', background: sent ? '#10b981' : '' }}>

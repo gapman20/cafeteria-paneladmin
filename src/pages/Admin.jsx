@@ -14,50 +14,42 @@ import {
   ToggleLeft, ToggleRight, RefreshCw, Plus, Trash2, Package,
   Columns, ArrowUp, ArrowDown, Bold, List, BarChart, Lock, Search,
   Download, Upload, Copy, Utensils, Coffee,
-  Folder, Calendar, LayoutGrid, Edit3, MousePointer, Clock,
-  Link, ImagePlus, MapPin, Phone, AtSign, Building2
+  Folder, LayoutGrid, Edit3, MousePointer, Clock,
+  Link, ImagePlus, MapPin, Phone, AtSign
 } from 'lucide-react';
+import { compressImage } from '../utils/compressImage';
+import { validatePassword } from '../utils/validation';
 
 
-
-// ─── Shared input style ───────────────────────────────────────────────────────
-const inputSt = {
-  width: '100%', padding: '11px 14px',
-  background: 'var(--color-elevated)',
-  border: '1px solid var(--color-border)',
-  borderRadius: '8px', color: 'var(--color-text)',
-  fontFamily: 'var(--font-body)', fontSize: '0.95rem',
-  outline: 'none', resize: 'vertical',
-  transition: 'border-color 0.2s',
-};
-
-const labelSt = {
-  display: 'block',
-  fontSize: '0.75rem',
-  fontWeight: '700',
-  color: 'var(--color-text-secondary)',
-  textTransform: 'uppercase',
-  marginBottom: '0.3rem',
-};
-
-const sectionTitle = {
-  fontFamily: 'var(--font-heading)', fontSize: '1.15rem', fontWeight: '800',
-  marginBottom: '2rem', paddingBottom: '1rem',
-  borderBottom: '1px solid var(--color-border)', color: 'var(--color-text)',
-  display: 'flex', alignItems: 'center', gap: '10px',
-};
 
 // ─── Reusable components ──────────────────────────────────────────────────────
-const Field = ({ label, path, value, type = 'text', onChange, hint }) => (
-  <div style={{ marginBottom: '1.2rem' }}>
-    <label className="admin-label">{label}</label>
-    {hint && <p className="admin-hint">{hint}</p>}
-    {type === 'textarea'
-      ? <textarea className="admin-input" value={value} rows={3} onChange={e => onChange(path, e.target.value)} />
-      : <input className="admin-input" type={type} value={value} onChange={e => onChange(path, e.target.value)} />
+const Field = ({ label, path, value, type = 'text', onChange, hint, validation }) => {
+  const [fieldError, setFieldError] = React.useState(null);
+
+  const handleBlur = () => {
+    if (validation) {
+      const error = validation(value);
+      setFieldError(error);
     }
-  </div>
-);
+  };
+
+  const handleChange = (e) => {
+    onChange(path, e.target.value);
+    if (fieldError) setFieldError(null);
+  };
+
+  return (
+    <div style={{ marginBottom: '1.2rem' }}>
+      <label className="admin-label">{label}</label>
+      {hint && <p className="admin-hint">{hint}</p>}
+      {type === 'textarea'
+        ? <textarea className="admin-input" value={value} rows={3} onChange={handleChange} onBlur={handleBlur} />
+        : <input className="admin-input" type={type} value={value} onChange={handleChange} onBlur={handleBlur} />
+      }
+      {fieldError && <p style={{ color: '#ef4444', fontSize: '0.78rem', marginTop: '0.3rem' }}>{fieldError}</p>}
+    </div>
+  );
+};
 
 // StatCard for Dashboard
 const StatCard = ({ label, val, sub, color, Icon }) => (
@@ -137,13 +129,6 @@ const Toolbar = ({ onFormat }) => (
   </div>
 );
 
-// Format helper
-const insertFormat = (path, value, formatType, onChange) => {
-  const formats = { 'bold': '**Texto Destacado**', 'list': '\\n- Punto de lista' };
-  const strVal = value || '';
-  onChange(path, strVal + (strVal && strVal !== '' ? ' ' : '') + formats[formatType]);
-};
-
 // ─── Sidebar Sections (Categorized) ──────────────────────────────────────────
 const sidebarTopItem = { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard size={17} /> };
 
@@ -219,39 +204,14 @@ const defaultSubBenefits = [
   { icon: '⭐', title: 'Puntos de Fidelidad', desc: 'Acumula puntos canjeables por productos, experiencias y eventos exclusivos.' },
 ];
 
-// ─── Image compression utility ────────────────────────────────────────────────
-function compressImage(file, maxDimension = 400, quality = 0.7) {
-  return new Promise((resolve) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const img = new Image();
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        let w = img.width;
-        let h = img.height;
-        if (w > maxDimension || h > maxDimension) {
-          if (w > h) { h = Math.round((h / w) * maxDimension); w = maxDimension; }
-          else { w = Math.round((w / h) * maxDimension); h = maxDimension; }
-        }
-        canvas.width = w;
-        canvas.height = h;
-        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-        resolve(canvas.toDataURL('image/jpeg', quality));
-      };
-      img.src = e.target.result;
-    };
-    reader.readAsDataURL(file);
-  });
-}
-
 // ─── Main Admin Component ─────────────────────────────────────────────────────
 const Admin = memo(() => {
-  const { content, updateContent, updateServiceCard, moveServiceCard, saveContent, resetContent, saveStatus, updateHomeStat, updateHomeStep, updateHomeTestimonial } = useContent();
+  const { content, updateContent, saveContent, resetContent, saveStatus } = useContent();
   const { images, updateImage } = useImages();
   const { theme, updateTheme, resetTheme } = useTheme();
   const { pages, createPage, updatePage, deletePage, movePage } = usePages();
   const { inbox, markMessageRead, deleteMessage } = useInbox();
-  const { logout } = useAuth();
+  const { logout, changePassword } = useAuth();
   const { analytics } = useAnalytics();
   const { menuSections, updateMenuSection, updateMenuItem, addMenuItem, removeMenuItem, addMenuSection, removeMenuSection, moveMenuSection, moveMenuItem } = useMenu();
 
@@ -260,10 +220,11 @@ const Admin = memo(() => {
   const [toasts, setToasts] = useState([]);
   const [oldPass, setOldPass] = useState('');
   const [newPass, setNewPass] = useState('');
+  const [confirmPass, setConfirmPass] = useState('');
+  const [passErrors, setPassErrors] = useState({});
   const [selectedMsg, setSelectedMsg] = useState(null);
   const [inboxSearch, setInboxSearch] = useState('');
   const [inboxFilter, setInboxFilter] = useState('all');
-  const [galleryFilter, setGalleryFilter] = useState('all');
   const [galleryView, setGalleryView] = useState('grid');
   const [gallerySearch, setGallerySearch] = useState('');
   const [dragOver, setDragOver] = useState(false);
@@ -281,19 +242,27 @@ const Admin = memo(() => {
   const [seoFollow, setSeoFollow] = useState(true);
   const [ogImage, setOgImage] = useState(null);
 
+  // Stable toast ID counter (avoids Date.now() impurity)
+  const toastIdRef = useRef(0);
+  const nextToastId = () => { toastIdRef.current += 1; return toastIdRef.current; };
+
   const onChange = (path, val) => updateContent(path, val);
 
   const showToast = (msg, type = 'success') => {
-    const id = Date.now();
+    const id = nextToastId();
     setToasts(prev => [...prev, { id, msg, type }]);
     setTimeout(() => setToasts(t => t.filter(x => x.id !== id)), 3000);
   };
 
   useEffect(() => {
     if (saveStatus === 'saved') {
-      showToast('¡Cambios Guardados Exitosamente!', 'success');
+      const id = nextToastId();
+      setToasts(prev => [...prev, { id, msg: '¡Cambios Guardados Exitosamente!', type: 'success' }]);
+      setTimeout(() => setToasts(t => t.filter(x => x.id !== id)), 3000);
     } else if (saveStatus === 'error') {
-      showToast('Error al guardar', 'error');
+      const id = nextToastId();
+      setToasts(prev => [...prev, { id, msg: 'Error al guardar', type: 'error' }]);
+      setTimeout(() => setToasts(t => t.filter(x => x.id !== id)), 3000);
     }
   }, [saveStatus]);
 
@@ -301,9 +270,9 @@ const Admin = memo(() => {
     switch (active) {
 
       // ── Dashboard ─────────────────────────────────────────────────────────
-      case 'dashboard':
+      case 'dashboard': {
         const activePages = pages.filter(p => p.active).length;
-        const totalImages = [images.logo, images.heroBg, images.aboutHero, ...(images.portfolio || [])].filter(Boolean).length;
+        const totalImages = [images.logo, ...(images.portfolio || [])].filter(Boolean).length;
         const totalMenuItems = menuSections.reduce((acc, s) => acc + s.items.length, 0);
         const unreadMsgs = inbox.filter(m => !m.read).length;
         
@@ -454,6 +423,7 @@ const Admin = memo(() => {
             </div>
           </div>
         );
+      }
 
       // ── Pages / Menu ──────────────────────────────────────────────────────
       case 'pages': {
@@ -483,7 +453,6 @@ const Admin = memo(() => {
                       const pageIcons = { home: <Monitor size={16} />, about: <Info size={16} />, menu: <Utensils size={16} />, contact: <Mail size={16} />, images: <ImageIcon size={16} /> };
                       const IconComp = pageIcons[page.id] || <FileText size={16} />;
                       const isPublished = page.active && !page.isCustom;
-                      const isDraft = !page.active || page.isCustom;
 
                       return (
                         <tr key={page.id}>
@@ -637,8 +606,8 @@ const Admin = memo(() => {
                             onChange={async e => {
                               const file = e.target.files?.[0];
                               if (!file) return;
-                              const compressed = await compressImage(file);
-                              updateMenuItem(section.id, iIdx, 'image', compressed);
+                              const { dataUrl } = await compressImage(file, { maxWidth: 400, quality: 0.7 });
+                              updateMenuItem(section.id, iIdx, 'image', dataUrl);
                             }}
                           />
                         </div>
@@ -971,11 +940,11 @@ const Admin = memo(() => {
                     </div>
 
                     {/* Hero */}
-                    <div className="admin-preview-hero" style={{ background: theme.bgSecondary }}>
-                      <div className="admin-preview-hero-title" style={{ color: theme.textPrimary, fontFamily: theme.fontDisplay }}>
+                    <div className="admin-preview-hero" style={{ background: '#1A1410' }}>
+                      <div className="admin-preview-hero-title" style={{ color: '#FFF8F3', fontFamily: theme.fontDisplay }}>
                         El Arte del Café
                       </div>
-                      <div className="admin-preview-hero-subtitle" style={{ color: theme.textSecondary, fontFamily: theme.fontBody }}>
+                      <div className="admin-preview-hero-subtitle" style={{ color: 'rgba(255,248,243,0.7)', fontFamily: theme.fontBody }}>
                         Descubrí sabores que cuentan historias
                       </div>
                       <div className="admin-preview-btn" style={{ background: theme.accentPrimary, color: getBtnText(theme.accentPrimary), fontFamily: theme.fontBody }}>
@@ -1030,7 +999,7 @@ const Admin = memo(() => {
       }
 
       // ── SEO ───────────────────────────────────────────────────────────────
-      case 'seo':
+      case 'seo': {
         const seoTitleLen = content.seo?.title?.length || 0;
         const seoDescLen = content.seo?.description?.length || 0;
 
@@ -1185,8 +1154,9 @@ const Admin = memo(() => {
             </div>
           </div>
         );
+      }
 
-      case 'general':
+      case 'general': {
         const dayLabels = { lunes: 'Lunes', martes: 'Martes', miercoles: 'Miércoles', jueves: 'Jueves', viernes: 'Viernes', sabado: 'Sábado', domingo: 'Domingo' };
 
         return (
@@ -1410,15 +1380,30 @@ const Admin = memo(() => {
               <h4 className="admin-card-title">🔒 Seguridad Institucional</h4>
               <p style={{ color: 'var(--admin-text-secondary)', fontSize: '0.8125rem', marginBottom: '1.25rem', lineHeight: '1.6', fontFamily: 'var(--admin-font-body)' }}>Cambia la contraseña maestra de acceso al panel ("admin123" por defecto).</p>
               <div className="admin-grid-2" style={{ marginBottom: '1rem' }}>
-                <input id="oldPass" type="password" placeholder="Contraseña Actual" value={oldPass} onChange={e => setOldPass(e.target.value)} className="admin-input" />
-                <input id="newPass" type="password" placeholder="Nueva Contraseña" value={newPass} onChange={e => setNewPass(e.target.value)} className="admin-input" />
+                <div>
+                  <input id="oldPass" type="password" placeholder="Contraseña Actual" value={oldPass} onChange={e => setOldPass(e.target.value)} className="admin-input" />
+                </div>
+                <div>
+                  <input id="newPass" type="password" placeholder="Nueva Contraseña" value={newPass} onChange={e => { setNewPass(e.target.value); if (passErrors.newPass) setPassErrors(prev => ({ ...prev, newPass: null })); }} className="admin-input" />
+                  {passErrors.newPass && <p style={{ color: '#ef4444', fontSize: '0.78rem', marginTop: '0.3rem' }}>{passErrors.newPass}</p>}
+                </div>
+              </div>
+              <div style={{ marginBottom: '1rem' }}>
+                <input id="confirmPass" type="password" placeholder="Confirmar Nueva Contraseña" value={confirmPass} onChange={e => { setConfirmPass(e.target.value); if (passErrors.confirm) setPassErrors(prev => ({ ...prev, confirm: null })); }} className="admin-input" style={{ width: '100%' }} />
+                {passErrors.confirm && <p style={{ color: '#ef4444', fontSize: '0.78rem', marginTop: '0.3rem' }}>{passErrors.confirm}</p>}
               </div>
               <button
                 className="admin-security-btn"
                 onClick={async () => {
-                  if (!oldPass || !newPass) { showToast('Llena ambos campos', 'error'); return; }
+                  const errors = {};
+                  if (!oldPass) { errors.oldPass = 'La contraseña actual es obligatoria'; }
+                  const passResult = validatePassword(newPass);
+                  if (!passResult.valid) errors.newPass = passResult.error;
+                  if (newPass !== confirmPass) errors.confirm = 'Las contraseñas no coinciden';
+                  if (Object.keys(errors).length > 0) { setPassErrors(errors); return; }
+
                   const success = await changePassword(oldPass, newPass);
-                  if (success) { setOldPass(''); setNewPass(''); showToast('Contraseña Actualizada', 'success'); }
+                  if (success) { setOldPass(''); setNewPass(''); setConfirmPass(''); setPassErrors({}); showToast('Contraseña Actualizada', 'success'); }
                   else showToast('Error al actualizar', 'error');
                 }}
               >
@@ -1427,6 +1412,7 @@ const Admin = memo(() => {
             </div>
           </div>
         );
+      }
 
       case 'home':
         return (
@@ -1717,44 +1703,29 @@ const Admin = memo(() => {
 
       case 'images': {
         const imageSlots = [
-          { key: 'logo', label: 'logo-brand.png', category: 'cafe', size: '~45 KB', optimized: true },
-          { key: 'heroBg', label: 'hero-fondo.jpg', category: 'interior', size: '~320 KB', optimized: true },
-          { key: 'aboutHero', label: 'nosotros-equipo.jpg', category: 'equipo', size: '~180 KB', optimized: true },
+          { key: 'logo', label: 'Logo', size: '~45 KB' },
           ...(images.portfolio || []).map((_, i) => ({ 
             key: `portfolio.${i}`, 
-            label: `galeria-${i + 1}.jpg`, 
-            category: i < 2 ? 'cafe' : i < 4 ? 'eventos' : 'interior', 
+            label: `Galería ${i + 1}`, 
             size: `~${120 + i * 30} KB`, 
-            optimized: i % 2 === 0 
           })),
         ];
 
-        const categories = [
-          { key: 'all', label: 'Todo', icon: <Folder size={15} /> },
-          { key: 'cafe', label: 'Café & Bebidas', icon: <Coffee size={15} /> },
-          { key: 'interior', label: 'Interior Local', icon: <Monitor size={15} /> },
-          { key: 'equipo', label: 'Equipo / Team', icon: <Users size={15} /> },
-          { key: 'eventos', label: 'Eventos', icon: <Calendar size={15} /> },
-        ];
-
         const filteredSlots = imageSlots.filter(s => {
-          const matchesFilter = galleryFilter === 'all' || s.category === galleryFilter;
-          const matchesSearch = !gallerySearch || s.label.toLowerCase().includes(gallerySearch.toLowerCase());
-          return matchesFilter && matchesSearch;
+          return !gallerySearch || s.label.toLowerCase().includes(gallerySearch.toLowerCase());
         });
 
-        const totalUsed = [images.logo, images.heroBg, images.aboutHero, ...(images.portfolio || [])].filter(Boolean).length;
-        const maxSlots = 9;
-        const usagePercent = Math.round((totalUsed / maxSlots) * 100);
+        const totalUsed = [images.logo, ...(images.portfolio || [])].filter(Boolean).length;
+        const maxSlots = imageSlots.length;
 
         const handleFileUpload = async (file, slot) => {
           if (!file) { return; }
-          const compressed = await compressImage(file, 600, 0.75);
+          const { dataUrl } = await compressImage(file, { maxWidth: 600, quality: 0.75 });
           if (slot.key.startsWith('portfolio.')) {
             const idx = parseInt(slot.key.split('.')[1]);
-            updateImage('portfolio', compressed, idx);
+            updateImage('portfolio', dataUrl, idx);
           } else {
-            updateImage(slot.key, compressed);
+            updateImage(slot.key, dataUrl);
           }
         };
 
@@ -1768,43 +1739,22 @@ const Admin = memo(() => {
               <span>Las imágenes se guardan en tu navegador como base64. <strong style={{ color: 'var(--admin-text)' }}>Máximo 2 MB por imagen.</strong></span>
             </div>
 
-            <div className="admin-gallery-layout">
-              {/* ── Left: Sidebar ── */}
-              <div className="admin-gallery-sidebar">
-                {categories.map(cat => {
-                  const count = cat.key === 'all' ? imageSlots.length : imageSlots.filter(s => s.category === cat.key).length;
-                  return (
-                    <div
-                      key={cat.key}
-                      className={`admin-gallery-sidebar-item ${galleryFilter === cat.key ? 'admin-gallery-sidebar-item--active' : ''}`}
-                      onClick={() => setGalleryFilter(cat.key)}
-                    >
-                      <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        {cat.icon} {cat.label}
-                      </span>
-                      <span className="admin-gallery-count">{count}</span>
-                    </div>
-                  );
-                })}
-
-                {/* Storage Widget */}
-                <div className="admin-storage-widget">
-                  <div className="admin-storage-label">
-                    <span>Almacenamiento</span>
-                    <span style={{ fontWeight: 600 }}>{usagePercent}%</span>
-                  </div>
-                  <div className="admin-storage-track">
-                    <div className="admin-storage-fill" style={{ width: `${usagePercent}%` }} />
-                  </div>
-                  <div className="admin-storage-detail">
-                    {totalUsed} de {maxSlots} slots utilizados
-                  </div>
+            <div style={{ marginBottom: '1.5rem' }}>
+              {/* Storage Widget */}
+              <div className="admin-storage-widget" style={{ marginBottom: '1.5rem' }}>
+                <div className="admin-storage-label">
+                  <span>Almacenamiento</span>
+                  <span style={{ fontWeight: 600 }}>{Math.round((totalUsed / maxSlots) * 100)}%</span>
+                </div>
+                <div className="admin-storage-track">
+                  <div className="admin-storage-fill" style={{ width: `${Math.round((totalUsed / maxSlots) * 100)}%` }} />
+                </div>
+                <div className="admin-storage-detail">
+                  {totalUsed} de {maxSlots} slots utilizados
                 </div>
               </div>
 
-              {/* ── Right: Main Area ── */}
-              <div>
-                {/* Dropzone */}
+              {/* Dropzone */}
                 <label
                   className={`admin-dropzone ${dragOver ? 'admin-dropzone--active' : ''}`}
                   onDragOver={e => { e.preventDefault(); setDragOver(true); }}
@@ -1913,13 +1863,11 @@ const Admin = memo(() => {
                             <div className="admin-gallery-card-name">{slot.label}</div>
                             <div className="admin-gallery-card-meta">
                               <span className="admin-gallery-card-size">{slot.size}</span>
-                              <span className="admin-badge" style={imgVal && slot.optimized
+                              <span className="admin-badge" style={imgVal
                                 ? { background: 'var(--admin-success-subtle)', color: 'var(--admin-success)', border: '1px solid rgba(45,106,79,0.15)', fontSize: '0.55rem', padding: '1px 5px' }
-                                : imgVal 
-                                  ? { background: 'rgba(245,158,11,0.08)', color: '#D97706', border: '1px solid rgba(245,158,11,0.15)', fontSize: '0.55rem', padding: '1px 5px' }
-                                  : { background: 'var(--admin-surface-hover)', color: 'var(--admin-text-muted)', border: '1px solid var(--admin-border)', fontSize: '0.55rem', padding: '1px 5px' }
+                                : { background: 'var(--admin-surface-hover)', color: 'var(--admin-text-muted)', border: '1px solid var(--admin-border)', fontSize: '0.55rem', padding: '1px 5px' }
                               }>
-                                {imgVal ? (slot.optimized ? 'Optimizado' : 'Pendiente') : 'Vacío'}
+                                {imgVal ? 'Cargada' : 'Vacía'}
                               </span>
                             </div>
                           </div>
@@ -1949,13 +1897,11 @@ const Admin = memo(() => {
                           </div>
                           <div className="admin-gallery-row-size">{slot.size}</div>
                           <div>
-                            <span className="admin-badge" style={imgVal && slot.optimized
+                            <span className="admin-badge" style={imgVal
                               ? { background: 'var(--admin-success-subtle)', color: 'var(--admin-success)', border: '1px solid rgba(45,106,79,0.15)', fontSize: '0.6rem' }
-                              : imgVal
-                                ? { background: 'rgba(245,158,11,0.08)', color: '#D97706', border: '1px solid rgba(245,158,11,0.15)', fontSize: '0.6rem' }
-                                : { background: 'var(--admin-surface-hover)', color: 'var(--admin-text-muted)', border: '1px solid var(--admin-border)', fontSize: '0.6rem' }
+                              : { background: 'var(--admin-surface-hover)', color: 'var(--admin-text-muted)', border: '1px solid var(--admin-border)', fontSize: '0.6rem' }
                             }>
-                              {imgVal ? (slot.optimized ? 'Optimizado' : 'Pendiente') : 'Vacío'}
+                              {imgVal ? 'Cargada' : 'Vacía'}
                             </span>
                           </div>
                           <div className="admin-gallery-row-actions">
@@ -1980,7 +1926,6 @@ const Admin = memo(() => {
                   </div>
                 )}
               </div>
-            </div>
           </div>
         );
       }

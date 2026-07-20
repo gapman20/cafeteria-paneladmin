@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Coffee, Snowflake, CakeSlice } from 'lucide-react';
 
@@ -170,8 +171,6 @@ const defaultTheme = {
 // ─── Default Images ────────────────────────────────────────────────────────────
 const defaultImages = {
   logo:      null,
-  heroBg:    null,
-  aboutHero: null,
   portfolio: [null, null, null, null, null, null],
 };
 

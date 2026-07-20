@@ -829,6 +829,7 @@
 
 /* Dropzone */
 .admin-dropzone {
+  display: block;
   border: 2px dashed var(--admin-border);
   border-radius: var(--admin-radius);
   padding: 2rem;
