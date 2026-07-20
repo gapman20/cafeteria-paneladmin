@@ -1,8 +1,6 @@
-import React, { useState, useEffect, memo, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import './CoffeeCarousel.css';
-
-/* eslint-disable react/prop-types */
 
 const coffees = [
   {
