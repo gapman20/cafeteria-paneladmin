@@ -103,7 +103,6 @@ export default memo(function RomaBrewHero() {
             <Link to="/menu" className="roma-cta-primary">
               Explorar Nuestro Men&uacute; <ArrowRight size={18} />
             </Link>
-            <Link to="/about" className="roma-cta-secondary">Nuestra Historia</Link>
           </div>
         </div>
 
