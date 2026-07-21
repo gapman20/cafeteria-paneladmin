@@ -8,12 +8,14 @@ export const useContent = () => {
   const {
     content, updateContent,
     updateServiceCard, moveServiceCard,
-    saveContent, resetContent, saveStatus,
+    saveContent, saveDraft, discardDraft, resetContent, saveStatus,
+    draftMode, setDraftMode, isDirty,
   } = useSite();
   return {
     content, updateContent,
     updateServiceCard, moveServiceCard,
-    saveContent, resetContent, saveStatus,
+    saveContent, saveDraft, discardDraft, resetContent, saveStatus,
+    draftMode, setDraftMode, isDirty,
   };
 };
 

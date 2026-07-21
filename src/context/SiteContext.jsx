@@ -1,18 +1,56 @@
 /* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Coffee, Snowflake, CakeSlice } from 'lucide-react';
+import {
+  Coffee, Snowflake, CakeSlice,
+  Utensils, Wine, Beer, IceCream, Sandwich, Salad, Cookie,
+  Cherry, Flame, Star, Leaf, Droplets, GlassWater, Beef, Fish, Egg, Soup,
+} from 'lucide-react';
 
 // ─── Section Icon Map ────────────────────────────────────────────────────────
 export const SECTION_ICON_MAP = {
   coffee: Coffee,
   snowflake: Snowflake,
   'cake-slice': CakeSlice,
+  utensils: Utensils,
+  wine: Wine,
+  beer: Beer,
+  'ice-cream': IceCream,
+  sandwich: Sandwich,
+  salad: Salad,
+  cookie: Cookie,
+  cherry: Cherry,
+  flame: Flame,
+  star: Star,
+  leaf: Leaf,
+  droplets: Droplets,
+  'glass-water': GlassWater,
+  beef: Beef,
+  fish: Fish,
+  egg: Egg,
+  soup: Soup,
 };
 
 export const SECTION_ICON_OPTIONS = [
-  { key: 'coffee', label: '☕ Coffee' },
-  { key: 'snowflake', label: '❄️ Snowflake' },
-  { key: 'cake-slice', label: '🍰 Cake' },
+  { key: 'coffee',       label: '☕ Coffee' },
+  { key: 'utensils',     label: '🍴 Utensils' },
+  { key: 'wine',         label: '🍷 Wine' },
+  { key: 'beer',         label: '🍺 Beer' },
+  { key: 'glass-water',  label: '🥤 Beverage' },
+  { key: 'droplets',     label: '💧 Drinks' },
+  { key: 'snowflake',    label: '❄️ Cold' },
+  { key: 'flame',        label: '🔥 Hot / Spicy' },
+  { key: 'cake-slice',   label: '🍰 Cake' },
+  { key: 'ice-cream',    label: '🍦 Ice Cream' },
+  { key: 'cookie',       label: '🍪 Pastry' },
+  { key: 'sandwich',     label: '🥪 Sandwich' },
+  { key: 'salad',        label: '🥗 Salad' },
+  { key: 'soup',         label: '🍜 Soup' },
+  { key: 'beef',         label: '🥩 Meat' },
+  { key: 'fish',         label: '🐟 Seafood' },
+  { key: 'egg',          label: '🍳 Breakfast' },
+  { key: 'cherry',       label: '🍒 Fruit' },
+  { key: 'leaf',         label: '🌿 Vegetarian' },
+  { key: 'star',         label: '⭐ Special' },
 ];
 
 // ─── Default Text Content ─────────────────────────────────────────────────────
@@ -366,7 +404,7 @@ function applyTheme(theme) {
 const SiteContext = createContext(null);
 
 export const SiteProvider = ({ children }) => {
-  const [content, setContent] = useState(() => {
+  const [content, _setContentRaw] = useState(() => {
     try {
       const saved = localStorage.getItem(CONTENT_KEY);
       if (saved) return deepMerge(defaultContent, JSON.parse(saved));
@@ -374,7 +412,7 @@ export const SiteProvider = ({ children }) => {
     return defaultContent;
   });
 
-  const [images, setImages] = useState(() => {
+  const [images, _setImagesRaw] = useState(() => {
     try {
       const saved = localStorage.getItem(IMAGES_KEY);
       if (saved) return { ...defaultImages, ...JSON.parse(saved) };
@@ -382,7 +420,7 @@ export const SiteProvider = ({ children }) => {
     return defaultImages;
   });
 
-  const [theme, setTheme] = useState(() => {
+  const [theme, _setThemeRaw] = useState(() => {
     try {
       const saved = localStorage.getItem(THEME_KEY);
       if (saved) return { ...defaultTheme, ...JSON.parse(saved) };
@@ -390,7 +428,7 @@ export const SiteProvider = ({ children }) => {
     return defaultTheme;
   });
 
-  const [pages, setPages] = useState(() => {
+  const [pages, _setPagesRaw] = useState(() => {
     try {
       const saved = localStorage.getItem(PAGES_KEY);
       if (saved) return JSON.parse(saved);
@@ -398,7 +436,7 @@ export const SiteProvider = ({ children }) => {
     return defaultPages;
   });
 
-  const [products, setProducts] = useState(() => {
+  const [products, _setProductsRaw] = useState(() => {
     try {
       const saved = localStorage.getItem(PRODS_KEY);
       if (saved) return JSON.parse(saved);
@@ -425,7 +463,7 @@ export const SiteProvider = ({ children }) => {
     return [];
   });
 
-  const [menuSections, setMenuSections] = useState(() => {
+  const [menuSections, _setMenuSectionsRaw] = useState(() => {
     try {
       const saved = localStorage.getItem(MENU_KEY);
       if (saved) return JSON.parse(saved);
@@ -436,6 +474,62 @@ export const SiteProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [saveStatus, setSaveStatus] = useState(null);
   const [loadingDb, setLoadingDb] = useState(true);
+
+  // ── Draft mode (edits are buffered until save) ──────────────────────────
+  const [draftMode, setDraftMode] = useState(false);
+  const [draft, setDraft] = useState({});
+
+  // Draft-aware setters: when draftMode is active, writes go to draft instead of real state
+  const setContent = (updater) => {
+    if (!draftMode) return _setContentRaw(updater);
+    setDraft(prev => {
+      const base = prev.content !== undefined ? prev.content : content;
+      return { ...prev, content: typeof updater === 'function' ? updater(base) : updater };
+    });
+  };
+  const setImages = (updater) => {
+    if (!draftMode) return _setImagesRaw(updater);
+    setDraft(prev => {
+      const base = prev.images !== undefined ? prev.images : images;
+      return { ...prev, images: typeof updater === 'function' ? updater(base) : updater };
+    });
+  };
+  const setTheme = (updater) => {
+    if (!draftMode) return _setThemeRaw(updater);
+    setDraft(prev => {
+      const base = prev.theme !== undefined ? prev.theme : theme;
+      return { ...prev, theme: typeof updater === 'function' ? updater(base) : updater };
+    });
+  };
+  const setPages = (updater) => {
+    if (!draftMode) return _setPagesRaw(updater);
+    setDraft(prev => {
+      const base = prev.pages !== undefined ? prev.pages : pages;
+      return { ...prev, pages: typeof updater === 'function' ? updater(base) : updater };
+    });
+  };
+  const setMenuSections = (updater) => {
+    if (!draftMode) return _setMenuSectionsRaw(updater);
+    setDraft(prev => {
+      const base = prev.menuSections !== undefined ? prev.menuSections : menuSections;
+      return { ...prev, menuSections: typeof updater === 'function' ? updater(base) : updater };
+    });
+  };
+  const setProducts = (updater) => {
+    if (!draftMode) return _setProductsRaw(updater);
+    setDraft(prev => {
+      const base = prev.products !== undefined ? prev.products : products;
+      return { ...prev, products: typeof updater === 'function' ? updater(base) : updater };
+    });
+  };
+
+  // Effective values: return draft when active, real state otherwise
+  const effectiveContent = draftMode && draft.content !== undefined ? draft.content : content;
+  const effectiveImages = draftMode && draft.images !== undefined ? draft.images : images;
+  const effectiveTheme = draftMode && draft.theme !== undefined ? draft.theme : theme;
+  const effectivePages = draftMode && draft.pages !== undefined ? draft.pages : pages;
+  const effectiveMenuSections = draftMode && draft.menuSections !== undefined ? draft.menuSections : menuSections;
+  const effectiveProducts = draftMode && draft.products !== undefined ? draft.products : products;
 
   // Check localStorage for existing session on mount
   useEffect(() => {
@@ -729,31 +823,83 @@ export const SiteProvider = ({ children }) => {
     }
   };
 
+  // ── Draft save/discard ────────────────────────────────────────────────
+  const saveDraft = async () => {
+    try {
+      setSaveStatus('saving');
+
+      // Determine final values (draft overrides real state)
+      const finalContent = draft.content ?? content;
+      const finalImages = draft.images ?? images;
+      const finalTheme = draft.theme ?? theme;
+      const finalPages = draft.pages ?? pages;
+      const finalProducts = draft.products ?? products;
+      const finalMenuSections = draft.menuSections ?? menuSections;
+
+      // Apply draft to real state
+      _setContentRaw(finalContent);
+      _setImagesRaw(finalImages);
+      _setThemeRaw(finalTheme);
+      _setPagesRaw(finalPages);
+      _setProductsRaw(finalProducts);
+      _setMenuSectionsRaw(finalMenuSections);
+
+      // Persist to localStorage
+      localStorage.setItem(CONTENT_KEY, JSON.stringify(finalContent));
+      localStorage.setItem(IMAGES_KEY,  JSON.stringify(finalImages));
+      localStorage.setItem(THEME_KEY,   JSON.stringify(finalTheme));
+      localStorage.setItem(PAGES_KEY,   JSON.stringify(finalPages));
+      localStorage.setItem(PRODS_KEY,   JSON.stringify(finalProducts));
+      localStorage.setItem(ANALYTICS_KEY, JSON.stringify(analytics));
+      localStorage.setItem(INBOX_KEY,   JSON.stringify(inbox));
+      localStorage.setItem(MENU_KEY,    JSON.stringify(finalMenuSections));
+
+      // Clear draft and exit draft mode
+      setDraft({});
+      setDraftMode(false);
+
+      setSaveStatus('saved');
+    } catch (error) {
+      console.error("Error saving draft:", error);
+      setSaveStatus('error');
+    } finally {
+      setTimeout(() => setSaveStatus(null), 3000);
+    }
+  };
+
+  const discardDraft = () => {
+    setDraft({});
+    setDraftMode(false);
+  };
+
   const resetContent = () => {
     [CONTENT_KEY, IMAGES_KEY, THEME_KEY, PAGES_KEY, PRODS_KEY, ANALYTICS_KEY, MENU_KEY].forEach(k => localStorage.removeItem(k));
-    setContent(defaultContent);
-    setImages(defaultImages);
-    setTheme(defaultTheme);
-    setPages(defaultPages);
-    setProducts(defaultProducts);
-    setMenuSections(defaultMenuSections);
+    _setContentRaw(defaultContent);
+    _setImagesRaw(defaultImages);
+    _setThemeRaw(defaultTheme);
+    _setPagesRaw(defaultPages);
+    _setProductsRaw(defaultProducts);
+    _setMenuSectionsRaw(defaultMenuSections);
+    setDraft({});
+    setDraftMode(false);
     setSaveStatus('saved');
     setTimeout(() => setSaveStatus(null), 3000);
   };
 
   return (
     <SiteContext.Provider value={{
-      content, updateContent, updateServiceCard, moveServiceCard,
+      content: effectiveContent, updateContent, updateServiceCard, moveServiceCard,
       updateHomeStat, updateHomeStep, updateHomeTestimonial,
-      images,  updateImage, removeImage,
-      theme,   updateTheme, resetTheme,
-      pages, createPage, updatePage, deletePage, movePage,
-      products, createProduct, updateProduct, deleteProduct, moveProduct,
+      images: effectiveImages,  updateImage, removeImage,
+      theme: effectiveTheme,   updateTheme, resetTheme,
+      pages: effectivePages, createPage, updatePage, deletePage, movePage,
+      products: effectiveProducts, createProduct, updateProduct, deleteProduct, moveProduct,
       analytics, trackAnalytics,
-      menuSections, updateMenuSection, updateMenuItem, addMenuItem, removeMenuItem, addMenuSection, removeMenuSection, moveMenuSection, moveMenuItem,
+      menuSections: effectiveMenuSections, updateMenuSection, updateMenuItem, addMenuItem, removeMenuItem, addMenuSection, removeMenuSection, moveMenuSection, moveMenuItem,
       inbox, addMessage, markMessageRead, deleteMessage,
       isAuthenticated, login, logout, changePassword,
-      saveContent, resetContent, saveStatus, loadingDb,
+      saveContent, saveDraft, discardDraft, resetContent, saveStatus, loadingDb,
+      draftMode, setDraftMode, isDirty: draftMode && Object.keys(draft).length > 0,
     }}>
       {children}
     </SiteContext.Provider>

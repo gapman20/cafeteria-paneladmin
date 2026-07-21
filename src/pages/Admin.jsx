@@ -9,10 +9,10 @@ import '../styles/admin.css';
 import {
   LayoutDashboard, FileText, Settings, Mail, Info,
   Save, RotateCcw, CheckCircle, AlertCircle, Eye,
-  Image as ImageIcon, Palette, BarChart2, Globe,
-  MessageSquare, Zap, Users, TrendingUp, Monitor,
-  ToggleLeft, ToggleRight, RefreshCw, Plus, Trash2, Package,
-  Columns, ArrowUp, ArrowDown, Bold, List, BarChart, Lock, Search,
+  Image as ImageIcon, Palette, Globe,
+  MessageSquare, TrendingUp, Monitor,
+  RefreshCw, Plus, Trash2,
+  ArrowUp, ArrowDown, Bold, List, Search,
   Download, Upload, Copy, Utensils, Coffee,
   Folder, LayoutGrid, Edit3, MousePointer, Clock,
   Link, ImagePlus, MapPin, Phone, AtSign
@@ -206,17 +206,16 @@ const defaultSubBenefits = [
 
 // ─── Main Admin Component ─────────────────────────────────────────────────────
 const Admin = memo(() => {
-  const { content, updateContent, saveContent, resetContent, saveStatus } = useContent();
+  const { content, updateContent, saveContent, saveDraft, discardDraft, resetContent, saveStatus, draftMode, setDraftMode, isDirty } = useContent();
   const { images, updateImage } = useImages();
   const { theme, updateTheme, resetTheme } = useTheme();
-  const { pages, createPage, updatePage, deletePage, movePage } = usePages();
+  const { pages, updatePage, deletePage, movePage } = usePages();
   const { inbox, markMessageRead, deleteMessage } = useInbox();
   const { logout, changePassword } = useAuth();
   const { analytics } = useAnalytics();
   const { menuSections, updateMenuSection, updateMenuItem, addMenuItem, removeMenuItem, addMenuSection, removeMenuSection, moveMenuSection, moveMenuItem } = useMenu();
 
   const [active, setActive] = useState('dashboard');
-  const [splitView, setSplitView] = useState(false);
   const [toasts, setToasts] = useState([]);
   const [oldPass, setOldPass] = useState('');
   const [newPass, setNewPass] = useState('');
@@ -228,6 +227,8 @@ const Admin = memo(() => {
   const [galleryView, setGalleryView] = useState('grid');
   const [gallerySearch, setGallerySearch] = useState('');
   const [dragOver, setDragOver] = useState(false);
+  const [openSection, setOpenSection] = useState(null);
+  const [editingField, setEditingField] = useState(null); // { sId, iIdx, field }
   const [waEnabled, setWaEnabled] = useState(true);
   const [hours, setHours] = useState({
     lunes: { open: true, start: '08:00', end: '20:00' },
@@ -253,6 +254,43 @@ const Admin = memo(() => {
     setToasts(prev => [...prev, { id, msg, type }]);
     setTimeout(() => setToasts(t => t.filter(x => x.id !== id)), 3000);
   };
+
+  // Enable draft mode on mount, disable on unmount
+  useEffect(() => {
+    setDraftMode(true);
+    return () => setDraftMode(false);
+  }, [setDraftMode]);
+
+  // Sync phone preview scroll with editor scroll
+  useEffect(() => {
+    if (active !== 'menu') return;
+
+    const phoneScreen = document.querySelector('.admin-phone-screen');
+    const phoneContent = document.querySelector('.admin-phone-content');
+    if (!phoneScreen || !phoneContent) return;
+
+    const handleScroll = () => {
+      const adminMain = document.querySelector('.admin-main');
+      if (!adminMain) return;
+
+      // Calculate scroll ratio of the editor
+      const maxScroll = adminMain.scrollHeight - adminMain.clientHeight;
+      if (maxScroll <= 0) return;
+      const ratio = adminMain.scrollTop / maxScroll;
+
+      // Apply proportional scroll to phone preview
+      const phoneMaxScroll = phoneContent.scrollHeight - phoneScreen.clientHeight;
+      if (phoneMaxScroll > 0) {
+        phoneScreen.scrollTop = ratio * phoneMaxScroll;
+      }
+    };
+
+    const adminMain = document.querySelector('.admin-main');
+    if (adminMain) {
+      adminMain.addEventListener('scroll', handleScroll, { passive: true });
+      return () => adminMain.removeEventListener('scroll', handleScroll);
+    }
+  }, [active]);
 
   useEffect(() => {
     if (saveStatus === 'saved') {
@@ -500,9 +538,6 @@ const Admin = memo(() => {
               {/* Quick Action Card */}
               <div className="admin-quick-action">
                 <div className="admin-quick-action-title">Acción Rápida</div>
-                <button className="admin-btn-primary" style={{ width: '100%', justifyContent: 'center', marginBottom: '1.25rem' }} onClick={() => createPage()}>
-                  <Plus size={16} /> Añadir Nueva Página
-                </button>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
                   <div className="admin-quick-stat">
                     <span className="admin-quick-stat-label">Total Páginas</span>
@@ -526,142 +561,284 @@ const Admin = memo(() => {
       // ── Menu / Carta ────────────────────────────────────────────────────────
       case 'menu': {
         return (
-          <div>
-            <h3 className="admin-section-title"><Utensils size={20} color="var(--admin-accent)" /> Gestión de la Carta</h3>
-            
-            <div className="admin-menu-columns">
-              {menuSections.map((section, sIdx) => {
-                const IconComp = SECTION_ICON_MAP[section.icon] || SECTION_ICON_MAP.coffee;
-                return (
-                  <div key={section.id} className="admin-menu-column">
-                    {/* Column Header */}
-                    <div className="admin-menu-column-header">
-                      <span style={{ color: section.color, display: 'flex' }}><IconComp size={18} /></span>
-                      <span className="admin-menu-column-title">{section.title}</span>
-                      <span className="admin-menu-column-count">{section.items.length}</span>
-                      <div style={{ marginLeft: 'auto', display: 'flex', gap: '2px' }}>
-                        <button onClick={() => moveMenuSection(sIdx, 'up')} className="admin-move-btn" style={{ width: '22px', height: '22px' }}><ArrowUp size={11} /></button>
-                        <button onClick={() => moveMenuSection(sIdx, 'down')} className="admin-move-btn" style={{ width: '22px', height: '22px' }}><ArrowDown size={11} /></button>
-                        <button onClick={() => { if (confirm(`¿Eliminar sección "${section.title}"?`)) removeMenuSection(section.id); }} style={{ background: 'transparent', border: 'none', color: 'var(--admin-text-muted)', cursor: 'pointer', padding: '2px' }}><Trash2 size={12} /></button>
+          <div className="admin-menu-layout">
+            {/* Left: Editor */}
+            <div>
+              <h3 className="admin-section-title"><Utensils size={20} color="var(--admin-accent)" /> Gestión de la Carta</h3>
+              
+              <div className="admin-menu-columns">
+                {menuSections.map((section, sIdx) => {
+                  const IconComp = SECTION_ICON_MAP[section.icon] || SECTION_ICON_MAP.coffee;
+                  const isOpen = openSection === section.id;
+                  return (
+                    <div key={section.id} className={`admin-menu-column ${isOpen ? 'admin-menu-column--open' : ''}`}>
+                      {/* Column Header (clickable toggle) */}
+                      <div
+                        className="admin-menu-column-header"
+                        onClick={() => setOpenSection(isOpen ? null : section.id)}
+                        style={{ cursor: 'pointer' }}
+                      >
+                        <span style={{ color: section.color, display: 'flex' }}><IconComp size={18} /></span>
+                        <span className="admin-menu-column-title">{section.title}</span>
+                        <span className="admin-menu-column-count">{section.items.length}</span>
+                        <span className="admin-menu-column-chevron" style={{ transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s ease', marginLeft: '4px' }}>
+                          <ArrowDown size={14} />
+                        </span>
+                        <div style={{ marginLeft: 'auto', display: 'flex', gap: '2px' }} onClick={e => e.stopPropagation()}>
+                          <button onClick={() => moveMenuSection(sIdx, 'up')} className="admin-move-btn" style={{ width: '22px', height: '22px' }}><ArrowUp size={11} /></button>
+                          <button onClick={() => moveMenuSection(sIdx, 'down')} className="admin-move-btn" style={{ width: '22px', height: '22px' }}><ArrowDown size={11} /></button>
+                          <button onClick={() => { if (confirm(`¿Eliminar sección "${section.title}"?`)) removeMenuSection(section.id); }} style={{ background: 'transparent', border: 'none', color: 'var(--admin-text-muted)', cursor: 'pointer', padding: '2px' }}><Trash2 size={12} /></button>
+                        </div>
                       </div>
-                    </div>
 
-                    {/* Section Config (compact) */}
-                    <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.75rem' }}>
-                      <input value={section.title} onChange={e => updateMenuSection(section.id, 'title', e.target.value)} className="admin-input" style={{ flex: 1, padding: '6px 8px', fontSize: '0.8125rem' }} placeholder="Título" />
-                      <input type="color" value={section.color} onChange={e => updateMenuSection(section.id, 'color', e.target.value)} style={{ width: '32px', height: '32px', border: '1px solid var(--admin-border)', borderRadius: '6px', cursor: 'pointer', padding: '2px' }} />
-                      <select value={section.icon} onChange={e => updateMenuSection(section.id, 'icon', e.target.value)} className="admin-input" style={{ width: '80px', padding: '4px 6px', fontSize: '0.75rem' }}>
-                        {SECTION_ICON_OPTIONS.map(opt => <option key={opt.key} value={opt.key}>{opt.label}</option>)}
-                      </select>
-                    </div>
-
-                    {/* Product Cards */}
-                    {section.items.map((item, iIdx) => (
-                      <div key={iIdx} className="admin-menu-product">
-                        {/* Image thumbnail if exists */}
-                        {item.image && (
-                          <img src={item.image} alt={item.name} style={{ width: '100%', height: '80px', objectFit: 'cover', borderRadius: '6px', marginBottom: '0.5rem' }} />
-                        )}
-                        <div className="admin-menu-product-name">{item.name || 'Sin nombre'}</div>
-                        <div className="admin-menu-product-desc">{item.desc || 'Sin descripción'}</div>
-                        <div className="admin-menu-product-footer">
-                          <span className="admin-menu-product-price">{item.price || '$0'}</span>
-                          <div 
-                            className={`admin-menu-availability ${item.available !== false ? 'admin-menu-availability--available' : 'admin-menu-availability--unavailable'}`}
-                            style={{ cursor: 'pointer' }}
-                            onClick={() => updateMenuItem(section.id, iIdx, 'available', item.available === false ? true : false)}
-                          >
-                            <span className="admin-menu-availability-dot"></span>
-                            {item.available !== false ? 'Disponible' : 'Agotado'}
+                      {/* Section Content (collapsible) */}
+                      {isOpen && (
+                        <div className="admin-menu-column-body">
+                          {/* Section Config */}
+                          <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
+                            <div style={{ flex: 1, minWidth: '140px' }}>
+                              <label style={{ fontSize: '0.7rem', color: 'var(--admin-text-muted)', display: 'block', marginBottom: '4px' }}>Título</label>
+                              <input value={section.title} onChange={e => updateMenuSection(section.id, 'title', e.target.value)} className="admin-input" style={{ width: '100%', padding: '6px 10px', fontSize: '0.8125rem' }} placeholder="Título" />
+                            </div>
+                            <div>
+                              <label style={{ fontSize: '0.7rem', color: 'var(--admin-text-muted)', display: 'block', marginBottom: '4px' }}>Color</label>
+                              <input type="color" value={section.color} onChange={e => updateMenuSection(section.id, 'color', e.target.value)} style={{ width: '36px', height: '34px', border: '1px solid var(--admin-border)', borderRadius: '6px', cursor: 'pointer', padding: '2px' }} />
+                            </div>
+                            <div>
+                              <label style={{ fontSize: '0.7rem', color: 'var(--admin-text-muted)', display: 'block', marginBottom: '4px' }}>Icono</label>
+                              <select value={section.icon} onChange={e => updateMenuSection(section.id, 'icon', e.target.value)} className="admin-input" style={{ width: '140px', padding: '6px 8px', fontSize: '0.8125rem' }}>
+                                {SECTION_ICON_OPTIONS.map(opt => <option key={opt.key} value={opt.key}>{opt.label}</option>)}
+                              </select>
+                            </div>
                           </div>
-                        </div>
-                        <div className="admin-menu-product-actions">
-                          <button onClick={() => moveMenuItem(section.id, iIdx, 'up')} className="admin-move-btn" style={{ width: '22px', height: '22px' }}><ArrowUp size={11} /></button>
-                          <button onClick={() => moveMenuItem(section.id, iIdx, 'down')} className="admin-move-btn" style={{ width: '22px', height: '22px' }}><ArrowDown size={11} /></button>
-                          <button onClick={() => removeMenuItem(section.id, iIdx)} style={{ background: 'transparent', border: 'none', color: 'var(--admin-text-muted)', cursor: 'pointer', padding: '2px' }}><Trash2 size={11} /></button>
-                          
-                          {/* Inline edit fields (hidden by default, shown on click) */}
-                          <input value={item.name} onChange={e => updateMenuItem(section.id, iIdx, 'name', e.target.value)} className="admin-input" style={{ flex: 1, marginLeft: '4px', padding: '3px 6px', fontSize: '0.75rem' }} placeholder="Nombre" />
-                          <input value={item.price} onChange={e => updateMenuItem(section.id, iIdx, 'price', e.target.value)} className="admin-input" style={{ width: '60px', padding: '3px 6px', fontSize: '0.75rem' }} placeholder="$0" />
-                        </div>
 
-                        {/* Image upload */}
-                        <div style={{ marginTop: '0.4rem' }}>
-                          {item.image ? (
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                              <img src={item.image} alt="" style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '4px' }} />
-                              <button onClick={() => updateMenuItem(section.id, iIdx, 'image', null)} style={{ fontSize: '0.65rem', color: 'var(--admin-danger)', background: 'transparent', border: 'none', cursor: 'pointer', padding: 0 }}>Quitar imagen</button>
-                            </div>
-                          ) : (
-                            <div
-                              style={{ fontSize: '0.65rem', color: 'var(--admin-text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '3px' }}
-                              onClick={() => document.getElementById(`menu-file-${section.id}-${iIdx}`)?.click()}
-                            >
-                              <ImageIcon size={10} /> Subir imagen
-                            </div>
-                          )}
-                          <input
-                            id={`menu-file-${section.id}-${iIdx}`}
-                            type="file"
-                            accept="image/*"
-                            style={{ display: 'none' }}
-                            onChange={async e => {
-                              const file = e.target.files?.[0];
-                              if (!file) return;
-                              const { dataUrl } = await compressImage(file, { maxWidth: 400, quality: 0.7 });
-                              updateMenuItem(section.id, iIdx, 'image', dataUrl);
-                            }}
-                          />
+                          {/* Product Cards */}
+                          {section.items.map((item, iIdx) => {
+                            const isEditing = (field) => editingField?.sId === section.id && editingField?.iIdx === iIdx && editingField?.field === field;
+                            const startEdit = (field) => setEditingField({ sId: section.id, iIdx, field });
+                            const saveEdit = (field, value) => {
+                              updateMenuItem(section.id, iIdx, field, value);
+                              setEditingField(null);
+                            };
+                            return (
+                              <div key={iIdx} className="admin-menu-product">
+                                {/* Image thumbnail if exists */}
+                                {item.image && (
+                                  <img src={item.image} alt={item.name} style={{ width: '100%', maxHeight: '120px', objectFit: 'contain', borderRadius: '6px', marginBottom: '0.5rem', background: 'rgba(0,0,0,0.03)' }} />
+                                )}
+
+                                {/* Editable Name */}
+                                {isEditing('name') ? (
+                                  <input
+                                    autoFocus
+                                    defaultValue={item.name}
+                                    onBlur={e => saveEdit('name', e.target.value)}
+                                    onKeyDown={e => { if (e.key === 'Enter') saveEdit('name', e.target.value); if (e.key === 'Escape') setEditingField(null); }}
+                                    className="admin-input admin-menu-inline-input"
+                                    style={{ width: '100%', padding: '2px 6px', fontSize: '0.9375rem', fontWeight: 700, fontFamily: 'var(--admin-font-display)' }}
+                                  />
+                                ) : (
+                                  <div
+                                    className="admin-menu-product-name"
+                                    onClick={() => startEdit('name')}
+                                    style={{ cursor: 'text' }}
+                                    title="Click para editar"
+                                  >{item.name || 'Sin nombre'}</div>
+                                )}
+
+                                {/* Editable Description */}
+                                {isEditing('desc') ? (
+                                  <textarea
+                                    autoFocus
+                                    defaultValue={item.desc}
+                                    onBlur={e => saveEdit('desc', e.target.value)}
+                                    onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); saveEdit('desc', e.target.value); } if (e.key === 'Escape') setEditingField(null); }}
+                                    className="admin-input admin-menu-inline-input"
+                                    rows={2}
+                                    style={{ width: '100%', padding: '2px 6px', fontSize: '0.8125rem', resize: 'vertical', fontFamily: 'inherit' }}
+                                  />
+                                ) : (
+                                  <div
+                                    className="admin-menu-product-desc"
+                                    onClick={() => startEdit('desc')}
+                                    style={{ cursor: 'text' }}
+                                    title="Click para editar"
+                                  >{item.desc || 'Sin descripción'}</div>
+                                )}
+
+                                {/* Editable Price + Availability */}
+                                <div className="admin-menu-product-footer">
+                                  {isEditing('price') ? (
+                                    <input
+                                      autoFocus
+                                      defaultValue={item.price}
+                                      onBlur={e => saveEdit('price', e.target.value)}
+                                      onKeyDown={e => { if (e.key === 'Enter') saveEdit('price', e.target.value); if (e.key === 'Escape') setEditingField(null); }}
+                                      className="admin-input admin-menu-inline-input"
+                                      style={{ width: '80px', padding: '2px 6px', fontSize: '0.9375rem', fontWeight: 700 }}
+                                    />
+                                  ) : (
+                                    <span
+                                      className="admin-menu-product-price"
+                                      onClick={() => startEdit('price')}
+                                      style={{ cursor: 'text' }}
+                                      title="Click para editar"
+                                    >{item.price || '$0'}</span>
+                                  )}
+                                  <div
+                                    className={`admin-menu-availability ${item.available !== false ? 'admin-menu-availability--available' : 'admin-menu-availability--unavailable'}`}
+                                    style={{ cursor: 'pointer' }}
+                                    onClick={() => updateMenuItem(section.id, iIdx, 'available', item.available === false ? true : false)}
+                                  >
+                                    <span className="admin-menu-availability-dot"></span>
+                                    {item.available !== false ? 'Disponible' : 'Agotado'}
+                                  </div>
+                                </div>
+
+                                {/* Actions: move + delete + image */}
+                                <div className="admin-menu-product-actions">
+                                  <button onClick={() => moveMenuItem(section.id, iIdx, 'up')} className="admin-move-btn" style={{ width: '22px', height: '22px' }}><ArrowUp size={11} /></button>
+                                  <button onClick={() => moveMenuItem(section.id, iIdx, 'down')} className="admin-move-btn" style={{ width: '22px', height: '22px' }}><ArrowDown size={11} /></button>
+                                  <button onClick={() => removeMenuItem(section.id, iIdx)} style={{ background: 'transparent', border: 'none', color: 'var(--admin-text-muted)', cursor: 'pointer', padding: '2px' }}><Trash2 size={11} /></button>
+
+                                  {/* Image upload */}
+                                  {item.image ? (
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginLeft: 'auto' }}>
+                                      <img src={item.image} alt="" style={{ width: '28px', height: '28px', objectFit: 'cover', borderRadius: '4px' }} />
+                                      <button onClick={() => updateMenuItem(section.id, iIdx, 'image', null)} style={{ fontSize: '0.65rem', color: 'var(--admin-danger)', background: 'transparent', border: 'none', cursor: 'pointer', padding: 0 }}>Quitar</button>
+                                    </div>
+                                  ) : (
+                                    <div
+                                      style={{ fontSize: '0.65rem', color: 'var(--admin-text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '3px', marginLeft: 'auto' }}
+                                      onClick={() => document.getElementById(`menu-file-${section.id}-${iIdx}`)?.click()}
+                                    >
+                                      <ImageIcon size={10} /> Imagen
+                                    </div>
+                                  )}
+                                  <input
+                                    id={`menu-file-${section.id}-${iIdx}`}
+                                    type="file"
+                                    accept="image/*"
+                                    style={{ display: 'none' }}
+                                    onChange={async e => {
+                                      const file = e.target.files?.[0];
+                                      if (!file) return;
+                                      const { dataUrl } = await compressImage(file, { maxWidth: 400, quality: 0.7 });
+                                      updateMenuItem(section.id, iIdx, 'image', dataUrl);
+                                    }}
+                                  />
+                                </div>
+                              </div>
+                            );
+                          })}
+
+                          {/* Add Item Button */}
+                          <button className="admin-menu-add-btn" onClick={() => addMenuItem(section.id)}>
+                            <Plus size={14} /> Añadir Ítem
+                          </button>
                         </div>
-                      </div>
-                    ))}
+                      )}
+                    </div>
+                  );
+                })}
 
-                    {/* Add Item Button */}
-                    <button className="admin-menu-add-btn" onClick={() => addMenuItem(section.id)}>
-                      <Plus size={14} /> Añadir Ítem
-                    </button>
-                  </div>
-                );
-              })}
-
-              {/* Add Category Column */}
-              <div className="admin-menu-column" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', borderStyle: 'dashed', minHeight: '200px' }}>
-                <button className="admin-menu-add-btn" onClick={addMenuSection} style={{ border: 'none', width: 'auto', padding: '1rem' }}>
-                  <Plus size={18} /> Nueva Categoría
-                </button>
+                {/* Add Category Button */}
+                <div className="admin-menu-column" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', borderStyle: 'dashed', minHeight: '60px' }}>
+                  <button className="admin-menu-add-btn" onClick={addMenuSection} style={{ border: 'none', width: 'auto', padding: '0.75rem' }}>
+                    <Plus size={18} /> Nueva Categoría
+                  </button>
+                </div>
               </div>
             </div>
 
-            {/* ═══ Mobile Preview ═══ */}
-            <div style={{ marginTop: '2rem', paddingTop: '2rem', borderTop: '2px solid var(--admin-border)' }}>
+            {/* Right: Preview (sticky) */}
+            <div className="admin-menu-preview">
               <h3 className="admin-section-title"><Monitor size={20} color="var(--admin-accent)" /> Previsualización en Vivo</h3>
-              <div className="admin-mobile-preview">
-                <div className="admin-phone-frame">
-                  <div className="admin-phone-notch"></div>
-                  <div className="admin-phone-screen">
-                    <div className="admin-phone-status-bar">
-                      <span>9:41</span>
-                      <span>●●● WiFi 🔋</span>
-                    </div>
-                    <div className="admin-phone-content">
-                      <div className="admin-phone-menu-title">{content.services?.title || 'Nuestra Carta'}</div>
-                      
-                      {menuSections.map(section => (
-                        <div key={section.id}>
-                          <div className="admin-phone-section-title">{section.title}</div>
+              <div className="admin-phone-frame">
+                <div className="admin-phone-notch"></div>
+                <div className="admin-phone-screen">
+                  <div className="admin-phone-status-bar">
+                    <span>9:41</span>
+                    <span>●●● WiFi 🔋</span>
+                  </div>
+                  <div className="admin-phone-content">
+                    <div className="admin-phone-menu-title">{content.services?.title || 'Nuestra Carta'}</div>
+                    
+                    {menuSections.map(section => (
+                      <div key={section.id} id={`phone-section-${section.id}`} style={{ marginBottom: '1rem' }}>
+                        {/* Section Header with icon + gradient line */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '0.5rem' }}>
+                          <div style={{ color: section.color, display: 'flex' }}>
+                            {React.createElement(SECTION_ICON_MAP[section.icon] || SECTION_ICON_MAP.coffee, { size: 12 })}
+                          </div>
+                          <span style={{ fontFamily: 'var(--admin-font-display)', fontSize: '0.75rem', fontWeight: '700', color: 'var(--admin-text)' }}>
+                            {section.title}
+                          </span>
+                          <div style={{ flex: 1, height: '1px', background: `linear-gradient(90deg, ${section.color}40, transparent)` }}></div>
+                        </div>
+
+                        {/* Items as cards */}
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
                           {section.items.map((item, i) => (
-                            <div key={i} className="admin-phone-item">
-                              <div style={{ flex: 1 }}>
-                                <div className="admin-phone-item-name">{item.name}</div>
-                                <div className="admin-phone-item-desc">{item.desc}</div>
+                            <div key={i} style={{
+                              background: 'var(--admin-card)',
+                              border: '1px solid var(--admin-border)',
+                              borderRadius: '8px',
+                              overflow: 'hidden',
+                            }}>
+                              {/* Image header or color gradient */}
+                              {item.image ? (
+                                <div style={{ height: '70px', position: 'relative', borderBottom: '1px solid var(--admin-border)' }}>
+                                  <img src={item.image} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                  <span style={{
+                                    position: 'absolute', bottom: '4px', right: '4px',
+                                    background: 'var(--admin-accent)',
+                                    color: '#fff',
+                                    padding: '2px 6px',
+                                    borderRadius: '6px',
+                                    fontWeight: '800',
+                                    fontSize: '0.6rem',
+                                    fontFamily: 'var(--admin-font-display)',
+                                    boxShadow: '0 1px 4px rgba(0,0,0,0.2)',
+                                  }}>{item.price}</span>
+                                </div>
+                              ) : (
+                                <div style={{
+                                  height: '50px',
+                                  background: `linear-gradient(135deg, ${section.color}20, ${section.color}08)`,
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  borderBottom: '1px solid var(--admin-border)',
+                                  position: 'relative',
+                                }}>
+                                  {React.createElement(SECTION_ICON_MAP[section.icon] || SECTION_ICON_MAP.coffee, { size: 20, color: section.color, opacity: 0.5 })}
+                                  <span style={{
+                                    position: 'absolute', bottom: '4px', right: '4px',
+                                    background: 'var(--admin-accent)',
+                                    color: '#fff',
+                                    padding: '2px 6px',
+                                    borderRadius: '6px',
+                                    fontWeight: '800',
+                                    fontSize: '0.6rem',
+                                    fontFamily: 'var(--admin-font-display)',
+                                  }}>{item.price}</span>
+                                </div>
+                              )}
+                              {/* Info */}
+                              <div style={{ padding: '6px' }}>
+                                <div style={{ fontWeight: '700', fontSize: '0.65rem', color: 'var(--admin-text)', fontFamily: 'var(--admin-font-display)', marginBottom: '2px', lineHeight: '1.2' }}>
+                                  {item.name}
+                                </div>
+                                <div style={{ fontSize: '0.55rem', color: 'var(--admin-text-muted)', lineHeight: '1.3' }}>
+                                  {item.desc}
+                                </div>
                               </div>
-                              <div className="admin-phone-item-dots"></div>
-                              <div className="admin-phone-item-price">{item.price}</div>
                             </div>
                           ))}
                         </div>
-                      ))}
-                    </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
@@ -925,7 +1102,7 @@ const Admin = memo(() => {
 
               {/* ═══ Right Column: Live Preview ═══ */}
               <div>
-                <div className="admin-card" style={{ padding: '1.5rem', position: 'sticky', top: 'calc(var(--nav-height, 60px) + 1rem)' }}>
+                <div className="admin-card" style={{ padding: '1.5rem', position: 'sticky', top: '1rem' }}>
                   <h4 style={{ fontFamily: 'var(--admin-font-display)', fontSize: '1rem', fontWeight: '700', color: 'var(--admin-text)', marginBottom: '1rem' }}>Vista Previa en Vivo</h4>
 
                   <div className="admin-preview-mockup">
@@ -2160,16 +2337,18 @@ const Admin = memo(() => {
             </div>
           </div>
           <div className="admin-topbar-actions">
-            <button className="admin-btn" onClick={() => setSplitView(!splitView)}>
-              <Columns size={15} /> {splitView ? 'Cerrar Vista Previa' : 'Vista Dividida'}
-            </button>
             <button className="admin-btn" onClick={() => { if(confirm('¿Estás seguro?')) resetContent(); }}>
               <RotateCcw size={15} /> Reset
             </button>
             <a href="/" target="_blank" rel="noreferrer" className="admin-btn">
               <Eye size={15} /> Ver Sitio
             </a>
-            <button className="admin-btn-primary" onClick={saveContent}>
+            {isDirty && (
+              <button className="admin-btn" onClick={() => { if(confirm('¿Descartar todos los cambios no guardados?')) discardDraft(); }}>
+                Descartar
+              </button>
+            )}
+            <button className="admin-btn-primary" onClick={saveDraft}>
               <Save size={17} /> Guardar
             </button>
           </div>
@@ -2179,13 +2358,6 @@ const Admin = memo(() => {
         <div className="admin-editor-card">
           {renderSection()}
         </div>
-
-        {/* Live Preview Iframe */}
-        {splitView && (
-          <div style={{ marginTop: '1.5rem', background: '#fff', borderRadius: 'var(--admin-radius)', border: '1px solid var(--admin-border)', overflow: 'hidden', position: 'relative', height: '500px' }}>
-            <iframe src="/" style={{ width: '100%', height: '100%', border: 'none' }} title="Vista Previa" />
-          </div>
-        )}
       </div>
 
       {/* Toast Notifications */}
