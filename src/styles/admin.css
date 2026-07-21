@@ -662,30 +662,8 @@
   border-color: rgba(192, 57, 43, 0.25);
 }
 
-/* Responsive */
-@media (max-width: 1024px) {
-  .admin-layout { flex-direction: column; }
-  .admin-sidebar {
-    width: 100%;
-    position: relative;
-    top: 0;
-    height: auto;
-    flex-direction: row;
-    flex-wrap: wrap;
-    padding: 1rem;
-    gap: 0.5rem;
-  }
-  .admin-sidebar-nav { flex-direction: row; flex-wrap: wrap; }
-  .admin-sidebar-category { display: none; }
-  .admin-sidebar-user { display: none; }
-  .admin-main { padding: 1.5rem; }
-}
-
-@media (max-width: 768px) {
-  .admin-main { padding: 1rem; }
-  .admin-topbar { flex-direction: column; align-items: flex-start; gap: 1rem; }
-  .admin-topbar-actions { flex-wrap: wrap; }
-}
+/* ─── Responsive: sidebar overlay (tablet & mobile) ────────────────── */
+/* Sidebar rules moved to the tablet media query below */
 
 /* ─── Dashboard Line Chart ─────────────────────────────────────────── */
 .admin-line-chart {
@@ -701,11 +679,17 @@
 }
 
 /* ─── Pages Table ──────────────────────────────────────────────────── */
+.admin-table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 .admin-table {
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
   font-family: var(--admin-font-body);
+  min-width: 640px;
 }
 
 .admin-table th {
@@ -1916,6 +1900,31 @@
   color: var(--admin-text);
 }
 
+/* ─── Sidebar Toggle (checkbox hack — no React state needed) ───────── */
+.admin-sidebar-toggle { position: absolute; opacity: 0; width: 0; height: 0; pointer-events: none; }
+
+.admin-hamburger-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: var(--admin-surface);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-sm);
+  color: var(--admin-text);
+  font-size: 1.125rem;
+  cursor: pointer;
+  transition: all var(--admin-transition);
+  flex-shrink: 0;
+}
+
+.admin-hamburger-btn:hover {
+  border-color: var(--admin-accent);
+  color: var(--admin-accent);
+  background: var(--admin-accent-subtle);
+}
+
 /* ─── Responsive additions ─────────────────────────────────────────── */
 @media (max-width: 1024px) {
   .admin-inbox-layout { grid-template-columns: 1fr; }
@@ -1923,6 +1932,71 @@
   .admin-gallery { flex-direction: column; }
   .admin-gallery-sidebar { width: 100%; }
   .admin-gallery-sidebar { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+
+  /* Hours grid: collapse to 2 columns on tablet */
+  .admin-hours-card {
+    grid-template-columns: 100px 1fr 1fr auto;
+  }
+
+  /* General settings grid: stack on tablet */
+  .admin-general-grid { grid-template-columns: 1fr; }
+
+  /* Pages layout: stack on tablet */
+  .admin-pages-layout { grid-template-columns: 1fr; }
+
+  /* Sidebar → overlay for tablet & mobile */
+  .admin-sidebar {
+    position: fixed;
+    top: var(--nav-height);
+    left: 0;
+    width: 300px;
+    height: calc(100vh - var(--nav-height));
+    z-index: 900;
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    padding: 1.5rem 0;
+    flex-direction: column;
+  }
+
+  .admin-sidebar-toggle:checked ~ .admin-sidebar { transform: translateX(0); }
+  .admin-sidebar-toggle:checked ~ .admin-sidebar-overlay { opacity: 1; pointer-events: auto; }
+
+  .admin-sidebar-overlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    top: var(--nav-height);
+    background: rgba(0, 0, 0, 0.35);
+    z-index: 899;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .admin-hamburger-btn { display: flex; }
+
+  .admin-sidebar-nav { flex-direction: column; }
+  .admin-sidebar-category { display: block; padding: 0 1.25rem; margin-top: 1.25rem; margin-bottom: 0.5rem; }
+  .admin-sidebar-user { display: flex; }
+  .admin-main { padding: 1.5rem; margin-left: 0; }
+
+  /* Menu columns: stack vertically on tablet */
+  .admin-menu-columns {
+    flex-direction: column;
+    overflow-x: visible;
+  }
+
+  .admin-menu-column {
+    min-width: 0;
+    width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-sidebar { width: 280px; }
+  .admin-main { padding: 1rem; }
+  .admin-topbar { flex-direction: column; align-items: flex-start; gap: 1rem; }
+  .admin-topbar-actions { flex-wrap: wrap; }
 }
 
 /* ─── Pages & Menu Layout ─────────────────────────────────────────── */

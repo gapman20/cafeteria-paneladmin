@@ -437,7 +437,8 @@ const Admin = memo(() => {
             <div className="admin-pages-layout">
               {/* Table */}
               <div className="admin-card" style={{ padding: 0, overflow: 'hidden' }}>
-                <table className="admin-table">
+                <div className="admin-table-wrap">
+                  <table className="admin-table">
                   <thead>
                     <tr>
                       <th style={{ width: '40px' }}></th>
@@ -493,6 +494,7 @@ const Admin = memo(() => {
                     })}
                   </tbody>
                 </table>
+                </div>
               </div>
 
               {/* Quick Action Card */}
@@ -2090,6 +2092,12 @@ const Admin = memo(() => {
   return (
     <div className="admin-layout">
 
+      {/* ── Sidebar toggle (CSS-only for tablet/mobile) ── */}
+      <input type="checkbox" id="sidebar-toggle" className="admin-sidebar-toggle" />
+
+      {/* ── Sidebar Overlay ── */}
+      <label htmlFor="sidebar-toggle" className="admin-sidebar-overlay" />
+
       {/* ── Sidebar ─────────────────────────── */}
       <aside className="admin-sidebar">
         <div className="admin-sidebar-logo">
@@ -2103,7 +2111,7 @@ const Admin = memo(() => {
         <ul className="admin-sidebar-nav" style={{ padding: '0 0.5rem', marginBottom: '0.5rem' }}>
           <li
             className={`admin-sidebar-item ${active === sidebarTopItem.id ? 'admin-sidebar-item--active' : ''}`}
-            onClick={() => setActive(sidebarTopItem.id)}
+            onClick={() => { setActive(sidebarTopItem.id); document.getElementById('sidebar-toggle').checked = false; }}
           >
             {sidebarTopItem.icon} {sidebarTopItem.label}
           </li>
@@ -2119,7 +2127,7 @@ const Admin = memo(() => {
                 <li
                   key={s.id}
                   className={`admin-sidebar-item ${active === s.id ? 'admin-sidebar-item--active' : ''}`}
-                  onClick={() => setActive(s.id)}
+                  onClick={() => { setActive(s.id); document.getElementById('sidebar-toggle').checked = false; }}
                 >
                   {s.icon} {s.label}
                 </li>
@@ -2144,9 +2152,12 @@ const Admin = memo(() => {
       <div className="admin-main">
         {/* Top Bar */}
         <div className="admin-topbar">
-          <div>
-            <h1 className="admin-topbar-title">Panel de Administración</h1>
-            <p className="admin-topbar-subtitle">Edita cualquier cosa → Guarda → Los cambios persisten.</p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <label htmlFor="sidebar-toggle" className="admin-hamburger-btn" title="Abrir menú">☰</label>
+            <div>
+              <h1 className="admin-topbar-title">Panel de Administración</h1>
+              <p className="admin-topbar-subtitle">Edita cualquier cosa → Guarda → Los cambios persisten.</p>
+            </div>
           </div>
           <div className="admin-topbar-actions">
             <button className="admin-btn" onClick={() => setSplitView(!splitView)}>
