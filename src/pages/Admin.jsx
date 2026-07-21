@@ -2267,7 +2267,7 @@ const Admin = memo(() => {
   };
 
   return (
-    <div className="admin-layout">
+    <div className={`admin-layout${active === 'menu' ? ' admin-layout--fixed' : ''}`}>
 
       {/* ── Sidebar toggle (CSS-only for tablet/mobile) ── */}
       <input type="checkbox" id="sidebar-toggle" className="admin-sidebar-toggle" />
@@ -2326,7 +2326,7 @@ const Admin = memo(() => {
       </aside>
 
       {/* ── Main Layout ──────────────────────── */}
-      <div className="admin-main">
+      <div className={`admin-main${active === 'menu' ? ' admin-main--no-scroll' : ''}`}>
         {/* Top Bar */}
         <div className="admin-topbar">
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>

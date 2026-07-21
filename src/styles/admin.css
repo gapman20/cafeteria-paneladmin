@@ -176,8 +176,24 @@
   overflow-y: auto;
 }
 
-/* Menu tab: page scroll disabled — left panel scrolls independently */
-.admin-main:has(.admin-menu-layout) {
+/* Menu tab: lock viewport, no page scroll */
+.admin-layout--fixed {
+  height: 100vh;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.admin-main--no-scroll {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-main--no-scroll > .admin-editor-card {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
 }
 
@@ -1936,13 +1952,14 @@
   grid-template-columns: 1fr 1fr;
   gap: 1.5rem;
   align-items: start;
-  height: calc(100vh - 7rem);
+  flex: 1;
+  min-height: 0;
 }
 
 .admin-menu-layout > :first-child {
+  align-self: stretch;
   overflow-y: auto;
   min-height: 0;
-  max-height: 100%;
   scrollbar-width: thin;
   scrollbar-color: var(--admin-border) transparent;
 }
@@ -2010,11 +2027,19 @@
   .admin-sidebar-category { display: block; padding: 0 1.25rem; margin-top: 1.25rem; margin-bottom: 0.5rem; }
   .admin-sidebar-user { display: flex; }
   .admin-main { padding: 1.5rem; margin-left: 0; overflow-y: auto; }
+  .admin-main--no-scroll { overflow-y: auto; display: block; }
+  .admin-main--no-scroll > .admin-editor-card { display: block; overflow: visible; }
 
-  /* Menu layout: stack on tablet, remove fixed height */
+  /* Menu layout: stack on tablet */
   .admin-menu-layout {
     grid-template-columns: 1fr;
+    flex: none;
     height: auto;
+  }
+
+  .admin-menu-layout > :first-child {
+    align-self: auto;
+    overflow-y: visible;
   }
 
   /* Menu columns: already vertical, just reset width on tablet */
@@ -2027,6 +2052,8 @@
 @media (max-width: 768px) {
   .admin-sidebar { width: 280px; }
   .admin-main { padding: 1rem; overflow-y: auto; }
+  .admin-main--no-scroll { overflow-y: auto; display: block; }
+  .admin-main--no-scroll > .admin-editor-card { display: block; overflow: visible; }
   .admin-topbar { flex-direction: column; align-items: flex-start; gap: 1rem; }
   .admin-topbar-actions { flex-wrap: wrap; }
 }
