@@ -47,7 +47,7 @@ const Gallery = () => {
       </header>
 
       <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 2rem 6rem' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '2rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(300px, 100%), 1fr))', gap: '2rem' }}>
           {gallery.map((item, i) => (
             <div key={i} className={`glass-card animate-fade-up delay-${(i+1)*100}`} style={{ padding: '0', overflow: 'hidden', display: 'flex', flexDirection: 'column', cursor: 'pointer' }}>
 
@@ -57,6 +57,7 @@ const Gallery = () => {
                   src={item.img}
                   alt={item.title}
                   loading="lazy"
+                  className="gallery-card-img"
                   style={{ width: '100%', display: 'block', transition: 'transform 0.7s cubic-bezier(0.16, 1, 0.3, 1)' }}
                   onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.08)'}
                   onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}

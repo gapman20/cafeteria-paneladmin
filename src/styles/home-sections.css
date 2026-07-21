@@ -610,7 +610,7 @@
 /* ─── Responsive: Mobile (≤768px) ───────────────────────────────────────────── */
 @media (max-width: 768px) {
   .home-section {
-    padding: 100px 20px;
+    padding: 80px 16px;
   }
 
   .lux-features-grid,
@@ -650,7 +650,7 @@
 /* ─── Responsive: Small Mobile (≤480px) ─────────────────────────────────────── */
 @media (max-width: 480px) {
   .home-section {
-    padding: 80px 16px;
+    padding: 60px 12px;
   }
 
   .lux-feature-card,

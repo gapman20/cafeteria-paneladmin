@@ -99,7 +99,7 @@ const Menu = () => {
             style={{ marginBottom: '4rem' }}
           >
             {/* Section Header */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1.5rem' }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '10px', marginBottom: '1.5rem' }}>
               <div style={{ color: section.color, display: 'flex' }}>{React.createElement(SECTION_ICON_MAP[section.icon] || SECTION_ICON_MAP.coffee, { size: 18 })}</div>
               <h2 style={{
                 fontFamily: 'var(--font-display)',
@@ -116,7 +116,7 @@ const Menu = () => {
             {/* Items Grid */}
             <div style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(min(220px, 100%), 1fr))',
               gap: '1.2rem',
             }}>
               {section.items.map((item, iIdx) => (
@@ -138,7 +138,6 @@ const Menu = () => {
                         fontWeight: '800',
                         fontSize: '0.8rem',
                         fontFamily: 'var(--font-display)',
-                        whiteSpace: 'nowrap',
                       }}>
                         {item.price}
                       </span>
