@@ -206,7 +206,7 @@ const defaultSubBenefits = [
 
 // ─── Main Admin Component ─────────────────────────────────────────────────────
 const Admin = memo(() => {
-  const { content, updateContent, saveContent, saveDraft, discardDraft, resetContent, saveStatus, draftMode, setDraftMode, isDirty } = useContent();
+  const { content, updateContent, saveDraft, discardDraft, resetContent, saveStatus, setDraftMode, isDirty } = useContent();
   const { images, updateImage } = useImages();
   const { theme, updateTheme, resetTheme } = useTheme();
   const { pages, updatePage, deletePage, movePage } = usePages();
