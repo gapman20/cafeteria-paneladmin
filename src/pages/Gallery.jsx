@@ -1,20 +1,25 @@
 import React from 'react';
-import { Camera, Coffee, ArrowUpRight } from 'lucide-react';
+import { Camera, ArrowUpRight } from 'lucide-react';
 import { useSite } from '../context/SiteContext';
 import SEO from '../components/SEO';
 import ImageFallback from '../components/ImageFallback';
 
-const Portfolio = () => {
-  const { content } = useSite();
+const FALLBACK_IMAGES = [
+  { title: 'Nuestro Tostador Artisan', cat: 'Proceso', img: 'https://images.unsplash.com/photo-1447933601403-0c6688de566e?auto=format&fit=crop&q=80' },
+  { title: 'Latte Art Perfecto', cat: 'Barismo', img: 'https://images.unsplash.com/photo-1541167760496-1628856ab772?auto=format&fit=crop&q=80' },
+  { title: 'Orígenes Seleccionados', cat: 'Materia Prima', img: 'https://images.unsplash.com/photo-1559056199-641a0ac8b55e?auto=format&fit=crop&q=80' },
+  { title: 'Nuestro Espacio', cat: 'Ambiente', img: 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&q=80' },
+  { title: 'Pour Over en Acción', cat: 'Métodos', img: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&q=80' },
+  { title: 'Repostería Artesanal', cat: 'Panadería', img: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&q=80' },
+];
 
-  const gallery = [
-    { title: 'Nuestro Tostador Artisan', cat: 'Proceso', img: 'https://images.unsplash.com/photo-1447933601403-0c6688de566e?auto=format&fit=crop&q=80', gradient: 'from-[#8B4513] to-[#D2691E]' },
-    { title: 'Latte Art Perfecto', cat: 'Barismo', img: 'https://images.unsplash.com/photo-1541167760496-1628856ab772?auto=format&fit=crop&q=80', gradient: 'from-[#D2691E] to-[#8B4513]' },
-    { title: 'Orígenes Seleccionados', cat: 'Materia Prima', img: 'https://images.unsplash.com/photo-1559056199-641a0ac8b55e?auto=format&fit=crop&q=80', gradient: 'from-[#6B4C3B] to-[#8B4513]' },
-    { title: 'Nuestro Espacio', cat: 'Ambiente', img: 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&q=80', gradient: 'from-[#8B4513] to-[#6B4C3B]' },
-    { title: 'Pour Over en Acción', cat: 'Métodos', img: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&q=80', gradient: 'from-[#D2691E] to-[#A0522D]' },
-    { title: 'Repostería Artesanal', cat: 'Panadería', img: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&q=80', gradient: 'from-[#8B4513] to-[#D2691E]' },
-  ];
+const Gallery = () => {
+  const { content, images } = useSite();
+
+  const gallery = FALLBACK_IMAGES.map((item, i) => {
+    const adminImg = (images.portfolio || [])[i];
+    return adminImg ? { ...item, img: adminImg, fromAdmin: true } : item;
+  }).filter(item => item.img);
 
   return (
     <div className="page" style={{ position: 'relative', zIndex: 1 }}>
@@ -32,12 +37,12 @@ const Portfolio = () => {
               <Camera size={16} color="var(--accent-primary)" />
               <span style={{ fontSize: '0.8rem', fontWeight: '700', color: 'var(--accent-primary)', letterSpacing: '1px', textTransform: 'uppercase' }}>Nuestro Mundo</span>
            </div>
-           <h1 className="h1-premium mb-4">
-             Galería <span className="text-gradient">Cafetera</span>
-           </h1>
-           <p className="subtitle" style={{ maxWidth: '650px', margin: '0 auto' }}>
-             Imágenes que capturan la esencia de Café Aromático: pasión, arte y la mejor materia prima.
-           </p>
+            <h1 className="h1-premium mb-4">
+              Galería <span className="text-gradient">Cafetera</span>
+            </h1>
+            <p className="subtitle" style={{ maxWidth: '650px', margin: '0 auto' }}>
+              Imágenes que capturan la esencia de Café Aromático: pasión, arte y la mejor materia prima.
+            </p>
         </div>
       </header>
 
@@ -46,13 +51,13 @@ const Portfolio = () => {
           {gallery.map((item, i) => (
             <div key={i} className={`glass-card animate-fade-up delay-${(i+1)*100}`} style={{ padding: '0', overflow: 'hidden', display: 'flex', flexDirection: 'column', cursor: 'pointer' }}>
 
-              <div style={{ height: '220px', width: '100%', overflow: 'hidden', position: 'relative' }}>
+              <div style={{ width: '100%', overflow: 'hidden', position: 'relative', background: 'var(--color-surface)' }}>
                 <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'linear-gradient(to top, var(--bg-secondary) 0%, transparent 60%)', zIndex: 1 }}></div>
                 <ImageFallback
                   src={item.img}
                   alt={item.title}
                   loading="lazy"
-                  style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.7s cubic-bezier(0.16, 1, 0.3, 1)' }}
+                  style={{ width: '100%', display: 'block', transition: 'transform 0.7s cubic-bezier(0.16, 1, 0.3, 1)' }}
                   onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.08)'}
                   onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
                 />
@@ -120,4 +125,4 @@ const Portfolio = () => {
   );
 };
 
-export default Portfolio;
+export default Gallery;
