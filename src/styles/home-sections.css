@@ -6,21 +6,34 @@
 
 /* ─── Luxury Design Tokens ──────────────────────────────────────────────────── */
 .home-luxury {
-  /* Derived from theme system — updated by applyTheme() */
+  /* Derived from theme system — updated by applyTheme()
+     Cream sections adapt to the theme's bg-primary/text-primary.
+     Dark sections mix theme colors with black — always dark but carrying
+     the theme's hue so they adapt when the user switches presets. */
   --lux-cream: var(--bg-primary, #FFF8F3);
-  --lux-brown: var(--text-primary, #4E342E);
-  --lux-brown-dark: color-mix(in srgb, var(--text-primary, #4E342E) 85%, black);
+
+  /* Dark sections: mix accent-primary with black — always dark, carrying
+     the theme's hue so sections adapt when switching presets.
+     20% accent + 80% black = very dark tinted background. */
+  --lux-brown: color-mix(in srgb, var(--accent-primary, #8D5524) 20%, black);
+  --lux-brown-dark: color-mix(in srgb, var(--accent-primary, #8D5524) 14%, black);
+
   --lux-caramel: var(--accent-primary, #8D5524);
   --lux-caramel-dark: color-mix(in srgb, var(--accent-primary, #8D5524) 90%, black);
   --lux-caramel-glow: color-mix(in srgb, var(--accent-primary, #8D5524) 35%, transparent);
   --lux-text: var(--text-primary, #2C1810);
   --lux-text-muted: var(--text-secondary, #6B5B4E);
-  --lux-text-light: var(--bg-primary, #FFF8F3);
-  --lux-text-light-muted: color-mix(in srgb, var(--bg-primary, #FFF8F3) 70%, transparent);
+
+  /* Light text on dark sections: always light for readability.
+     The section backgrounds adapt to the theme hue, but text must
+     remain light regardless of theme. */
+  --lux-text-light: #FAF6F1;
+  --lux-text-light-muted: rgba(250, 246, 241, 0.7);
+
   --lux-font-display: var(--font-display, 'Source Serif 4');
   --lux-font-body: var(--font-body, 'Work Sans');
-  --lux-shadow-soft: 0 20px 60px color-mix(in srgb, var(--text-primary, #000) 8%, transparent);
-  --lux-shadow-hover: 0 28px 80px color-mix(in srgb, var(--text-primary, #000) 12%, transparent);
+  --lux-shadow-soft: 0 20px 60px rgba(0, 0, 0, 0.08);
+  --lux-shadow-hover: 0 28px 80px rgba(0, 0, 0, 0.12);
   --lux-radius: 24px;
   --lux-radius-sm: 16px;
   --lux-transition: 0.5s cubic-bezier(0.16, 1, 0.3, 1);
@@ -342,8 +355,8 @@
 }
 
 .lux-testimonial-card {
-  background: color-mix(in srgb, var(--bg-primary, #fff) 6%, transparent);
-  border: 1px solid color-mix(in srgb, var(--bg-primary, #fff) 8%, transparent);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: var(--lux-radius);
   padding: 2.5rem;
   position: relative;
@@ -351,7 +364,7 @@
 }
 
 .lux-testimonial-card:hover {
-  background: color-mix(in srgb, var(--bg-primary, #fff) 10%, transparent);
+  background: rgba(255, 255, 255, 0.10);
   transform: translateY(-4px);
 }
 
@@ -430,7 +443,7 @@
 }
 
 .lux-faq-item--open {
-  box-shadow: 0 8px 32px color-mix(in srgb, var(--text-primary, #000) 6%, transparent);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
 }
 
 .lux-faq-question {
@@ -494,8 +507,8 @@
 
 /* ─── Suscripción Premium ───────────────────────────────────────────────────── */
 .lux-sub-card {
-  background: color-mix(in srgb, var(--bg-primary, #fff) 5%, transparent);
-  border: 1px solid color-mix(in srgb, var(--bg-primary, #fff) 8%, transparent);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: var(--lux-radius);
   padding: 3rem;
   display: grid;

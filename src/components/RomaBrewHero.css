@@ -7,8 +7,11 @@
 /* ── Custom Properties ───────────────────────────────────────────── */
 :root {
   /* Hero is ALWAYS dark — bg and text are hardcoded light-on-dark.
-     Only --roma-caramel adapts to the user's theme accent. */
-  --roma-bg: color-mix(in srgb, var(--text-primary, #2C1810) 75%, black);
+     Only --roma-caramel adapts to the user's theme accent.
+     NOTE: --roma-bg MUST be a fixed dark color. Do NOT use --text-primary
+     here — dark themes set textPrimary to light (#FAFAFA) which would
+     make the hero background light instead of dark. */
+  --roma-bg: #1A1410;
   --roma-caramel: var(--accent-primary, #8D5524);
   --roma-cream: #FFF8F3;
 }

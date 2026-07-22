@@ -193,10 +193,9 @@ const defaultTheme = {
   textSecondary:   '#6B4C3B',  // Muted brown
   navbarColor:     '#FAF6F1',  // Match bgPrimary
   cardBg:          '#FFFFFF',  // Pure white cards
-  textNavbarPrimary:   '#2C1810',
-  textNavbarSecondary: '#6B4C3B',
-  textCardPrimary:     '#2C1810',
-  textCardSecondary:   '#6B4C3B',
+  // NOTE: textNavbarPrimary/Secondary and textCardPrimary/Secondary are NOT
+  // defined here on purpose. applyTheme() falls back to textPrimary/textSecondary
+  // when they're absent, ensuring card/navbar text adapts to every theme preset.
   // Typography
   fontDisplay: "'Fraunces', Georgia, serif",
   fontBody: "'Outfit', system-ui, sans-serif",
@@ -394,6 +393,10 @@ function applyTheme(theme) {
   root.style.setProperty('--hero-card-shadow',
     isLight ? 'rgba(0,0,0,0.15)' : 'rgba(0,0,0,0.5)');
 
+  // ── Home dark section text (always light for readability) ────────────────
+  root.style.setProperty('--lux-text-on-dark', '#FAF6F1');
+  root.style.setProperty('--lux-text-on-dark-muted', 'rgba(250, 246, 241, 0.7)');
+
   // ── Glow intensity ────────────────────────────────────────────────────────
   const gi = theme.glowIntensity ?? 1;
   const glowAlpha = Math.round(gi * 0.15 * 255).toString(16).padStart(2, '0');
@@ -423,7 +426,17 @@ export const SiteProvider = ({ children }) => {
   const [theme, _setThemeRaw] = useState(() => {
     try {
       const saved = localStorage.getItem(THEME_KEY);
-      if (saved) return { ...defaultTheme, ...JSON.parse(saved) };
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        // Remove legacy override keys so applyTheme() falls back to
+        // textPrimary/textSecondary for card & navbar text colors.
+        // These were hardcoded in defaultTheme and prevented theme adaptation.
+        delete parsed.textCardPrimary;
+        delete parsed.textCardSecondary;
+        delete parsed.textNavbarPrimary;
+        delete parsed.textNavbarSecondary;
+        return { ...defaultTheme, ...parsed };
+      }
     } catch { /* ignore */ }
     return defaultTheme;
   });
