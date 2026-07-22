@@ -17,13 +17,14 @@ const cardStyle = {
 };
 
 const imageStyle = (color) => ({
-  height: '160px',
+  height: '200px',
   background: `linear-gradient(135deg, ${color}20, ${color}08)`,
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
   position: 'relative',
   borderBottom: '1px solid var(--glass-border)',
+  overflow: 'hidden',
 });
 
 const priceBadge = {
@@ -124,7 +125,7 @@ const Menu = () => {
                   {/* Image */}
                   {item.image ? (
                     <div style={imageStyle(section.color)}>
-                      <ImageFallback src={item.image} alt={item.name} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      <ImageFallback src={item.image} alt={item.name} loading="lazy" style={{ width: '100%', height: 'auto', objectFit: 'contain' }} />
                       <div style={priceBadge}>{item.price}</div>
                     </div>
                   ) : (
