@@ -18,6 +18,7 @@ const Contact = React.lazy(() => import('./pages/Contact'));
 const Admin = React.lazy(() => import('./pages/Admin'));
 const CustomPage = React.lazy(() => import('./pages/CustomPage'));
 const Login = React.lazy(() => import('./pages/Login'));
+const Order = React.lazy(() => import('./pages/Order'));
 
 const AppContent = () => {
   const { pages, isAuthenticated, images } = useSite();
@@ -75,6 +76,7 @@ const AppContent = () => {
         <Route path="/menu/1" element={<ServiceDetail1 />} />
         <Route path="/menu/2" element={<ServiceDetail2 />} />
         <Route path="/contacto" element={<Contact />} />
+        <Route path="/pedir" element={<Order />} />
       </Route>
     </Routes>
   );
