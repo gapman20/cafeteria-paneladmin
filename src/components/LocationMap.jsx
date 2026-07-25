@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
+import { useSite } from '../context/SiteContext';
 
 // Fix for default marker icon in leaflet with webpack/vite
 delete L.Icon.Default.prototype._getIconUrl;
@@ -25,6 +26,7 @@ const ChangeView = ({ center, zoom }) => {
 };
 
 const LocationMap = ({ center = [19.4326, -99.1332], zoom = 13, height = '400px' }) => {
+  const { content } = useSite();
   return (
     <div className="map-wrapper" style={{ height, width: '100%', borderRadius: '8px', overflow: 'hidden' }}>
       <MapContainer center={center} zoom={zoom} scrollWheelZoom={false} style={{ height: '100%', width: '100%' }}>
@@ -35,7 +37,7 @@ const LocationMap = ({ center = [19.4326, -99.1332], zoom = 13, height = '400px'
         />
         <Marker position={center}>
           <Popup>
-            LOGO PRO <br /> Oficinas Centrales.
+            {content.siteName} <br /> {content.contact?.address}
           </Popup>
         </Marker>
       </MapContainer>
