@@ -5,6 +5,7 @@ import {
 } from '../hooks';
 import { SECTION_ICON_MAP, SECTION_ICON_OPTIONS } from '../context/SiteContext';
 import ImageUploader from '../components/ImageUploader';
+import LocationMap from '../components/LocationMap';
 import '../styles/admin.css';
 import {
   LayoutDashboard, FileText, Settings, Mail, Info,
@@ -1385,18 +1386,12 @@ const Admin = memo(() => {
 
                 {/* Right: Map preview */}
                 <div>
-                  <div className="admin-map-container">
-                    <div className="admin-map-placeholder">
-                      <div className="admin-map-placeholder-icon">
-                        <MapPin size={20} />
-                      </div>
-                      <span className="admin-map-placeholder-text">Vista Previa del Mapa</span>
-                      <span style={{ fontSize: '0.65rem', color: 'var(--admin-text-muted)' }}>Lat: {content.contact?.mapLat || '19.4326'} / Lng: {content.contact?.mapLng || '-99.1332'}</span>
-                    </div>
-                    <div className="admin-map-coords">
-                      <div className="admin-map-coord">Lat: {content.contact?.mapLat || '19.4326'}</div>
-                      <div className="admin-map-coord">Lng: {content.contact?.mapLng || '-99.1332'}</div>
-                    </div>
+                  <div className="admin-map-container" style={{ height: '200px' }}>
+                    <LocationMap
+                      center={[content.contact?.mapLat || 19.4326, content.contact?.mapLng || -99.1332]}
+                      zoom={15}
+                      height="200px"
+                    />
                   </div>
                   <div className="admin-grid-2" style={{ marginTop: '0.75rem' }}>
                     <div>

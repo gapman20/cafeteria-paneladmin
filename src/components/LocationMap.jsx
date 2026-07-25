@@ -24,9 +24,9 @@ const ChangeView = ({ center, zoom }) => {
   return null;
 };
 
-const LocationMap = ({ center = [19.4326, -99.1332], zoom = 13 }) => {
+const LocationMap = ({ center = [19.4326, -99.1332], zoom = 13, height = '400px' }) => {
   return (
-    <div className="map-wrapper" style={{ height: '400px', width: '100%', borderRadius: '8px', overflow: 'hidden' }}>
+    <div className="map-wrapper" style={{ height, width: '100%', borderRadius: '8px', overflow: 'hidden' }}>
       <MapContainer center={center} zoom={zoom} scrollWheelZoom={false} style={{ height: '100%', width: '100%' }}>
         <ChangeView center={center} zoom={zoom} />
         <TileLayer
