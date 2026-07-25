@@ -1452,7 +1452,6 @@ const Admin = memo(() => {
                   </button>
                     {geoStatus === 'not-found' && <span style={{ fontSize: '0.7rem', color: 'var(--admin-danger)', marginLeft: '0.5rem' }}>No se encontró la dirección</span>}
                     {geoStatus === 'error' && <span style={{ fontSize: '0.7rem', color: 'var(--admin-danger)', marginLeft: '0.5rem' }}>Error al buscar</span>}
-                  </div>
                 </div>
 
                 {/* Right: Map preview */}
