@@ -6,6 +6,7 @@ import {
 import { SECTION_ICON_MAP, SECTION_ICON_OPTIONS } from '../context/SiteContext';
 import ImageUploader from '../components/ImageUploader';
 import LocationMap from '../components/LocationMap';
+import { geocodeAddress } from '../utils/geocode';
 import '../styles/admin.css';
 import {
   LayoutDashboard, FileText, Settings, Mail, Info,
@@ -243,12 +244,36 @@ const Admin = memo(() => {
   const [seoIndex, setSeoIndex] = useState(true);
   const [seoFollow, setSeoFollow] = useState(true);
   const [ogImage, setOgImage] = useState(null);
+  const [geoLoading, setGeoLoading] = useState(false);
+  const [geoStatus, setGeoStatus] = useState(null); // 'ok' | 'not-found' | 'error' | null
 
   // Stable toast ID counter (avoids Date.now() impurity)
   const toastIdRef = useRef(0);
   const nextToastId = () => { toastIdRef.current += 1; return toastIdRef.current; };
 
   const onChange = (path, val) => updateContent(path, val);
+
+  const handleGeocode = async () => {
+    const address = content.contact?.address;
+    if (!address) { setGeoStatus('not-found'); return; }
+    setGeoLoading(true);
+    setGeoStatus(null);
+    try {
+      const result = await geocodeAddress(address);
+      if (result) {
+        onChange('contact.mapLat', result.lat);
+        onChange('contact.mapLng', result.lng);
+        setGeoStatus('ok');
+        showToast(`Coordenadas actualizadas: ${result.lat.toFixed(5)}, ${result.lng.toFixed(5)}`);
+      } else {
+        setGeoStatus('not-found');
+      }
+    } catch {
+      setGeoStatus('error');
+    } finally {
+      setGeoLoading(false);
+    }
+  };
 
   const showToast = (msg, type = 'success') => {
     const id = nextToastId();
@@ -1381,6 +1406,22 @@ const Admin = memo(() => {
                       <MapPin size={16} style={{ color: 'var(--admin-text-muted)', flexShrink: 0 }} />
                       <input style={{ flex: 1, border: 'none', outline: 'none', fontSize: '0.875rem', fontFamily: 'var(--admin-font-body)', color: 'var(--admin-text)', background: 'transparent' }} value={content.contact?.address || ''} onChange={e => onChange('contact.address', e.target.value)} placeholder="Av. Principal 123, Colonia Centro" />
                     </div>
+                    <button
+                      onClick={handleGeocode}
+                      disabled={geoLoading}
+                      style={{
+                        marginTop: '0.5rem', padding: '0.375rem 0.75rem', fontSize: '0.75rem', fontWeight: 600,
+                        background: geoStatus === 'ok' ? 'rgba(34,197,94,0.15)' : 'var(--admin-surface)',
+                        color: geoStatus === 'ok' ? '#22c55e' : 'var(--admin-accent)',
+                        border: `1px solid ${geoStatus === 'ok' ? 'rgba(34,197,94,0.3)' : 'var(--admin-border)'}`,
+                        borderRadius: 'var(--admin-radius-xs)', cursor: geoLoading ? 'wait' : 'pointer',
+                        transition: 'all 0.2s',
+                      }}
+                    >
+                      {geoLoading ? 'Buscando...' : geoStatus === 'ok' ? '✓ Coordenadas actualizadas' : '📍 Buscar coordenadas'}
+                    </button>
+                    {geoStatus === 'not-found' && <span style={{ fontSize: '0.7rem', color: 'var(--admin-danger)', marginLeft: '0.5rem' }}>No se encontró la dirección</span>}
+                    {geoStatus === 'error' && <span style={{ fontSize: '0.7rem', color: 'var(--admin-danger)', marginLeft: '0.5rem' }}>Error al buscar</span>}
                   </div>
                 </div>
 
