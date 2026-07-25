@@ -254,12 +254,18 @@ const Admin = memo(() => {
   const onChange = (path, val) => updateContent(path, val);
 
   const handleGeocode = async () => {
-    const address = content.contact?.address;
-    if (!address) { setGeoStatus('not-found'); return; }
+    const c = content.contact || {};
+    if (!c.address && !c.city) { setGeoStatus('not-found'); return; }
     setGeoLoading(true);
     setGeoStatus(null);
     try {
-      const result = await geocodeAddress(address);
+      const result = await geocodeAddress({
+        address: c.address,
+        postalCode: c.postalCode,
+        city: c.city,
+        state: c.state,
+        country: c.country,
+      });
       if (result) {
         onChange('contact.mapLat', result.lat);
         onChange('contact.mapLng', result.lng);
@@ -1404,22 +1410,46 @@ const Admin = memo(() => {
                     <label className="admin-label">Dirección Física</label>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem 1rem', background: 'var(--admin-surface)', border: '1px solid var(--admin-border)', borderRadius: 'var(--admin-radius)', transition: 'border-color var(--admin-transition)' }}>
                       <MapPin size={16} style={{ color: 'var(--admin-text-muted)', flexShrink: 0 }} />
-                      <input style={{ flex: 1, border: 'none', outline: 'none', fontSize: '0.875rem', fontFamily: 'var(--admin-font-body)', color: 'var(--admin-text)', background: 'transparent' }} value={content.contact?.address || ''} onChange={e => onChange('contact.address', e.target.value)} placeholder="Av. Principal 123, Colonia Centro" />
+                      <input style={{ flex: 1, border: 'none', outline: 'none', fontSize: '0.875rem', fontFamily: 'var(--admin-font-body)', color: 'var(--admin-text)', background: 'transparent' }} value={content.contact?.address || ''} onChange={e => onChange('contact.address', e.target.value)} placeholder="Calle y número" />
                     </div>
-                    <button
-                      onClick={handleGeocode}
-                      disabled={geoLoading}
-                      style={{
-                        marginTop: '0.5rem', padding: '0.375rem 0.75rem', fontSize: '0.75rem', fontWeight: 600,
-                        background: geoStatus === 'ok' ? 'rgba(34,197,94,0.15)' : 'var(--admin-surface)',
-                        color: geoStatus === 'ok' ? '#22c55e' : 'var(--admin-accent)',
-                        border: `1px solid ${geoStatus === 'ok' ? 'rgba(34,197,94,0.3)' : 'var(--admin-border)'}`,
-                        borderRadius: 'var(--admin-radius-xs)', cursor: geoLoading ? 'wait' : 'pointer',
-                        transition: 'all 0.2s',
-                      }}
-                    >
-                      {geoLoading ? 'Buscando...' : geoStatus === 'ok' ? '✓ Coordenadas actualizadas' : '📍 Buscar coordenadas'}
-                    </button>
+                  </div>
+
+                  <div className="admin-grid-2" style={{ marginTop: '0.75rem' }}>
+                    <div>
+                      <label className="admin-label">Ciudad</label>
+                      <input className="admin-input" value={content.contact?.city || ''} onChange={e => onChange('contact.city', e.target.value)} placeholder="Ciudad de México" style={{ padding: '0.5rem 0.75rem', fontSize: '0.8125rem' }} />
+                    </div>
+                    <div>
+                      <label className="admin-label">Estado / Provincia</label>
+                      <input className="admin-input" value={content.contact?.state || ''} onChange={e => onChange('contact.state', e.target.value)} placeholder="CDMX" style={{ padding: '0.5rem 0.75rem', fontSize: '0.8125rem' }} />
+                    </div>
+                  </div>
+
+                  <div className="admin-grid-2" style={{ marginTop: '0.75rem' }}>
+                    <div>
+                      <label className="admin-label">Código Postal</label>
+                      <input className="admin-input" value={content.contact?.postalCode || ''} onChange={e => onChange('contact.postalCode', e.target.value)} placeholder="06000" style={{ padding: '0.5rem 0.75rem', fontSize: '0.8125rem' }} />
+                    </div>
+                    <div>
+                      <label className="admin-label">País</label>
+                      <input className="admin-input" value={content.contact?.country || ''} onChange={e => onChange('contact.country', e.target.value)} placeholder="México" style={{ padding: '0.5rem 0.75rem', fontSize: '0.8125rem' }} />
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={handleGeocode}
+                    disabled={geoLoading}
+                    style={{
+                      marginTop: '0.75rem', padding: '0.375rem 0.75rem', fontSize: '0.75rem', fontWeight: 600,
+                      background: geoStatus === 'ok' ? 'rgba(34,197,94,0.15)' : 'var(--admin-surface)',
+                      color: geoStatus === 'ok' ? '#22c55e' : 'var(--admin-accent)',
+                      border: `1px solid ${geoStatus === 'ok' ? 'rgba(34,197,94,0.3)' : 'var(--admin-border)'}`,
+                      borderRadius: 'var(--admin-radius-xs)', cursor: geoLoading ? 'wait' : 'pointer',
+                      transition: 'all 0.2s',
+                    }}
+                  >
+                    {geoLoading ? 'Buscando...' : geoStatus === 'ok' ? '✓ Coordenadas actualizadas' : '📍 Buscar coordenadas'}
+                  </button>
                     {geoStatus === 'not-found' && <span style={{ fontSize: '0.7rem', color: 'var(--admin-danger)', marginLeft: '0.5rem' }}>No se encontró la dirección</span>}
                     {geoStatus === 'error' && <span style={{ fontSize: '0.7rem', color: 'var(--admin-danger)', marginLeft: '0.5rem' }}>Error al buscar</span>}
                   </div>

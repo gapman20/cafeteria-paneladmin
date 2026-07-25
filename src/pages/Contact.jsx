@@ -86,7 +86,7 @@ const Contact = () => {
               {[
                 { icon: <MessageSquare color="#25d366" size={20} />, label: 'WhatsApp (Prioritario)', val: c.whatsapp, bg: 'linear-gradient(135deg, rgba(37,211,102,0.1), transparent)' },
                 { icon: <Mail color="var(--accent-primary)" size={20} />, label: 'Email Corporativo', val: c.email, bg: undefined },
-                { icon: <MapPin color="#ef4444" size={20} />, label: 'Oficinas HQ', val: c.address, bg: 'linear-gradient(135deg, rgba(239,68,68,0.1), transparent)' },
+                { icon: <MapPin color="#ef4444" size={20} />, label: 'Oficinas HQ', val: [c.address, c.city, c.state, c.postalCode, c.country].filter(Boolean).join(', '), bg: 'linear-gradient(135deg, rgba(239,68,68,0.1), transparent)' },
               ].map((item, i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '1.2rem' }}>
                   <div className="icon-wrapper" style={{ margin: 0, width: '50px', height: '50px', borderRadius: '12px', background: item.bg }}>

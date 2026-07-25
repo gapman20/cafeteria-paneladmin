@@ -37,7 +37,8 @@ const LocationMap = ({ center = [19.4326, -99.1332], zoom = 13, height = '400px'
         />
         <Marker position={center}>
           <Popup>
-            {content.siteName} <br /> {content.contact?.address}
+            {content.siteName} <br />
+            {[content.contact?.address, content.contact?.city, content.contact?.state, content.contact?.postalCode, content.contact?.country].filter(Boolean).join(', ')}
           </Popup>
         </Marker>
       </MapContainer>
