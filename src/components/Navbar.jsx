@@ -44,6 +44,9 @@ const Navbar = memo(() => {
               <Link to={page.path} className="nav-links" onClick={page.path === '/' ? scrollToTop : () => setIsOpen(false)}>{page.name}</Link>
             </li>
           ))}
+          <li>
+            <Link to="/contacto" className="nav-links" onClick={() => setIsOpen(false)}>Visítanos</Link>
+          </li>
           <li style={{ marginLeft: isOpen ? '0' : '1rem' }}>
             <Link to="/pedir" className="btn-primary" onClick={() => setIsOpen(false)} style={{ padding: '10px 24px', fontSize: '0.95rem' }}>
               Pedir
