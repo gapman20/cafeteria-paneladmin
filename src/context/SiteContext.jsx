@@ -172,8 +172,6 @@ const defaultPages = [
   { id: 'home', name: 'Inicio', path: '/', active: true, isCustom: false },
   { id: 'services', name: 'Menú', path: '/menu', active: true, isCustom: false },
   { id: 'portfolio', name: 'Galería', path: '/galeria', active: true, isCustom: false },
-  { id: 'visitanos', name: 'Visítanos', path: '/visitanos', active: true, isCustom: false },
-  { id: 'order', name: 'Pedir', path: '/pedir', active: true, isCustom: false },
 ];
 
 // ─── Default Products ────────────────────────────────────────────────────────
