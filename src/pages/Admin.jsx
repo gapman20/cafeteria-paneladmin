@@ -156,6 +156,12 @@ const sidebarCategories = [
     ],
   },
   {
+    label: 'OPERACIONES',
+    items: [
+      { id: 'tables', label: 'Mesas y QR', icon: <MapPin size={17} /> },
+    ],
+  },
+  {
     label: 'CONFIGURACIÓN',
     items: [
       { id: 'theme', label: 'Colores & Tema', icon: <Palette size={17} /> },
@@ -249,6 +255,7 @@ const Admin = memo(() => {
   const [ogImage, setOgImage] = useState(null);
   const [geoLoading, setGeoLoading] = useState(false);
   const [geoStatus, setGeoStatus] = useState(null); // 'ok' | 'not-found' | 'error' | null
+  const [qrTableInput, setQrTableInput] = useState('01');
 
   // Stable toast ID counter (avoids Date.now() impurity)
   const toastIdRef = useRef(0);
@@ -2019,6 +2026,96 @@ const Admin = memo(() => {
             ))}
           </div>
         );
+
+      case 'tables': {
+        const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&ecc=H&margin=1&data=${encodeURIComponent(window.location.origin + '/?mesa=' + qrTableInput)}`;
+        const logoHtml = images.logo ? `<img src="${images.logo}" class="qr-logo" alt="Logo" />` : '';
+        return (
+          <div>
+            <h3 className="admin-section-title"><MapPin size={20} color="var(--admin-accent)" /> Mesas y Códigos QR</h3>
+            <p className="admin-section-desc" style={{ marginBottom: '2rem' }}>
+              Genera e imprime el código QR para que los clientes ordenen desde su mesa.
+            </p>
+
+            <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
+              <div className="admin-card" style={{ flex: '1', minWidth: '300px', padding: '1.5rem' }}>
+                <h4 style={{ marginBottom: '1rem', color: 'var(--color-text)', fontFamily: 'var(--font-display)', fontSize: '1.1rem' }}>Configuración de Mesa</h4>
+                <div style={{ marginBottom: '1.5rem' }}>
+                  <label className="admin-label">Número de Mesa</label>
+                  <p className="admin-hint">Solo números (Ejemplo: "4", "12")</p>
+                  <input 
+                    type="number" 
+                    min="1"
+                    className="admin-input" 
+                    value={qrTableInput} 
+                    onChange={e => {
+                      const val = e.target.value.replace(/[^0-9]/g, '');
+                      setQrTableInput(val);
+                    }} 
+                    placeholder="Ej. 4"
+                  />
+                </div>
+                <button 
+                  className="admin-btn admin-btn-primary" 
+                  onClick={() => {
+                    const printWindow = window.open('', '_blank');
+                    printWindow.document.write(`
+                      <html>
+                        <head>
+                          <title>Imprimir QR Mesa ${qrTableInput}</title>
+                          <style>
+                            body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; background: #fff; text-align: center; }
+                            .card { border: 2px solid #1A1410; padding: 2rem; border-radius: 16px; max-width: 350px; }
+                            h1 { color: #1A1410; margin-bottom: 0.5rem; font-size: 24px; }
+                            h2 { color: #C8956C; font-size: 32px; margin-top: 0; margin-bottom: 1.5rem; }
+                            p { color: #666; font-size: 16px; margin-bottom: 1.5rem; }
+                            .qr-container { position: relative; display: inline-block; margin-bottom: 1rem; }
+                            .qr-image { display: block; max-width: 100%; height: auto; }
+                            .qr-logo { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 60px; height: 60px; object-fit: contain; background: #fff; padding: 4px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin: 0; }
+                          </style>
+                        </head>
+                        <body>
+                          <div class="card">
+                            <h1>${content.siteName}</h1>
+                            <h2>Mesa ${qrTableInput}</h2>
+                            <p>Escanea este código QR con la cámara de tu celular para ver el menú y ordenar sin levantarte.</p>
+                            <div class="qr-container">
+                              <img src="${qrUrl}" class="qr-image" alt="QR Mesa ${qrTableInput}" onload="window.print();" />
+                              ${logoHtml}
+                            </div>
+                          </div>
+                        </body>
+                      </html>
+                    `);
+                    printWindow.document.close();
+                  }}
+                  style={{ width: '100%', justifyContent: 'center' }}
+                  disabled={!qrTableInput.trim()}
+                >
+                  <Monitor size={16} /> Enviar a Imprimir
+                </button>
+              </div>
+
+              <div className="admin-card" style={{ flex: '1', minWidth: '300px', padding: '2rem', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'var(--color-surface)' }}>
+                <div style={{ background: '#fff', padding: '1rem', borderRadius: '12px', boxShadow: 'var(--shadow-sm)', marginBottom: '1rem', position: 'relative', display: 'inline-block' }}>
+                  <img src={qrUrl} alt="QR Code Preview" style={{ width: '200px', height: '200px', display: 'block' }} />
+                  {images.logo && (
+                    <img src={images.logo} alt="Logo" style={{
+                      position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+                      width: '44px', height: '44px', objectFit: 'contain', background: '#fff',
+                      padding: '4px', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
+                    }} />
+                  )}
+                </div>
+                <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.9rem', textAlign: 'center' }}>
+                  Previsualización del código QR.<br/>
+                  <span style={{ fontSize: '0.8rem', opacity: 0.7 }}>Apunta a: {window.location.origin}/?mesa={qrTableInput}</span>
+                </p>
+              </div>
+            </div>
+          </div>
+        );
+      }
 
       case 'whatsapp': {
         const waTemplates = [

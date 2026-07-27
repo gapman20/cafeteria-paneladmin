@@ -21,7 +21,16 @@ const Login = React.lazy(() => import('./pages/Login'));
 const Order = React.lazy(() => import('./pages/Order'));
 
 const AppContent = () => {
-  const { pages, isAuthenticated, images } = useSite();
+  const { pages, isAuthenticated, images, setTableNumber } = useSite();
+
+  // Detect table number from QR code URL (?mesa=XX)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const mesa = params.get('mesa');
+    if (mesa) {
+      setTableNumber(mesa);
+    }
+  }, [setTableNumber]);
 
   // Update favicon dynamically when logo is uploaded
   useEffect(() => {

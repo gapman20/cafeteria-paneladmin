@@ -5,25 +5,64 @@ import { parsePrice } from './priceParser';
  * Accepts either a cart object with an `items` array, or a plain items array.
  *
  * @param {Array|{ items: Array }} cartOrItems
- * @param {{ name: string, address: string, phone: string, notes: string }} customer
+ * @param {{ name: string, address: string, phone: string, notes: string, tableNumber?: string }} customer
  * @returns {string}
  */
 export function buildOrderMessage(cartOrItems, customer) {
   const items = Array.isArray(cartOrItems) ? cartOrItems : (cartOrItems.items || []);
   const lines = [];
-  lines.push('🛒 Pedido de Café Aromático');
-  lines.push('');
-  lines.push(`👤 ${customer.name}`);
-  lines.push(`📍 ${customer.address}`);
-  lines.push(`📱 ${customer.phone}`);
-  lines.push('');
+
+  const storeName = (customer.siteName || 'CAFÉ AROMÁTICO').toUpperCase();
+  const LINE_WIDTH = 32;
+
+  // Helpers for text alignment
+  const padRight = (str, len) => (str.length >= len ? str.substring(0, len) : str + ' '.repeat(len - str.length));
+  const padLeft = (str, len) => (str.length >= len ? str.substring(0, len) : ' '.repeat(len - str.length) + str);
+  const padCenter = (str, len) => {
+    if (str.length >= len) return str.substring(0, len);
+    const pad = len - str.length;
+    const padL = Math.floor(pad / 2);
+    const padR = pad - padL;
+    return ' '.repeat(padL) + str + ' '.repeat(padR);
+  };
+
+  // Start WhatsApp Monospace Block
+  lines.push('```');
+  lines.push('='.repeat(LINE_WIDTH));
+  lines.push(padCenter(storeName, LINE_WIDTH));
+  lines.push('='.repeat(LINE_WIDTH));
+  
+  const dateStr = new Date().toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  const timeStr = new Date().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
+  lines.push(`Fecha: ${dateStr} ${timeStr}`);
+  
+  if (customer.tableNumber) {
+    lines.push(`Mesa: ${customer.tableNumber}`);
+    lines.push(`Para: ${customer.name}`);
+  } else {
+    lines.push(`Para: ${customer.name}`);
+    lines.push(`Dir: ${customer.address}`);
+    lines.push(`Tel: ${customer.phone}`);
+  }
+  
+  lines.push('-'.repeat(LINE_WIDTH));
 
   let total = 0;
   for (const item of items) {
     const priceNum = typeof item.price === 'number' ? item.price : parsePrice(`$${item.price}`);
     const subtotal = priceNum * item.qty;
     total += subtotal;
-    lines.push(`• ${item.name} ×${item.qty} — $${subtotal}`);
+    
+    // Format line: "1  Cappuccino Clásico  $ 85.00"
+    const qtyStr = `${item.qty} `;
+    const priceStr = `$${subtotal.toFixed(2)}`;
+    
+    // Calculate remaining space for item name
+    const nameLen = LINE_WIDTH - qtyStr.length - priceStr.length;
+    const nameStr = padRight(item.name, nameLen);
+    
+    lines.push(`${qtyStr}${nameStr}${padLeft(priceStr, LINE_WIDTH - qtyStr.length - nameLen)}`);
+    
     // Include customization details if present
     if (item.customization) {
       const c = item.customization;
@@ -38,18 +77,32 @@ export function buildOrderMessage(cartOrItems, customer) {
         details.push(`Sin: ${c.excludedIngredients.join(', ')}`);
       }
       if (details.length > 0) {
-        lines.push(`   ↳ ${details.join(' · ')}`);
+        const detailStr = ` ↳ ${details.join(' · ')}`;
+        if (detailStr.length > LINE_WIDTH) {
+          lines.push(detailStr.substring(0, LINE_WIDTH));
+        } else {
+          lines.push(detailStr);
+        }
       }
     }
   }
 
-  lines.push('');
-  lines.push(`💰 Total: $${total}`);
+  lines.push('-'.repeat(LINE_WIDTH));
+  
+  const totalLabel = 'TOTAL:';
+  const totalStr = `$${total.toFixed(2)}`;
+  lines.push(`${totalLabel}${padLeft(totalStr, LINE_WIDTH - totalLabel.length)}`);
+  lines.push('='.repeat(LINE_WIDTH));
 
   if (customer.notes && customer.notes.trim()) {
-    lines.push('');
-    lines.push(`📝 ${customer.notes.trim()}`);
+    lines.push(`Notas: ${customer.notes.trim()}`);
+    lines.push('='.repeat(LINE_WIDTH));
   }
+  
+  lines.push('¡Gracias por su pedido!');
+  
+  // Close WhatsApp Monospace Block
+  lines.push('```');
 
   return lines.join('\n');
 }
