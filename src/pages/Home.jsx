@@ -154,7 +154,7 @@ const Home = memo(() => {
       />
 
       {/* ── Hero (DO NOT MODIFY) ──────────────────────────────────────────── */}
-      <RomaBrewHero />
+      <RomaBrewHero title={h.heroTitle} description={h.heroDescription} />
 
       {/* ── Features — Restyled ───────────────────────────────────────────── */}
       <section

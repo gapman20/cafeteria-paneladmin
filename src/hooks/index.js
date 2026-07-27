@@ -8,3 +8,4 @@ export { useImages } from './useImages';
 export { useInbox } from './useInbox';
 export { useAnalytics } from './useAnalytics';
 export { useMenu } from './useMenu';
+export { useCustomizer } from './useCustomizer';

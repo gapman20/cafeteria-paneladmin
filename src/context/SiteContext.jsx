@@ -82,6 +82,8 @@ const defaultContent = {
     badge:              '☕ Café de Especialidad',
     title:              'Sabor que',
     titleAccent:        'Enamora',
+    heroTitle:          'Café con Alma',
+    heroDescription:    'Granos de origen único, tostados artesanalmente. Creado para quienes no se conforman con lo ordinary.',
     subtitle:           'Granos seleccionados de las mejores fincas latinoamericanas, tostados artesanalmente en pequeños lotes para ofrecerte una experiencia única en cada taza.',
     ctaText:            'Ver Menú',
     ctaSecondary:       'Nuestra Historia',
@@ -223,20 +225,20 @@ const defaultMenuSections = [
     icon: 'coffee',
     color: '#C8956C',
     items: [
-      { name: 'Espresso Doble', desc: 'Doble extracción con granulometría perfecta. Notas intensas de cacao y avellana.', price: '$65', img: '☕' },
-      { name: 'Espresso Singolo', desc: 'Una sola extracción para quienes disfrutan la pureza del grano.', price: '$50', img: '☕' },
-      { name: 'Americano', desc: 'Espresso suavizado con agua caliente. Corporoso pero equilibrado.', price: '$60', img: '☕' },
-      { name: 'Cappuccino Clásico', desc: 'Espresso con espuma de leche sedosa. Balance perfecto entre café y cremosidad.', price: '$85', img: '☕' },
-      { name: 'Cortado', desc: 'Espresso con un toque de leche caliente. Intensidad con suavidad.', price: '$70', img: '☕' },
-      { name: 'Flat White', desc: 'Doble espresso con microespuma de leche. Cremoso y potente.', price: '$95', img: '☕' },
-      { name: 'Café Vainilla', desc: 'Espresso con jarabe de vainilla artesanal y leche texturizada.', price: '$90', img: '☕' },
-      { name: 'Caramelo Macchiato', desc: 'Capa de leche, caramelo casero y espresso. Dulce pero no empalagoso.', price: '$95', img: '☕' },
-      { name: 'Mocha Oscuro', desc: 'Espresso, chocolate belga 70% y leche. Para los amantes del cacao.', price: '$100', img: '☕' },
-      { name: 'Chai Latte', desc: 'Té chai especiado con leche de avena. Canela, jengibre y cardamomo.', price: '$85', img: '🍵' },
-      { name: 'Pour Over V60', desc: 'Café de origen único con notas de arándano, jazmín y final cítrico.', price: '$120', img: '☕' },
-      { name: 'Chemex', desc: 'Filtrado en papel doble. Taza limpia, dulce y aromática.', price: '$130', img: '☕' },
-      { name: 'Aeropress', desc: 'Extracción por presión. Concentrada, versátil, con cuerpo medio.', price: '$110', img: '☕' },
-      { name: 'Sifón Hario', desc: 'Preparación teatral. Taza brillante con textura de seda.', price: '$150', img: '☕' },
+      { name: 'Espresso Doble', desc: 'Doble extracción con granulometría perfecta. Notas intensas de cacao y avellana.', price: '$65', img: '☕', ingredients: ['Espresso Doble'] },
+      { name: 'Espresso Singolo', desc: 'Una sola extracción para quienes disfrutan la pureza del grano.', price: '$50', img: '☕', ingredients: ['Espresso'] },
+      { name: 'Americano', desc: 'Espresso suavizado con agua caliente. Corporoso pero equilibrado.', price: '$60', img: '☕', ingredients: ['Espresso', 'Agua Caliente'] },
+      { name: 'Cappuccino Clásico', desc: 'Espresso con espuma de leche sedosa. Balance perfecto entre café y cremosidad.', price: '$85', img: '☕', ingredients: ['Espresso', 'Leche'] },
+      { name: 'Cortado', desc: 'Espresso con un toque de leche caliente. Intensidad con suavidad.', price: '$70', img: '☕', ingredients: ['Espresso', 'Leche'] },
+      { name: 'Flat White', desc: 'Doble espresso con microespuma de leche. Cremoso y potente.', price: '$95', img: '☕', ingredients: ['Espresso Doble', 'Leche'] },
+      { name: 'Café Vainilla', desc: 'Espresso con jarabe de vainilla artesanal y leche texturizada.', price: '$90', img: '☕', ingredients: ['Espresso', 'Leche', 'Jarabe de Vainilla'] },
+      { name: 'Caramelo Macchiato', desc: 'Capa de leche, caramelo casero y espresso. Dulce pero no empalagoso.', price: '$95', img: '☕', ingredients: ['Espresso', 'Leche', 'Caramelo'] },
+      { name: 'Mocha Oscuro', desc: 'Espresso, chocolate belga 70% y leche. Para los amantes del cacao.', price: '$100', img: '☕', ingredients: ['Espresso', 'Leche', 'Chocolate'] },
+      { name: 'Chai Latte', desc: 'Té chai especiado con leche de avena. Canela, jengibre y cardamomo.', price: '$85', img: '🍵', ingredients: ['Té Chai', 'Leche de Avena', 'Canela', 'Jengibre'] },
+      { name: 'Pour Over V60', desc: 'Café de origen único con notas de arándano, jazmín y final cítrico.', price: '$120', img: '☕', ingredients: ['Café de Origen'] },
+      { name: 'Chemex', desc: 'Filtrado en papel doble. Taza limpia, dulce y aromática.', price: '$130', img: '☕', ingredients: ['Café de Origen'] },
+      { name: 'Aeropress', desc: 'Extracción por presión. Concentrada, versátil, con cuerpo medio.', price: '$110', img: '☕', ingredients: ['Café de Origen'] },
+      { name: 'Sifón Hario', desc: 'Preparación teatral. Taza brillante con textura de seda.', price: '$150', img: '☕', ingredients: ['Café de Origen'] },
     ],
   },
   {
@@ -245,13 +247,13 @@ const defaultMenuSections = [
     icon: 'snowflake',
     color: '#6CB4C8',
     items: [
-      { name: 'Cold Brew Clásico', desc: '12 horas de infusión en frío. Suave, refrescante y con sabor que conquista.', price: '$95', img: '🧊' },
-      { name: 'Cold Brew Vainilla', desc: 'Nuestro cold brew con jarabe de vainilla artesanal y hielo.', price: '$105', img: '🧊' },
-      { name: 'Cold Brew Drip', desc: 'Infusión lenta de 12 horas. Suave, refrescante, baja acidez.', price: '$110', img: '🧊' },
-      { name: 'Affogato Artesanal', desc: 'Espresso caliente sobre helado de vainilla hecho en casa.', price: '$95', img: '🍨' },
-      { name: 'Frappe Espresso', desc: 'Espresso, hielo, leche y jarabe. Batido hasta quedar espumoso.', price: '$110', img: '🥤' },
-      { name: 'Té Hielo Japonés', desc: 'Té verde matcha servido sobre hielo. Refrescante y antioxidante.', price: '$90', img: '🍵' },
-      { name: 'Limonada de Café', desc: 'Cold brew con limón fresco, hielo y un toque de miel.', price: '$100', img: '🍋' },
+      { name: 'Cold Brew Clásico', desc: '12 horas de infusión en frío. Suave, refrescante y con sabor que conquista.', price: '$95', img: '🧊', ingredients: ['Cold Brew', 'Hielo'] },
+      { name: 'Cold Brew Vainilla', desc: 'Nuestro cold brew con jarabe de vainilla artesanal y hielo.', price: '$105', img: '🧊', ingredients: ['Cold Brew', 'Jarabe de Vainilla', 'Hielo'] },
+      { name: 'Cold Brew Drip', desc: 'Infusión lenta de 12 horas. Suave, refrescante, baja acidez.', price: '$110', img: '🧊', ingredients: ['Cold Brew', 'Hielo'] },
+      { name: 'Affogato Artesanal', desc: 'Espresso caliente sobre helado de vainilla hecho en casa.', price: '$95', img: '🍨', ingredients: ['Espresso', 'Helado de Vainilla'] },
+      { name: 'Frappe Espresso', desc: 'Espresso, hielo, leche y jarabe. Batido hasta quedar espumoso.', price: '$110', img: '🥤', ingredients: ['Espresso', 'Leche', 'Hielo', 'Jarabe'] },
+      { name: 'Té Hielo Japonés', desc: 'Té verde matcha servido sobre hielo. Refrescante y antioxidante.', price: '$90', img: '🍵', ingredients: ['Matcha', 'Hielo'] },
+      { name: 'Limonada de Café', desc: 'Cold brew con limón fresco, hielo y un toque de miel.', price: '$100', img: '🍋', ingredients: ['Cold Brew', 'Limón', 'Hielo', 'Miel'] },
     ],
   },
   {
@@ -271,6 +273,31 @@ const defaultMenuSections = [
   },
 ];
 
+// ─── Default Customizer Options ────────────────────────────────────────────────
+const defaultCustomizerOptions = {
+  sizes: [
+    { key: 'chico', label: 'Chico', detail: '12oz', modifier: 0, active: true },
+    { key: 'mediano', label: 'Mediano', detail: '16oz', modifier: 10, active: true },
+    { key: 'grande', label: 'Grande', detail: '20oz', modifier: 20, active: true },
+  ],
+  milks: [
+    { key: 'entera', label: 'Entera', modifier: 0, active: true },
+    { key: 'deslactosada', label: 'Deslactosada', modifier: 0, active: true },
+    { key: 'almendra', label: 'Almendra', modifier: 15, active: true },
+    { key: 'avena', label: 'Avena', modifier: 15, active: true },
+  ],
+  sweetness: [
+    { key: '100', label: '100%', active: true },
+    { key: '50', label: '50%', active: true },
+    { key: 'sin-azucar', label: 'Sin Azúcar', active: true },
+  ],
+  extras: [
+    { key: 'shot-extra', label: 'Shot extra de Espresso', modifier: 15, active: true },
+    { key: 'crema-batida', label: 'Crema Batida', modifier: 0, active: true },
+    { key: 'jarabe-caramelo', label: 'Jarabe de Caramelo', modifier: 10, active: true },
+  ],
+};
+
 // ─── Storage Keys ──────────────────────────────────────────────────────────────
 const CONTENT_KEY = 'site_content_v1';
 const IMAGES_KEY  = 'site_images_v1';
@@ -282,6 +309,7 @@ const AUTH_KEY    = 'site_auth_v1';
 const PASS_KEY    = 'site_pass_v1';
 const INBOX_KEY   = 'site_inbox_v1';
 const MENU_KEY    = 'site_menu_v1';
+const CUSTOMIZER_KEY = 'site_customizer_v1';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function deepMerge(target, source) {
@@ -488,6 +516,14 @@ export const SiteProvider = ({ children }) => {
     return defaultMenuSections;
   });
 
+  const [customizerOptions, _setCustomizerOptionsRaw] = useState(() => {
+    try {
+      const saved = localStorage.getItem(CUSTOMIZER_KEY);
+      if (saved) return deepMerge(defaultCustomizerOptions, JSON.parse(saved));
+    } catch { /* ignore */ }
+    return defaultCustomizerOptions;
+  });
+
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [saveStatus, setSaveStatus] = useState(null);
   const [loadingDb, setLoadingDb] = useState(true);
@@ -532,6 +568,13 @@ export const SiteProvider = ({ children }) => {
       return { ...prev, menuSections: typeof updater === 'function' ? updater(base) : updater };
     });
   };
+  const setCustomizerOptions = (updater) => {
+    if (!draftMode) return _setCustomizerOptionsRaw(updater);
+    setDraft(prev => {
+      const base = prev.customizerOptions !== undefined ? prev.customizerOptions : customizerOptions;
+      return { ...prev, customizerOptions: typeof updater === 'function' ? updater(base) : updater };
+    });
+  };
   const setProducts = (updater) => {
     if (!draftMode) return _setProductsRaw(updater);
     setDraft(prev => {
@@ -546,6 +589,7 @@ export const SiteProvider = ({ children }) => {
   const effectiveTheme = draftMode && draft.theme !== undefined ? draft.theme : theme;
   const effectivePages = draftMode && draft.pages !== undefined ? draft.pages : pages;
   const effectiveMenuSections = draftMode && draft.menuSections !== undefined ? draft.menuSections : menuSections;
+  const effectiveCustomizerOptions = draftMode && draft.customizerOptions !== undefined ? draft.customizerOptions : customizerOptions;
   const effectiveProducts = draftMode && draft.products !== undefined ? draft.products : products;
 
   // Check localStorage for existing session on mount
@@ -800,6 +844,43 @@ export const SiteProvider = ({ children }) => {
     ));
   };
 
+  // ── Customizer helpers ──────────────────────────────────────────────────
+  const updateCustomizerOption = (category, index, field, value) => {
+    setCustomizerOptions(prev => ({
+      ...prev,
+      [category]: prev[category].map((opt, i) => i === index ? { ...opt, [field]: value } : opt),
+    }));
+  };
+
+  const addCustomizerOption = (category) => {
+    const newOpt = { key: `custom-${Date.now()}`, label: 'Nueva Opción', modifier: 0, active: true };
+    setCustomizerOptions(prev => ({
+      ...prev,
+      [category]: [...(prev[category] || []), newOpt],
+    }));
+  };
+
+  const removeCustomizerOption = (category, index) => {
+    setCustomizerOptions(prev => ({
+      ...prev,
+      [category]: prev[category].filter((_, i) => i !== index),
+    }));
+  };
+
+  const toggleCustomizerOption = (category, index) => {
+    setCustomizerOptions(prev => ({
+      ...prev,
+      [category]: prev[category].map((opt, i) => i === index ? { ...opt, active: !opt.active } : opt),
+    }));
+  };
+
+  const moveCustomizerOption = (category, index, direction) => {
+    setCustomizerOptions(prev => ({
+      ...prev,
+      [category]: moveArrayItem(prev[category], index, direction),
+    }));
+  };
+
   // ── Theme helpers ─────────────────────────────────────────────────────────
   const updateTheme = (key, value) => setTheme(prev => ({ ...prev, [key]: value }));
   const resetTheme  = () => setTheme(defaultTheme);
@@ -830,6 +911,7 @@ export const SiteProvider = ({ children }) => {
       localStorage.setItem(ANALYTICS_KEY,JSON.stringify(analytics));
       localStorage.setItem(INBOX_KEY,   JSON.stringify(inbox));
       localStorage.setItem(MENU_KEY,    JSON.stringify(menuSections));
+      localStorage.setItem(CUSTOMIZER_KEY, JSON.stringify(customizerOptions));
 
       setSaveStatus('saved');
     } catch (error) {
@@ -852,6 +934,7 @@ export const SiteProvider = ({ children }) => {
       const finalPages = draft.pages ?? pages;
       const finalProducts = draft.products ?? products;
       const finalMenuSections = draft.menuSections ?? menuSections;
+      const finalCustomizerOptions = draft.customizerOptions ?? customizerOptions;
 
       // Apply draft to real state
       _setContentRaw(finalContent);
@@ -860,6 +943,7 @@ export const SiteProvider = ({ children }) => {
       _setPagesRaw(finalPages);
       _setProductsRaw(finalProducts);
       _setMenuSectionsRaw(finalMenuSections);
+      _setCustomizerOptionsRaw(finalCustomizerOptions);
 
       // Persist to localStorage
       localStorage.setItem(CONTENT_KEY, JSON.stringify(finalContent));
@@ -870,6 +954,7 @@ export const SiteProvider = ({ children }) => {
       localStorage.setItem(ANALYTICS_KEY, JSON.stringify(analytics));
       localStorage.setItem(INBOX_KEY,   JSON.stringify(inbox));
       localStorage.setItem(MENU_KEY,    JSON.stringify(finalMenuSections));
+      localStorage.setItem(CUSTOMIZER_KEY, JSON.stringify(finalCustomizerOptions));
 
       // Clear draft and exit draft mode
       setDraft({});
@@ -890,13 +975,14 @@ export const SiteProvider = ({ children }) => {
   };
 
   const resetContent = () => {
-    [CONTENT_KEY, IMAGES_KEY, THEME_KEY, PAGES_KEY, PRODS_KEY, ANALYTICS_KEY, MENU_KEY].forEach(k => localStorage.removeItem(k));
+    [CONTENT_KEY, IMAGES_KEY, THEME_KEY, PAGES_KEY, PRODS_KEY, ANALYTICS_KEY, MENU_KEY, CUSTOMIZER_KEY].forEach(k => localStorage.removeItem(k));
     _setContentRaw(defaultContent);
     _setImagesRaw(defaultImages);
     _setThemeRaw(defaultTheme);
     _setPagesRaw(defaultPages);
     _setProductsRaw(defaultProducts);
     _setMenuSectionsRaw(defaultMenuSections);
+    _setCustomizerOptionsRaw(defaultCustomizerOptions);
     setDraft({});
     setDraftMode(false);
     setSaveStatus('saved');
@@ -913,6 +999,7 @@ export const SiteProvider = ({ children }) => {
       products: effectiveProducts, createProduct, updateProduct, deleteProduct, moveProduct,
       analytics, trackAnalytics,
       menuSections: effectiveMenuSections, updateMenuSection, updateMenuItem, addMenuItem, removeMenuItem, addMenuSection, removeMenuSection, moveMenuSection, moveMenuItem,
+      customizerOptions: effectiveCustomizerOptions, updateCustomizerOption, addCustomizerOption, removeCustomizerOption, toggleCustomizerOption, moveCustomizerOption,
       inbox, addMessage, markMessageRead, deleteMessage,
       isAuthenticated, login, logout, changePassword,
       saveContent, saveDraft, discardDraft, resetContent, saveStatus, loadingDb,

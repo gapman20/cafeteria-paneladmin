@@ -5,6 +5,8 @@ import { parsePrice } from '../utils/priceParser';
 import { buildOrderMessage, getWhatsAppUrl } from '../utils/whatsappMessage';
 import { validateRequired, validatePhone } from '../utils/validation';
 import SEO from '../components/SEO';
+import ImageFallback from '../components/ImageFallback';
+import DrinkCustomizer from '../components/DrinkCustomizer';
 
 const CART_KEY = 'order_cart_v1';
 const INITIAL_CART = { items: [], customer: { name: '', address: '', phone: '', notes: '' } };
@@ -60,6 +62,7 @@ const Order = () => {
   const [errors, setErrors] = useState({});
   const [mobileCartOpen, setMobileCartOpen] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [customizerItem, setCustomizerItem] = useState(null); // { item, sectionId, sectionColor, sectionEmoji }
 
   // Sync cart to localStorage
   useEffect(() => { saveCart(cart); }, [cart]);
@@ -74,29 +77,49 @@ const Order = () => {
   const whatsappNumber = content?.whatsappFloat?.number || '';
 
   // ── Cart helpers ──────────────────────────────────────────────────────────
-  const addItem = useCallback((item, sectionId, sectionEmoji) => {
-    setCart(prev => {
-      const idx = prev.items.findIndex(i => i.name === item.name && i.sectionId === sectionId);
-      if (idx >= 0) {
-        const updated = prev.items.map((i, j) => j === idx ? { ...i, qty: i.qty + 1 } : i);
-        return { ...prev, items: updated };
-      }
-      return {
-        ...prev,
-        items: [...prev.items, { name: item.name, price: parsePrice(item.price), qty: 1, sectionId, emoji: sectionEmoji }],
-      };
-    });
+  const addItemWithCustomization = useCallback((item, sectionId, sectionEmoji, customization) => {
+    setCart(prev => ({
+      ...prev,
+      items: [...prev.items, {
+        cartId: `cart-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        name: item.name,
+        price: customization.totalPrice,
+        qty: 1,
+        sectionId,
+        emoji: sectionEmoji,
+        customization: {
+          size: customization.size?.key || null,
+          sizeLabel: customization.size?.label || null,
+          milk: customization.milk?.key || null,
+          milkLabel: customization.milk?.label || null,
+          sweetness: customization.sweetness?.key || null,
+          sweetnessLabel: customization.sweetness?.label || null,
+          extras: customization.extras?.map(e => e.key) || [],
+          extrasLabels: customization.extras?.map(e => e.label) || [],
+          excludedIngredients: customization.excludedIngredients || [],
+          summary: customization.summary || '',
+        },
+      }],
+    }));
   }, []);
 
-  const decrementItem = useCallback((name, sectionId) => {
+  const decrementItem = useCallback((cartId) => {
     setCart(prev => {
-      const idx = prev.items.findIndex(i => i.name === name && i.sectionId === sectionId);
+      const idx = prev.items.findIndex(i => i.cartId === cartId);
       if (idx < 0) return prev;
       const item = prev.items[idx];
       if (item.qty <= 1) {
         return { ...prev, items: prev.items.filter((_, j) => j !== idx) };
       }
       return { ...prev, items: prev.items.map((i, j) => j === idx ? { ...i, qty: i.qty - 1 } : i) };
+    });
+  }, []);
+
+  const incrementCartItem = useCallback((cartId) => {
+    setCart(prev => {
+      const idx = prev.items.findIndex(i => i.cartId === cartId);
+      if (idx < 0) return prev;
+      return { ...prev, items: prev.items.map((i, j) => j === idx ? { ...i, qty: i.qty + 1 } : i) };
     });
   }, []);
 
@@ -213,10 +236,35 @@ const Order = () => {
                     <div key={idx} className="glass-card" style={{
                       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                       padding: '0.875rem 1rem', marginBottom: '0.5rem', gap: '0.75rem',
-                    }}>
+                      cursor: 'pointer',
+                    }}
+                    onClick={(e) => {
+                      // Don't open customizer if clicking on the +/- buttons
+                      if (e.target.closest('button')) return;
+                      setCustomizerItem({ item, sectionId: section.id, sectionColor: section.color, sectionEmoji: item.img || '🍽️' });
+                    }}
+                    >
+                      {/* Thumbnail image or emoji */}
+                      {item.image ? (
+                        <div style={{
+                          width: '56px', height: '56px', borderRadius: 'var(--radius-md)',
+                          overflow: 'hidden', flexShrink: 0,
+                          background: `linear-gradient(135deg, ${section.color}20, ${section.color}08)`,
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        }}>
+                          <ImageFallback
+                            src={item.image}
+                            alt={item.name}
+                            loading="lazy"
+                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                          />
+                        </div>
+                      ) : (
+                        <span style={{ fontSize: '1.5rem', flexShrink: 0 }}>{item.img}</span>
+                      )}
+
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                          <span style={{ fontSize: '1.1rem' }}>{item.img}</span>
                           <span style={{
                             fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: '0.9rem',
                             color: 'var(--color-text)',
@@ -233,7 +281,11 @@ const Order = () => {
                         {qty > 0 && (
                           <>
                             <button
-                              onClick={() => decrementItem(item.name, section.id)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                const found = cart.items.find(i => i.name === item.name && i.sectionId === section.id && !i.customization);
+                                if (found) decrementItem(found.cartId);
+                              }}
                               aria-label={`Reducir ${item.name}`}
                               style={{
                                 width: '30px', height: '30px', borderRadius: 'var(--radius-full)',
@@ -251,20 +303,6 @@ const Order = () => {
                             }}>{qty}</span>
                           </>
                         )}
-                        <button
-                          onClick={() => addItem(item, section.id, section.items[0]?.img || '🍽️')}
-                          aria-label={`Agregar ${item.name}`}
-                          style={{
-                            width: '30px', height: '30px', borderRadius: 'var(--radius-full)',
-                            background: qty > 0 ? 'var(--color-accent)' : 'var(--color-accent-subtle)',
-                            border: qty > 0 ? 'none' : '1px solid var(--color-accent-border)',
-                            color: qty > 0 ? 'var(--btn-text)' : 'var(--color-accent)',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            cursor: 'pointer',
-                          }}
-                        >
-                          <Plus size={14} />
-                        </button>
                       </div>
                     </div>
                   );
@@ -303,7 +341,7 @@ const Order = () => {
             ) : (
               <div style={{ maxHeight: '220px', overflowY: 'auto', marginBottom: '1rem' }}>
                 {cart.items.map((item, idx) => (
-                  <div key={idx} style={{
+                  <div key={item.cartId || idx} style={{
                     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                     padding: '0.5rem 0', borderBottom: idx < cart.items.length - 1 ? '1px solid var(--color-border)' : 'none',
                   }}>
@@ -311,13 +349,18 @@ const Order = () => {
                       <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--color-text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                         {item.emoji} {item.name}
                       </div>
+                      {item.customization?.summary && (
+                        <div style={{ fontSize: '0.6875rem', color: 'var(--color-accent)', marginTop: '0.1rem' }}>
+                          {item.customization.summary}
+                        </div>
+                      )}
                       <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>
                         ×{item.qty} — ${item.price * item.qty}
                       </div>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', flexShrink: 0, marginLeft: '0.5rem' }}>
                       <button
-                        onClick={() => decrementItem(item.name, item.sectionId)}
+                        onClick={() => decrementItem(item.cartId)}
                         style={{
                           width: '24px', height: '24px', borderRadius: 'var(--radius-full)',
                           border: '1px solid var(--color-border)', background: 'transparent',
@@ -330,7 +373,7 @@ const Order = () => {
                       </button>
                       <span style={{ fontSize: '0.8rem', fontWeight: 700, minWidth: '16px', textAlign: 'center', color: 'var(--color-text)' }}>{item.qty}</span>
                       <button
-                        onClick={() => addItem({ name: item.name, price: `$${item.price}` }, item.sectionId, item.emoji)}
+                        onClick={() => incrementCartItem(item.cartId)}
                         style={{
                           width: '24px', height: '24px', borderRadius: 'var(--radius-full)',
                           background: 'var(--color-accent)', border: 'none',
@@ -458,6 +501,26 @@ const Order = () => {
           </div>
           <span style={{ fontWeight: 800, fontFamily: 'var(--font-display)' }}>${totalPrice}</span>
         </div>
+      )}
+
+      {/* ── Drink Customizer Modal ── */}
+      {customizerItem && (
+        <DrinkCustomizer
+          item={customizerItem.item}
+          sectionId={customizerItem.sectionId}
+          sectionColor={customizerItem.sectionColor}
+          sectionEmoji={customizerItem.sectionEmoji}
+          onClose={() => setCustomizerItem(null)}
+          onAdd={(customization) => {
+            addItemWithCustomization(
+              customizerItem.item,
+              customizerItem.sectionId,
+              customizerItem.sectionEmoji,
+              customization,
+            );
+            setCustomizerItem(null);
+          }}
+        />
       )}
     </div>
   );

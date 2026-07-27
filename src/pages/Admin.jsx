@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, memo } from 'react';
 import {
   useContent, useImages, useTheme,
-  usePages, useInbox, useAuth, useAnalytics, useMenu,
+  usePages, useInbox, useAuth, useAnalytics, useMenu, useCustomizer,
 } from '../hooks';
 import { SECTION_ICON_MAP, SECTION_ICON_OPTIONS } from '../context/SiteContext';
 import ImageUploader from '../components/ImageUploader';
@@ -142,6 +142,7 @@ const sidebarCategories = [
       { id: 'images', label: 'Imágenes & Galería', icon: <ImageIcon size={17} /> },
       { id: 'home', label: 'Inicio', icon: <Monitor size={17} /> },
       { id: 'menu', label: 'Menú', icon: <Utensils size={17} /> },
+      { id: 'customizer', label: 'Personalizar Bebidas', icon: <Coffee size={17} /> },
       { id: 'contact', label: 'Contacto', icon: <Mail size={17} /> },
       { id: 'footer', label: 'Footer', icon: <FileText size={17} /> },
     ],
@@ -216,6 +217,7 @@ const Admin = memo(() => {
   const { logout, changePassword } = useAuth();
   const { analytics } = useAnalytics();
   const { menuSections, updateMenuSection, updateMenuItem, addMenuItem, removeMenuItem, addMenuSection, removeMenuSection, moveMenuSection, moveMenuItem } = useMenu();
+  const { customizerOptions, updateCustomizerOption, addCustomizerOption, removeCustomizerOption, toggleCustomizerOption, moveCustomizerOption } = useCustomizer();
 
   const [active, setActive] = useState('dashboard');
   const [toasts, setToasts] = useState([]);
@@ -231,6 +233,7 @@ const Admin = memo(() => {
   const [dragOver, setDragOver] = useState(false);
   const [openSection, setOpenSection] = useState(null);
   const [editingField, setEditingField] = useState(null); // { sId, iIdx, field }
+  const [editingCustom, setEditingCustom] = useState(null); // { cat, idx, field }
   const [waEnabled, setWaEnabled] = useState(true);
   const [hours, setHours] = useState({
     lunes: { open: true, start: '08:00', end: '20:00' },
@@ -727,6 +730,69 @@ const Admin = memo(() => {
                                   </div>
                                 </div>
 
+                                {/* Ingredients Editor */}
+                                <div style={{ marginTop: '0.5rem', marginBottom: '0.25rem' }}>
+                                  <label style={{ fontSize: '0.65rem', color: 'var(--admin-text-muted)', display: 'block', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 600 }}>
+                                    Ingredientes
+                                  </label>
+                                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', alignItems: 'center' }}>
+                                    {(item.ingredients || []).map((ing, ingIdx) => (
+                                      <span
+                                        key={ingIdx}
+                                        style={{
+                                          display: 'inline-flex', alignItems: 'center', gap: '3px',
+                                          padding: '2px 6px', borderRadius: '9999px',
+                                          background: 'var(--admin-accent-subtle)', color: 'var(--admin-accent)',
+                                          fontSize: '0.6875rem', fontWeight: 500,
+                                          border: '1px solid var(--admin-accent-border)',
+                                        }}
+                                      >
+                                        {ing}
+                                        <button
+                                          onClick={() => {
+                                            const newIngredients = (item.ingredients || []).filter((_, idx) => idx !== ingIdx);
+                                            updateMenuItem(section.id, iIdx, 'ingredients', newIngredients);
+                                          }}
+                                          style={{
+                                            display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                                            width: '14px', height: '14px', borderRadius: '9999px',
+                                            background: 'transparent', border: 'none',
+                                            color: 'var(--admin-accent)', cursor: 'pointer',
+                                            padding: 0, lineHeight: 1, fontSize: '0.7rem',
+                                          }}
+                                          title="Quitar ingrediente"
+                                        >
+                                          ×
+                                        </button>
+                                      </span>
+                                    ))}
+                                    {/* Add ingredient input */}
+                                    <input
+                                      placeholder="+ Agregar"
+                                      className="admin-input"
+                                      style={{
+                                        width: '90px', padding: '2px 6px', fontSize: '0.6875rem',
+                                        borderRadius: '9999px', border: '1px dashed var(--admin-border)',
+                                        background: 'transparent',
+                                      }}
+                                      onKeyDown={(e) => {
+                                        if (e.key === 'Enter' && e.target.value.trim()) {
+                                          const newIngredients = [...(item.ingredients || []), e.target.value.trim()];
+                                          updateMenuItem(section.id, iIdx, 'ingredients', newIngredients);
+                                          e.target.value = '';
+                                        }
+                                      }}
+                                      onBlur={(e) => {
+                                        if (e.target.value.trim()) {
+                                          const newIngredients = [...(item.ingredients || []), e.target.value.trim()];
+                                          updateMenuItem(section.id, iIdx, 'ingredients', newIngredients);
+                                          e.target.value = '';
+                                        }
+                                      }}
+                                    />
+                                  </div>
+                                </div>
+
                                 {/* Actions: move + delete + image */}
                                 <div className="admin-menu-product-actions">
                                   <button onClick={() => moveMenuItem(section.id, iIdx, 'up')} className="admin-move-btn" style={{ width: '22px', height: '22px' }}><ArrowUp size={11} /></button>
@@ -874,6 +940,134 @@ const Admin = memo(() => {
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+        );
+      }
+
+      // ── Customizer / Drink Personalization ─────────────────────────────
+      case 'customizer': {
+        const CATEGORIES = [
+          { key: 'sizes', title: 'Tamaños', icon: '📏', hasModifier: true, hasDetail: true },
+          { key: 'milks', title: 'Base de Leche', icon: '🥛', hasModifier: true, hasDetail: false },
+          { key: 'sweetness', title: 'Nivel de Dulzor', icon: '🍯', hasModifier: false, hasDetail: false },
+          { key: 'extras', title: 'Extras / Toppings', icon: '✨', hasModifier: true, hasDetail: false },
+        ];
+
+        const startEdit = (cat, idx, field) => setEditingCustom({ cat, idx, field });
+        const saveEdit = (cat, idx, field, value) => {
+          updateCustomizerOption(cat, idx, field, value);
+          setEditingCustom(null);
+        };
+
+        const isEditing = (cat, idx, field) => editingCustom?.cat === cat && editingCustom?.idx === idx && editingCustom?.field === field;
+
+        const renderOptionRow = (cat, opt, idx, catConfig) => (
+          <div key={opt.key} style={{
+            display: 'flex', alignItems: 'center', gap: '0.625rem',
+            padding: '0.625rem 0.75rem', marginBottom: '0.375rem',
+            background: opt.active === false ? 'var(--admin-surface)' : 'var(--admin-card)',
+            border: '1px solid var(--admin-border)', borderRadius: 'var(--admin-radius)',
+            opacity: opt.active === false ? 0.5 : 1, transition: 'all 0.2s',
+          }}>
+            {/* Label */}
+            <div style={{ flex: 1, minWidth: 0 }}>
+              {isEditing(cat, idx, 'label') ? (
+                <input autoFocus defaultValue={opt.label}
+                  onBlur={e => saveEdit(cat, idx, 'label', e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Enter') saveEdit(cat, idx, 'label', e.target.value); if (e.key === 'Escape') setEditingCustom(null); }}
+                  className="admin-input" style={{ width: '100%', padding: '2px 6px', fontSize: '0.8125rem', fontWeight: 600 }}
+                />
+              ) : (
+                <span onClick={() => startEdit(cat, idx, 'label')} style={{ cursor: 'text', fontWeight: 600, fontSize: '0.8125rem', color: 'var(--admin-text)' }}>
+                  {opt.label}
+                </span>
+              )}
+            </div>
+
+            {/* Detail (for sizes) */}
+            {catConfig.hasDetail && (
+              <div style={{ width: '50px' }}>
+                {isEditing(cat, idx, 'detail') ? (
+                  <input autoFocus defaultValue={opt.detail || ''}
+                    onBlur={e => saveEdit(cat, idx, 'detail', e.target.value)}
+                    onKeyDown={e => { if (e.key === 'Enter') saveEdit(cat, idx, 'detail', e.target.value); if (e.key === 'Escape') setEditingCustom(null); }}
+                    className="admin-input" style={{ width: '100%', padding: '2px 4px', fontSize: '0.75rem', textAlign: 'center' }}
+                  />
+                ) : (
+                  <span onClick={() => startEdit(cat, idx, 'detail')} style={{ cursor: 'text', fontSize: '0.75rem', color: 'var(--admin-text-muted)' }}>
+                    {opt.detail || '—'}
+                  </span>
+                )}
+              </div>
+            )}
+
+            {/* Modifier */}
+            {catConfig.hasModifier && (
+              <div style={{ width: '70px', display: 'flex', alignItems: 'center', gap: '2px' }}>
+                {isEditing(cat, idx, 'modifier') ? (
+                  <input autoFocus type="number" defaultValue={opt.modifier || 0} min="0"
+                    onBlur={e => saveEdit(cat, idx, 'modifier', parseInt(e.target.value) || 0)}
+                    onKeyDown={e => { if (e.key === 'Enter') saveEdit(cat, idx, 'modifier', parseInt(e.target.value) || 0); if (e.key === 'Escape') setEditingCustom(null); }}
+                    className="admin-input" style={{ width: '100%', padding: '2px 4px', fontSize: '0.8125rem', textAlign: 'right' }}
+                  />
+                ) : (
+                  <span onClick={() => startEdit(cat, idx, 'modifier')} style={{ cursor: 'text', fontSize: '0.8125rem', fontWeight: 600, color: opt.modifier > 0 ? 'var(--admin-accent)' : 'var(--admin-text-muted)' }}>
+                    {opt.modifier > 0 ? `+$${opt.modifier}` : 'Gratis'}
+                  </span>
+                )}
+              </div>
+            )}
+
+            {/* Actions */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '2px', flexShrink: 0 }}>
+              <button onClick={() => moveCustomizerOption(cat, idx, 'up')} className="admin-move-btn" style={{ width: '22px', height: '22px' }}><ArrowUp size={11} /></button>
+              <button onClick={() => moveCustomizerOption(cat, idx, 'down')} className="admin-move-btn" style={{ width: '22px', height: '22px' }}><ArrowDown size={11} /></button>
+              <button onClick={() => toggleCustomizerOption(cat, idx)} style={{
+                width: '22px', height: '22px', borderRadius: 'var(--admin-radius-xs)',
+                border: '1px solid var(--admin-border)', background: opt.active !== false ? 'rgba(34,197,94,0.15)' : 'var(--admin-surface)',
+                color: opt.active !== false ? '#22c55e' : 'var(--admin-text-muted)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '0.65rem',
+              }} title={opt.active !== false ? 'Desactivar' : 'Activar'}>
+                {opt.active !== false ? '✓' : '—'}
+              </button>
+              <button onClick={() => { if (confirm(`Eliminar "${opt.label}"?`)) removeCustomizerOption(cat, idx); }}
+                style={{ background: 'transparent', border: 'none', color: 'var(--admin-text-muted)', cursor: 'pointer', padding: '2px' }}>
+                <Trash2 size={12} />
+              </button>
+            </div>
+          </div>
+        );
+
+        return (
+          <div>
+            <h3 className="admin-section-title"><Coffee size={20} color="var(--admin-accent)" /> Personalización de Bebidas</h3>
+
+            <div className="admin-info-banner admin-info-banner--warm" style={{ marginBottom: '1.5rem' }}>
+              <span>☕</span>
+              <span><strong style={{ color: 'var(--admin-text)' }}>Configurá las opciones de personalización</strong> que aparecen en el modal "Arma tu Pedido". Podés agregar, quitar o modificar precios de tamaños, leches, dulzor y extras.</span>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(480px, 100%), 1fr))', gap: '1.5rem' }}>
+              {CATEGORIES.map(catConfig => {
+                const options = customizerOptions[catConfig.key] || [];
+                return (
+                  <div key={catConfig.key} className="admin-card" style={{ padding: '1.25rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
+                      <span style={{ fontSize: '1.2rem' }}>{catConfig.icon}</span>
+                      <h4 style={{ fontFamily: 'var(--admin-font-display)', fontSize: '0.9375rem', fontWeight: 700, color: 'var(--admin-text)', margin: 0 }}>{catConfig.title}</h4>
+                    </div>
+
+                    {/* Option rows */}
+                    {options.map((opt, idx) => renderOptionRow(catConfig.key, opt, idx, catConfig))}
+
+                    {/* Add button */}
+                    <button className="admin-menu-add-btn" onClick={() => addCustomizerOption(catConfig.key)} style={{ marginTop: '0.5rem' }}>
+                      <Plus size={14} /> Agregar Opción
+                    </button>
+                  </div>
+                );
+              })}
             </div>
           </div>
         );
@@ -1662,6 +1856,26 @@ const Admin = memo(() => {
         return (
           <div>
             <h3 className="admin-section-title"><Monitor size={20} color="var(--admin-accent)" /> Página de Inicio</h3>
+
+            {/* Section 0: Hero */}
+            <div className="admin-card" style={{ padding: '1.5rem', marginBottom: '1.5rem' }}>
+              <h4 className="admin-card-title">🏠 Sección Hero</h4>
+              <Field
+                label="Título del Hero"
+                path="home.heroTitle"
+                value={content.home?.heroTitle || ''}
+                onChange={onChange}
+                hint="Título principal que aparece en la página de inicio (default: Café con Alma)."
+              />
+              <Field
+                label="Descripción del Hero"
+                path="home.heroDescription"
+                value={content.home?.heroDescription || ''}
+                onChange={onChange}
+                type="textarea"
+                hint="Texto que aparece debajo del título en la página de inicio."
+              />
+            </div>
 
             {/* Section 1: Features */}
             <div className="admin-card" style={{ padding: '1.5rem', marginBottom: '1.5rem' }}>

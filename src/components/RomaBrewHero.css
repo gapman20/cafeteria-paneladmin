@@ -191,7 +191,11 @@
 }
 
 /* ── Shimmer Effect ─────────────────────────────────────────────── */
-.roma-word,
+.roma-word {
+  position: relative;
+  clip-path: inset(-0.2em -0.15em);
+}
+
 .roma-cta-primary {
   position: relative;
   overflow: hidden;

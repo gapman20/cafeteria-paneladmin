@@ -49,7 +49,7 @@ function CoffeeBean({ bean }) {
   );
 }
 
-export default memo(function RomaBrewHero() {
+export default memo(function RomaBrewHero({ title, description }) {
   const containerRef = useRef(null);
   const [mouse, setMouse] = useState({ x: 0.5, y: 0.5 });
 
@@ -92,12 +92,17 @@ export default memo(function RomaBrewHero() {
         >
           <span className="roma-eyebrow roma-word--reveal">ESPECIALIDAD PREMIUM</span>
           <h1 className="roma-headline">
-            <span className="roma-word roma-word--reveal">CAF&Eacute;</span>{' '}
-            <span className="roma-headline-accent roma-word--reveal">CON</span>{' '}
-            <span className="roma-word roma-word--reveal">ALMA</span>
+            {(title || 'Café con Alma').split(' ').map((word, i, arr) => (
+              <React.Fragment key={i}>
+                <span className={`${i === 1 ? 'roma-headline-accent ' : ''}roma-word roma-word--reveal`}>
+                  {word.toUpperCase()}
+                </span>
+                {i < arr.length - 1 && ' '}
+              </React.Fragment>
+            ))}
           </h1>
           <p className="roma-subtitle">
-            Granos de origen &uacute;nico, tostados artesanalmente. Creado para quienes no se conforman con lo ordinary.
+            {description || 'Granos de origen \u00FAnico, tostados artesanalmente. Creado para quienes no se conforman con lo ordinary.'}
           </p>
           <div className="roma-cta-group">
             <Link to="/menu" className="roma-cta-primary">

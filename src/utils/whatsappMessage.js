@@ -24,6 +24,23 @@ export function buildOrderMessage(cartOrItems, customer) {
     const subtotal = priceNum * item.qty;
     total += subtotal;
     lines.push(`• ${item.name} ×${item.qty} — $${subtotal}`);
+    // Include customization details if present
+    if (item.customization) {
+      const c = item.customization;
+      const details = [];
+      if (c.sizeLabel) details.push(c.sizeLabel);
+      if (c.milkLabel) details.push(c.milkLabel);
+      if (c.sweetnessLabel) details.push(c.sweetnessLabel);
+      if (c.extrasLabels && c.extrasLabels.length > 0) {
+        details.push(c.extrasLabels.join(', '));
+      }
+      if (c.excludedIngredients && c.excludedIngredients.length > 0) {
+        details.push(`Sin: ${c.excludedIngredients.join(', ')}`);
+      }
+      if (details.length > 0) {
+        lines.push(`   ↳ ${details.join(' · ')}`);
+      }
+    }
   }
 
   lines.push('');
