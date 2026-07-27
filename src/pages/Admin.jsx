@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, memo } from 'react';
 import {
   useContent, useImages, useTheme,
-  usePages, useInbox, useAuth, useAnalytics, useMenu, useCustomizer,
+  usePages, useInbox, useAuth, useAnalytics, useMenu, useCustomizer, useProducts,
 } from '../hooks';
 import { SECTION_ICON_MAP, SECTION_ICON_OPTIONS } from '../context/SiteContext';
 import ImageUploader from '../components/ImageUploader';
@@ -17,7 +17,7 @@ import {
   ArrowUp, ArrowDown, Bold, List, Search,
   Download, Upload, Copy, Utensils, Coffee,
   Folder, LayoutGrid, Edit3, MousePointer, Clock,
-  Link, ImagePlus, MapPin, Phone, AtSign
+  Link, ImagePlus, MapPin, Phone, AtSign, Star
 } from 'lucide-react';
 import { compressImage } from '../utils/compressImage';
 import { validatePassword } from '../utils/validation';
@@ -141,6 +141,7 @@ const sidebarCategories = [
       { id: 'pages', label: 'Páginas', icon: <FileText size={17} /> },
       { id: 'images', label: 'Imágenes & Galería', icon: <ImageIcon size={17} /> },
       { id: 'home', label: 'Inicio', icon: <Monitor size={17} /> },
+      { id: 'featured', label: 'Productos Estrella', icon: <Star size={17} /> },
       { id: 'menu', label: 'Menú', icon: <Utensils size={17} /> },
       { id: 'customizer', label: 'Personalizar Bebidas', icon: <Coffee size={17} /> },
       { id: 'contact', label: 'Contacto', icon: <Mail size={17} /> },
@@ -224,6 +225,7 @@ const Admin = memo(() => {
   const { analytics } = useAnalytics();
   const { menuSections, updateMenuSection, updateMenuItem, addMenuItem, removeMenuItem, addMenuSection, removeMenuSection, moveMenuSection, moveMenuItem } = useMenu();
   const { customizerOptions, updateCustomizerOption, addCustomizerOption, removeCustomizerOption, toggleCustomizerOption, moveCustomizerOption } = useCustomizer();
+  const { products, updateProduct, createProduct, deleteProduct, moveProduct } = useProducts();
 
   const [active, setActive] = useState('dashboard');
   const [toasts, setToasts] = useState([]);
@@ -595,6 +597,109 @@ const Admin = memo(() => {
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+        );
+      }
+
+      // ── Productos Estrella ──────────────────────────────────────────────────
+      case 'featured': {
+        return (
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+              <h3 className="admin-section-title" style={{ margin: 0 }}>
+                <Star size={20} color="var(--admin-accent)" /> Productos Estrella
+              </h3>
+              <button 
+                className="admin-btn"
+                onClick={() => createProduct()}
+              >
+                <Plus size={16} /> Agregar Producto
+              </button>
+            </div>
+
+            <p style={{ color: 'var(--admin-text-muted)', fontSize: '0.875rem', marginBottom: '1.5rem' }}>
+              Administra los productos destacados que aparecen en la página de inicio.
+            </p>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              {products.map((prod, index) => (
+                <div key={prod.id} className="admin-card" style={{ padding: '1rem', display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
+                  
+                  {/* Left: Image Upload */}
+                  <div style={{ width: '220px', flexShrink: 0 }}>
+                    <ImageUploader 
+                      label="Imagen"
+                      value={prod.image}
+                      onChange={(img) => updateProduct(prod.id, 'image', img)}
+                    />
+                  </div>
+
+                  {/* Center: Fields */}
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                      <div>
+                        <label className="admin-label">Título del Producto</label>
+                        <input 
+                          value={prod.name} 
+                          onChange={(e) => updateProduct(prod.id, 'name', e.target.value)}
+                          className="admin-input" 
+                          placeholder="Ej: Café Premium"
+                        />
+                      </div>
+                      <div>
+                        <label className="admin-label">Precio (MXN)</label>
+                        <input 
+                          value={prod.price} 
+                          onChange={(e) => updateProduct(prod.id, 'price', e.target.value)}
+                          className="admin-input" 
+                          placeholder="Ej: 285"
+                        />
+                      </div>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                      <div>
+                        <label className="admin-label">Etiqueta (opcional)</label>
+                        <input 
+                          value={prod.tag || ''} 
+                          onChange={(e) => updateProduct(prod.id, 'tag', e.target.value)}
+                          className="admin-input" 
+                          placeholder="Ej: Edición Limitada"
+                        />
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', paddingTop: '1.5rem' }}>
+                        <label className="admin-toggle" title="¿Tiene opciones de personalización (leche, etc)?">
+                          <input 
+                            type="checkbox" 
+                            checked={prod.isCustomizable || false} 
+                            onChange={e => updateProduct(prod.id, 'isCustomizable', e.target.checked)} 
+                          />
+                        </label>
+                        <span style={{ fontSize: '0.8125rem', color: 'var(--admin-text-muted)', marginLeft: '0.5rem' }}>
+                          Abrir menú de personalización al ordenar
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Right: Actions */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'center' }}>
+                    <button onClick={() => moveProduct(index, 'up')} className="admin-move-btn" title="Arriba"><ArrowUp size={14} /></button>
+                    <button onClick={() => moveProduct(index, 'down')} className="admin-move-btn" title="Abajo"><ArrowDown size={14} /></button>
+                    <label className="admin-toggle" style={{ margin: '8px 0' }} title="Mostrar/Ocultar">
+                      <input type="checkbox" checked={prod.active} onChange={e => updateProduct(prod.id, 'active', e.target.checked)} />
+                    </label>
+                    <button onClick={() => { if (confirm(`¿Eliminar producto "${prod.name}"?`)) deleteProduct(prod.id); }} className="admin-btn-danger" style={{ padding: '6px', marginTop: 'auto' }}>
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                </div>
+              ))}
+              {products.length === 0 && (
+                <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--admin-text-muted)', background: 'var(--admin-surface)', borderRadius: 'var(--admin-radius)' }}>
+                  No hay productos estrella. Agrega uno nuevo.
+                </div>
+              )}
             </div>
           </div>
         );

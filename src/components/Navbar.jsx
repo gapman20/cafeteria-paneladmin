@@ -1,5 +1,5 @@
 import React, { useState, memo } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, Hexagon } from 'lucide-react';
 import { useContent, usePages, useImages } from '../hooks';
 import { useSite } from '../context/SiteContext';
@@ -11,6 +11,10 @@ const Navbar = memo(() => {
   const { pages } = usePages();
   const { images } = useImages();
   const { tableNumber } = useSite();
+  const location = useLocation();
+
+  const searchParams = new URLSearchParams(location.search);
+  const showTableBanner = tableNumber && searchParams.has('mesa');
 
   const scrollToTop = () => {
     setIsOpen(false);
@@ -19,7 +23,7 @@ const Navbar = memo(() => {
 
   return (
     <>
-      {tableNumber && (
+      {showTableBanner && (
         <div style={{
           position: 'fixed',
           top: 0,
@@ -41,11 +45,11 @@ const Navbar = memo(() => {
           <MapPin size={16} /> Estás pidiendo desde la Mesa {tableNumber}
         </div>
       )}
-      <nav className="navbar" style={{ top: tableNumber ? '36px' : '0' }}>
+      <nav className="navbar" style={{ top: showTableBanner ? '36px' : '0' }}>
         <div className="navbar-container">
         <Link to="/" className="navbar-logo" onClick={scrollToTop}>
           {images.logo ? (
-            <img src={images.logo} alt={content.siteName} style={{ height: '28px', width: '28px', objectFit: 'contain', borderRadius: '6px' }} />
+            <img src={images.logo} alt={content.siteName} style={{ height: '44px', width: 'auto', maxWidth: '140px', objectFit: 'contain', borderRadius: '6px' }} />
           ) : (
             <>
               <Hexagon fill="url(#coffee-grad)" color="transparent" size={28} />

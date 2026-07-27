@@ -1,10 +1,10 @@
-import React, { memo, useState, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import React, { memo, useState, useCallback, useEffect } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Coffee, Leaf, Globe, ChevronDown, ArrowRight,
   Gift, Truck, Star,
 } from 'lucide-react';
-import { useContent } from '../hooks';
+import { useContent, useProducts } from '../hooks';
 import { useScrollReveal } from '../hooks/useScrollReveal';
 import SEO from '../components/SEO';
 import RomaBrewHero from '../components/RomaBrewHero';
@@ -26,33 +26,6 @@ const features = [
     Icon: Globe,
     title: 'Baristas Certificados',
     desc: 'Nuestro equipo domina cada método de preparación: espresso, pour over, cold brew, Aeropress y más.',
-  },
-];
-
-const shopProducts = [
-  {
-    name: 'Café de Origen Premium',
-    price: '285',
-    tag: 'Edición Limitada',
-    image: 'https://images.unsplash.com/photo-1559056199-641a0ac8b55e?w=600&q=80',
-  },
-  {
-    name: 'Prensa Francesa',
-    price: '450',
-    tag: 'Más Vendido',
-    image: 'https://images.unsplash.com/photo-1517256673644-36ad11246d21?w=600&q=80',
-  },
-  {
-    name: 'Granos Artesanales Tostados',
-    price: '195',
-    tag: null,
-    image: 'https://images.unsplash.com/photo-1447933601403-0c6688de566e?w=600&q=80',
-  },
-  {
-    name: 'Molino de Precisión',
-    price: '680',
-    tag: 'Nuevo',
-    image: 'https://images.unsplash.com/photo-1517668808822-9ebb02f2a0e6?w=600&q=80',
   },
 ];
 
@@ -129,9 +102,19 @@ const subscriptionBenefits = [
 // ── Component ────────────────────────────────────────────────────────────────
 
 const Home = memo(() => {
-  const { content } = useContent();
-  const h = content.home;
+  const { content: siteContent } = useContent();
+  const { products } = useProducts();
+  const navigate = useNavigate();
+  const h = siteContent.home || {};
   const [openFaq, setOpenFaq] = useState(null);
+  const [searchParams] = useSearchParams();
+  const mesa = searchParams.get('mesa');
+
+  useEffect(() => {
+    if (mesa) {
+      navigate(`/pedir?mesa=${mesa}`, { replace: true });
+    }
+  }, [mesa, navigate]);
 
   // Scroll reveal hooks — one per section
   const featuresReveal = useScrollReveal();
@@ -192,15 +175,20 @@ const Home = memo(() => {
             Lo mejor de nuestra selección artesanal, listo para llegar a tu puerta.
           </p>
           <div className={`lux-shop-grid sr-stagger ${shopReveal.isVisible ? 'sr-stagger--visible' : ''}`}>
-            {shopProducts.map((product, i) => (
-              <div key={i} className="lux-shop-card sr-child">
+            {products.filter(p => p.active).map((product) => (
+              <div 
+                key={product.id} 
+                className="lux-shop-card sr-child"
+                onClick={() => navigate(`/pedir?featured=${encodeURIComponent(product.id)}`)}
+                style={{ cursor: 'pointer' }}
+              >
                 <div className="lux-shop-card-image-wrap">
                   {product.tag && (
                     <span className="lux-shop-badge">{product.tag}</span>
                   )}
                   <img
                     className="lux-shop-card-image"
-                    src={product.image}
+                    src={product.image || 'https://via.placeholder.com/600x800?text=Sin+Imagen'}
                     alt={product.name}
                     loading="lazy"
                   />

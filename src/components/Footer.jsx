@@ -4,7 +4,7 @@ import { useSite } from '../context/SiteContext';
 import { Hexagon, Instagram, Youtube, Facebook } from 'lucide-react';
 
 const Footer = () => {
-  const { content, images } = useSite();
+  const { content, images, pages } = useSite();
   const social = content.social || {};
 
   return (
@@ -56,30 +56,22 @@ const Footer = () => {
         <div>
           <h4 style={{ fontFamily: 'var(--font-heading)', fontWeight: '700', marginBottom: '0.5rem', fontSize: '0.82rem' }}>Navegación</h4>
           <ul style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', listStyle: 'none', padding: 0, margin: 0 }}>
-            {[
-              { to: '/',          label: 'Inicio' },
-              { to: '/nosotros',  label: 'Nosotros' },
-              { to: '/servicios', label: 'Servicios' },
-              { to: '/portafolio',label: 'Portafolio' },
-              { to: '/contacto',  label: 'Contacto' },
-            ].map(l => (
-              <li key={l.to}>
-                <Link to={l.to} style={{ color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '0.82rem', transition: 'color 0.2s' }}
+            {pages.filter(p => p.active).map(page => (
+              <li key={page.id}>
+                <Link to={page.path} style={{ color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '0.82rem', transition: 'color 0.2s' }}
                   onMouseEnter={e => e.currentTarget.style.color = 'var(--accent-primary)'}
                   onMouseLeave={e => e.currentTarget.style.color = 'var(--text-secondary)'}
                 >
-                  {l.label}
+                  {page.name}
                 </Link>
               </li>
             ))}
-            {/* Admin link — separated and very subtle */}
-            <li style={{ marginTop: '0.3rem', paddingTop: '0.3rem', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-              <Link to="/admin"
-                style={{ color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '0.82rem', opacity: 0.45, display: 'flex', alignItems: 'center', gap: '5px', transition: 'all 0.2s' }}
-                onMouseEnter={e => { e.currentTarget.style.opacity = 1; e.currentTarget.style.color = 'var(--accent-primary)'; }}
-                onMouseLeave={e => { e.currentTarget.style.opacity = 0.45; e.currentTarget.style.color = 'var(--text-secondary)'; }}
+            <li>
+              <Link to="/contacto" style={{ color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '0.82rem', transition: 'color 0.2s' }}
+                onMouseEnter={e => e.currentTarget.style.color = 'var(--accent-primary)'}
+                onMouseLeave={e => e.currentTarget.style.color = 'var(--text-secondary)'}
               >
-                ⚙️ Panel Admin
+                Visítanos
               </Link>
             </li>
           </ul>

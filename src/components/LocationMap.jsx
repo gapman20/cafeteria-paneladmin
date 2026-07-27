@@ -4,16 +4,7 @@ import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import { useSite } from '../context/SiteContext';
 
-// Custom marker matching the grey/white dot style from the reference image
-const customIcon = L.divIcon({
-  html: `<div style="display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; background: #607D8B; border: 3px solid #FFFFFF; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">
-           <div style="width: 8px; height: 8px; background: #FFFFFF; border-radius: 50%;"></div>
-         </div>`,
-  className: 'custom-map-icon',
-  iconSize: [24, 24],
-  iconAnchor: [12, 12],
-  popupAnchor: [0, -12],
-});
+
 
 /**
  * Syncs the map view when center/zoom props change.
@@ -27,7 +18,33 @@ const ChangeView = ({ center, zoom }) => {
 };
 
 const LocationMap = ({ center = [19.4326, -99.1332], zoom = 15, height = '400px' }) => {
-  const { content } = useSite();
+  const { content, images } = useSite();
+
+  const getMarkerIcon = () => {
+    if (images?.logo) {
+      return L.divIcon({
+        html: `<div style="display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; background: #FFFFFF; border: 2px solid #D2691E; border-radius: 50%; box-shadow: 0 4px 8px rgba(0,0,0,0.3); overflow: hidden;">
+                 <img src="${images.logo}" alt="Logo" style="width: 100%; height: 100%; object-fit: contain; padding: 4px;" />
+               </div>`,
+        className: 'custom-map-icon',
+        iconSize: [44, 44],
+        iconAnchor: [22, 22],
+        popupAnchor: [0, -22],
+      });
+    }
+    
+    // Fallback
+    return L.divIcon({
+      html: `<div style="display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; background: #607D8B; border: 3px solid #FFFFFF; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">
+               <div style="width: 8px; height: 8px; background: #FFFFFF; border-radius: 50%;"></div>
+             </div>`,
+      className: 'custom-map-icon',
+      iconSize: [24, 24],
+      iconAnchor: [12, 12],
+      popupAnchor: [0, -12],
+    });
+  };
+
   return (
     <div className="map-wrapper" style={{ 
       height, 
@@ -44,7 +61,7 @@ const LocationMap = ({ center = [19.4326, -99.1332], zoom = 15, height = '400px'
           attribution='&copy; <a href="https://www.google.com/maps">Google Maps</a>'
           url="https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}"
         />
-        <Marker position={center} icon={customIcon}>
+        <Marker position={center} icon={getMarkerIcon()}>
           <Popup className="premium-popup">
             <strong style={{ color: '#333', fontSize: '1.05rem', fontWeight: 'bold' }}>{content.siteName}</strong> <br />
             <span style={{ color: '#666', fontSize: '0.9rem' }}>
