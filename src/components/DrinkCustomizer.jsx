@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { parsePrice } from '../utils/priceParser';
 import { useSite } from '../context/SiteContext';
+import ImageFallback from './ImageFallback';
 
 /* ─── Fallback Customization Options ────────────────────────────────────────── */
 const FALLBACK_SIZES = [
@@ -309,9 +310,24 @@ const DrinkCustomizer = ({ item, sectionId, sectionColor, sectionEmoji, onClose,
           padding: '1.5rem 1.5rem 0',
           textAlign: 'center',
         }}>
-          <span style={{ fontSize: '2.5rem', display: 'block', marginBottom: '0.5rem' }}>
-            {item.img || sectionEmoji || '☕'}
-          </span>
+          {item.image ? (
+            <div style={{
+              width: '80px', height: '80px', borderRadius: 'var(--radius-lg)',
+              overflow: 'hidden', margin: '0 auto 0.5rem',
+              background: `linear-gradient(135deg, ${sectionColor}20, ${sectionColor}08)`,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              <ImageFallback
+                src={item.image}
+                alt={item.name}
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              />
+            </div>
+          ) : (
+            <span style={{ fontSize: '2.5rem', display: 'block', marginBottom: '0.5rem' }}>
+              {item.img || sectionEmoji || '☕'}
+            </span>
+          )}
           <h2 style={{
             fontFamily: 'var(--font-display)',
             fontSize: '1.25rem',
