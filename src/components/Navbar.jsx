@@ -49,7 +49,7 @@ const Navbar = memo(() => {
           </li>
           <li style={{ marginLeft: isOpen ? '0' : '1rem' }}>
             <Link to="/pedir" className="btn-primary" onClick={() => setIsOpen(false)} style={{ padding: '10px 24px', fontSize: '0.95rem' }}>
-              Pedir
+              Ordenar
             </Link>
           </li>
         </ul>
