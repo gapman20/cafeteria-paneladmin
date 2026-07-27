@@ -42,6 +42,7 @@ export const SECTION_ICON_OPTIONS = [
   { key: 'cake-slice',   label: '🍰 Cake' },
   { key: 'ice-cream',    label: '🍦 Ice Cream' },
   { key: 'cookie',       label: '🍪 Pastry' },
+  { key: 'donut',        label: '🍩 Donut' },
   { key: 'sandwich',     label: '🥪 Sandwich' },
   { key: 'salad',        label: '🥗 Salad' },
   { key: 'soup',         label: '🍜 Soup' },
@@ -52,6 +53,14 @@ export const SECTION_ICON_OPTIONS = [
   { key: 'leaf',         label: '🌿 Vegetarian' },
   { key: 'star',         label: '⭐ Special' },
 ];
+
+// Maps section icon keys to their emoji character for new item defaults
+export const SECTION_ICON_EMOJI = Object.fromEntries(
+  SECTION_ICON_OPTIONS.map(opt => {
+    const emoji = opt.label.match(/[\p{Emoji_Presentation}\p{Extended_Pictographic}]/u)?.[0] || '🍽️';
+    return [opt.key, emoji];
+  })
+);
 
 // ─── Default Text Content ─────────────────────────────────────────────────────
 const defaultContent = {
@@ -234,7 +243,7 @@ const defaultMenuSections = [
       { name: 'Café Vainilla', desc: 'Espresso con jarabe de vainilla artesanal y leche texturizada.', price: '$90', img: '☕', ingredients: ['Espresso', 'Leche', 'Jarabe de Vainilla'] },
       { name: 'Caramelo Macchiato', desc: 'Capa de leche, caramelo casero y espresso. Dulce pero no empalagoso.', price: '$95', img: '☕', ingredients: ['Espresso', 'Leche', 'Caramelo'] },
       { name: 'Mocha Oscuro', desc: 'Espresso, chocolate belga 70% y leche. Para los amantes del cacao.', price: '$100', img: '☕', ingredients: ['Espresso', 'Leche', 'Chocolate'] },
-      { name: 'Chai Latte', desc: 'Té chai especiado con leche de avena. Canela, jengibre y cardamomo.', price: '$85', img: '🍵', ingredients: ['Té Chai', 'Leche de Avena', 'Canela', 'Jengibre'] },
+      { name: 'Chai Latte', desc: 'Té chai especiado con leche de avena. Canela, jengibre y cardamomo.', price: '$85', img: '☕', ingredients: ['Té Chai', 'Leche de Avena', 'Canela', 'Jengibre'] },
       { name: 'Pour Over V60', desc: 'Café de origen único con notas de arándano, jazmín y final cítrico.', price: '$120', img: '☕', ingredients: ['Café de Origen'] },
       { name: 'Chemex', desc: 'Filtrado en papel doble. Taza limpia, dulce y aromática.', price: '$130', img: '☕', ingredients: ['Café de Origen'] },
       { name: 'Aeropress', desc: 'Extracción por presión. Concentrada, versátil, con cuerpo medio.', price: '$110', img: '☕', ingredients: ['Café de Origen'] },
@@ -247,13 +256,13 @@ const defaultMenuSections = [
     icon: 'snowflake',
     color: '#6CB4C8',
     items: [
-      { name: 'Cold Brew Clásico', desc: '12 horas de infusión en frío. Suave, refrescante y con sabor que conquista.', price: '$95', img: '🧊', ingredients: ['Cold Brew', 'Hielo'] },
-      { name: 'Cold Brew Vainilla', desc: 'Nuestro cold brew con jarabe de vainilla artesanal y hielo.', price: '$105', img: '🧊', ingredients: ['Cold Brew', 'Jarabe de Vainilla', 'Hielo'] },
-      { name: 'Cold Brew Drip', desc: 'Infusión lenta de 12 horas. Suave, refrescante, baja acidez.', price: '$110', img: '🧊', ingredients: ['Cold Brew', 'Hielo'] },
-      { name: 'Affogato Artesanal', desc: 'Espresso caliente sobre helado de vainilla hecho en casa.', price: '$95', img: '🍨', ingredients: ['Espresso', 'Helado de Vainilla'] },
-      { name: 'Frappe Espresso', desc: 'Espresso, hielo, leche y jarabe. Batido hasta quedar espumoso.', price: '$110', img: '🥤', ingredients: ['Espresso', 'Leche', 'Hielo', 'Jarabe'] },
-      { name: 'Té Hielo Japonés', desc: 'Té verde matcha servido sobre hielo. Refrescante y antioxidante.', price: '$90', img: '🍵', ingredients: ['Matcha', 'Hielo'] },
-      { name: 'Limonada de Café', desc: 'Cold brew con limón fresco, hielo y un toque de miel.', price: '$100', img: '🍋', ingredients: ['Cold Brew', 'Limón', 'Hielo', 'Miel'] },
+      { name: 'Cold Brew Clásico', desc: '12 horas de infusión en frío. Suave, refrescante y con sabor que conquista.', price: '$95', img: '❄️', ingredients: ['Cold Brew', 'Hielo'] },
+      { name: 'Cold Brew Vainilla', desc: 'Nuestro cold brew con jarabe de vainilla artesanal y hielo.', price: '$105', img: '❄️', ingredients: ['Cold Brew', 'Jarabe de Vainilla', 'Hielo'] },
+      { name: 'Cold Brew Drip', desc: 'Infusión lenta de 12 horas. Suave, refrescante, baja acidez.', price: '$110', img: '❄️', ingredients: ['Cold Brew', 'Hielo'] },
+      { name: 'Affogato Artesanal', desc: 'Espresso caliente sobre helado de vainilla hecho en casa.', price: '$95', img: '❄️', ingredients: ['Espresso', 'Helado de Vainilla'] },
+      { name: 'Frappe Espresso', desc: 'Espresso, hielo, leche y jarabe. Batido hasta quedar espumoso.', price: '$110', img: '❄️', ingredients: ['Espresso', 'Leche', 'Hielo', 'Jarabe'] },
+      { name: 'Té Hielo Japonés', desc: 'Té verde matcha servido sobre hielo. Refrescante y antioxidante.', price: '$90', img: '❄️', ingredients: ['Matcha', 'Hielo'] },
+      { name: 'Limonada de Café', desc: 'Cold brew con limón fresco, hielo y un toque de miel.', price: '$100', img: '❄️', ingredients: ['Cold Brew', 'Limón', 'Hielo', 'Miel'] },
     ],
   },
   {
@@ -262,13 +271,13 @@ const defaultMenuSections = [
     icon: 'cake-slice',
     color: '#C86C8E',
     items: [
-      { name: 'Croissant de Mantequilla', desc: 'Hojarasca crujiente, mantequilla francesa. Recién horneado.', price: '$55', img: '🥐' },
-      { name: 'Muffin de Arándanos', desc: 'Esponjoso, con arándanos frescos y crumble de canela.', price: '$50', img: '🧁' },
-      { name: 'Brownie de Chocolate', desc: 'Denso, 70% cacao, con nuez pecana tostada.', price: '$65', img: '🍫' },
-      { name: 'Tarta de Zanahoria', desc: 'Hojaldre, crema de queso, zanahoria rallada y nuez.', price: '$75', img: '🥧' },
-      { name: 'Scone de Limón', desc: 'Mantequilloso con glaseado de limón fresco.', price: '$50', img: '🍪' },
-      { name: 'Galleta Choco Chip', desc: 'Grande, crujiente por fuera, suave por dentro. Receta de la casa.', price: '$40', img: '🍪' },
-      { name: 'Pan de Banano', desc: 'Banano maduro, canela y un toque de nuez. Pura ternura.', price: '$45', img: '🍞' },
+      { name: 'Croissant de Mantequilla', desc: 'Hojarasca crujiente, mantequilla francesa. Recién horneado.', price: '$55', img: '🍰' },
+      { name: 'Muffin de Arándanos', desc: 'Esponjoso, con arándanos frescos y crumble de canela.', price: '$50', img: '🍰' },
+      { name: 'Brownie de Chocolate', desc: 'Denso, 70% cacao, con nuez pecana tostada.', price: '$65', img: '🍰' },
+      { name: 'Tarta de Zanahoria', desc: 'Hojaldre, crema de queso, zanahoria rallada y nuez.', price: '$75', img: '🍰' },
+      { name: 'Scone de Limón', desc: 'Mantequilloso con glaseado de limón fresco.', price: '$50', img: '🍰' },
+      { name: 'Galleta Choco Chip', desc: 'Grande, crujiente por fuera, suave por dentro. Receta de la casa.', price: '$40', img: '🍰' },
+      { name: 'Pan de Banano', desc: 'Banano maduro, canela y un toque de nuez. Pura ternura.', price: '$45', img: '🍰' },
     ],
   },
 ];
@@ -803,11 +812,11 @@ export const SiteProvider = ({ children }) => {
   };
 
   const addMenuItem = (sectionId) => {
-    setMenuSections(prev => prev.map(s =>
-      s.id === sectionId
-        ? { ...s, items: [...s.items, { name: 'Nuevo Plato', desc: 'Descripción del plato.', price: '$0', img: '🍽️' }] }
-        : s
-    ));
+    setMenuSections(prev => prev.map(s => {
+      if (s.id !== sectionId) return s;
+      const emoji = SECTION_ICON_EMOJI[s.icon] || '🍽️';
+      return { ...s, items: [...s.items, { name: 'Nuevo Plato', desc: 'Descripción del plato.', price: '$0', img: emoji }] };
+    }));
   };
 
   const removeMenuItem = (sectionId, itemIndex) => {
@@ -819,12 +828,13 @@ export const SiteProvider = ({ children }) => {
   };
 
   const addMenuSection = () => {
+    const defaultIcon = 'coffee';
     setMenuSections(prev => [...prev, {
       id: `section-${Date.now()}`,
       title: 'Nueva Sección',
-      icon: 'coffee',
+      icon: defaultIcon,
       color: '#C8956C',
-      items: [{ name: 'Nuevo Plato', desc: 'Descripción del plato.', price: '$0', img: '🍽️' }],
+      items: [{ name: 'Nuevo Plato', desc: 'Descripción del plato.', price: '$0', img: SECTION_ICON_EMOJI[defaultIcon] || '🍽️' }],
     }]);
   };
 
