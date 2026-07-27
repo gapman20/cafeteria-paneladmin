@@ -2,12 +2,15 @@ import React, { useState, memo } from 'react';
 import { Link } from 'react-router-dom';
 import { Menu, X, Hexagon } from 'lucide-react';
 import { useContent, usePages, useImages } from '../hooks';
+import { useSite } from '../context/SiteContext';
+import { MapPin } from 'lucide-react';
 
 const Navbar = memo(() => {
   const [isOpen, setIsOpen] = useState(false);
   const { content } = useContent();
   const { pages } = usePages();
   const { images } = useImages();
+  const { tableNumber } = useSite();
 
   const scrollToTop = () => {
     setIsOpen(false);
@@ -15,8 +18,31 @@ const Navbar = memo(() => {
   };
 
   return (
-    <nav className="navbar">
-      <div className="navbar-container">
+    <>
+      {tableNumber && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100%',
+          background: 'var(--color-accent)',
+          color: '#ffffff',
+          textAlign: 'center',
+          padding: '8px 16px',
+          fontSize: '0.9rem',
+          fontWeight: '600',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '8px',
+          zIndex: 1001,
+          boxShadow: 'var(--shadow-sm)'
+        }}>
+          <MapPin size={16} /> Estás pidiendo desde la Mesa {tableNumber}
+        </div>
+      )}
+      <nav className="navbar" style={{ top: tableNumber ? '36px' : '0' }}>
+        <div className="navbar-container">
         <Link to="/" className="navbar-logo" onClick={scrollToTop}>
           {images.logo ? (
             <img src={images.logo} alt={content.siteName} style={{ height: '28px', width: '28px', objectFit: 'contain', borderRadius: '6px' }} />
@@ -54,7 +80,8 @@ const Navbar = memo(() => {
           </li>
         </ul>
       </div>
-    </nav>
+      </nav>
+    </>
   );
 });
 

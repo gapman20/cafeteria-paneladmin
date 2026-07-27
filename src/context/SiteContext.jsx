@@ -536,6 +536,7 @@ export const SiteProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [saveStatus, setSaveStatus] = useState(null);
   const [loadingDb, setLoadingDb] = useState(true);
+  const [tableNumber, setTableNumber] = useState(null); // Added for QR table orders
 
   // ── Draft mode (edits are buffered until save) ──────────────────────────
   const [draftMode, setDraftMode] = useState(false);
@@ -1014,6 +1015,7 @@ export const SiteProvider = ({ children }) => {
       isAuthenticated, login, logout, changePassword,
       saveContent, saveDraft, discardDraft, resetContent, saveStatus, loadingDb,
       draftMode, setDraftMode, isDirty: draftMode && Object.keys(draft).length > 0,
+      tableNumber, setTableNumber,
     }}>
       {children}
     </SiteContext.Provider>

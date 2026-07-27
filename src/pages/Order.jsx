@@ -57,7 +57,7 @@ const errorTextStyle = {
 
 /* ─── Order Page ────────────────────────────────────────────────────────────── */
 const Order = () => {
-  const { menuSections, content } = useSite();
+  const { menuSections, content, tableNumber } = useSite();
   const [cart, setCart] = useState(loadCart);
   const [errors, setErrors] = useState({});
   const [mobileCartOpen, setMobileCartOpen] = useState(false);
@@ -149,12 +149,15 @@ const Order = () => {
     // Validate required fields
     const newErrors = {};
     const nameResult = validateRequired(cart.customer.name, 'Nombre');
-    const addressResult = validateRequired(cart.customer.address, 'Dirección');
     const phoneResult = validatePhone(cart.customer.phone);
 
     if (!nameResult.valid) newErrors.name = nameResult.error;
-    if (!addressResult.valid) newErrors.address = addressResult.error;
     if (!phoneResult.valid) newErrors.phone = phoneResult.error;
+    
+    if (!tableNumber) {
+      const addressResult = validateRequired(cart.customer.address, 'Dirección');
+      if (!addressResult.valid) newErrors.address = addressResult.error;
+    }
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -166,7 +169,8 @@ const Order = () => {
       return;
     }
 
-    const message = buildOrderMessage(cart.items, cart.customer);
+    const customerData = { ...cart.customer, tableNumber, siteName: content.siteName };
+    const message = buildOrderMessage(cart.items, customerData);
     const url = getWhatsAppUrl(whatsappNumber, message);
     window.open(url, '_blank', 'noopener,noreferrer');
 
@@ -420,17 +424,19 @@ const Order = () => {
                   {errors.name && <div style={errorTextStyle}>{errors.name}</div>}
                 </div>
 
-                <div>
-                  <label style={labelStyle}><MapPin size={12} style={{ marginRight: '0.25rem', verticalAlign: 'middle' }} /> Dirección *</label>
-                  <input
-                    type="text"
-                    placeholder="Calle, número, colonia"
-                    value={cart.customer.address}
-                    onChange={e => updateCustomer('address', e.target.value)}
-                    style={errors.address ? inputErrorStyle : inputStyle}
-                  />
-                  {errors.address && <div style={errorTextStyle}>{errors.address}</div>}
-                </div>
+                {!tableNumber && (
+                  <div>
+                    <label style={labelStyle}><MapPin size={12} style={{ marginRight: '0.25rem', verticalAlign: 'middle' }} /> Dirección *</label>
+                    <input
+                      type="text"
+                      placeholder="Calle, número, colonia"
+                      value={cart.customer.address}
+                      onChange={e => updateCustomer('address', e.target.value)}
+                      style={errors.address ? inputErrorStyle : inputStyle}
+                    />
+                    {errors.address && <div style={errorTextStyle}>{errors.address}</div>}
+                  </div>
+                )}
 
                 <div>
                   <label style={labelStyle}><Phone size={12} style={{ marginRight: '0.25rem', verticalAlign: 'middle' }} /> Teléfono *</label>
