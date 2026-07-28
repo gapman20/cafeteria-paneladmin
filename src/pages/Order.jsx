@@ -538,6 +538,33 @@ const Order = () => {
                             }}>{qty}</span>
                           </>
                         )}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (item.isCustomizable) {
+                              setCustomizerItem({ item, sectionId: section.id, sectionColor: section.color, sectionEmoji: section.emoji });
+                            } else {
+                              const found = cart.items.find(i => i.name === item.name && i.sectionId === section.id && !i.customization);
+                              if (found) {
+                                incrementCartItem(found.cartId);
+                              } else {
+                                addItemWithCustomization(item, section.id, section.emoji, {
+                                  totalPrice: parsePrice(item.price),
+                                  size: null, milk: null, sweetness: null, extras: [], excludedIngredients: [], summary: ''
+                                });
+                              }
+                            }
+                          }}
+                          aria-label={`Agregar ${item.name}`}
+                          style={{
+                            width: '30px', height: '30px', borderRadius: 'var(--radius-full)',
+                            background: 'var(--color-accent)', border: 'none',
+                            color: 'var(--btn-text)', display: 'flex', alignItems: 'center',
+                            justifyContent: 'center', cursor: 'pointer',
+                          }}
+                        >
+                          <Plus size={14} />
+                        </button>
                       </div>
                     </div>
                   );

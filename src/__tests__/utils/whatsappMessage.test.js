@@ -16,34 +16,36 @@ describe('buildOrderMessage', () => {
 
   it('formats the complete message with notes', () => {
     const msg = buildOrderMessage(items, customer);
-    expect(msg).toContain('🛒 Pedido de Café Aromático');
-    expect(msg).toContain('👤 Juan Pérez');
-    expect(msg).toContain('📍 Calle Centro 123');
-    expect(msg).toContain('📱 +521234567890');
-    expect(msg).toContain('• Espresso Doble ×2 — $130');
-    expect(msg).toContain('• Cappuccino ×1 — $85');
-    expect(msg).toContain('💰 Total: $215');
-    expect(msg).toContain('📝 Sin azúcar, por favor');
+    expect(msg).toContain('CAFÉ AROMÁTICO');
+    expect(msg).toContain('Para: Juan Pérez');
+    expect(msg).toContain('Dir: Calle Centro 123');
+    expect(msg).toContain('Tel: +521234567890');
+    expect(msg).toContain('2 Espresso Doble');
+    expect(msg).toContain('1 Cappuccino');
+    expect(msg).toContain('TOTAL:');
+    expect(msg).toContain('$215.00');
+    expect(msg).toContain('Notas: Sin azúcar, por favor');
   });
 
   it('omits notes when empty', () => {
     const custNoNotes = { ...customer, notes: '' };
     const msg = buildOrderMessage(items, custNoNotes);
-    expect(msg).not.toContain('📝');
-    expect(msg).toContain('💰 Total: $215');
+    expect(msg).not.toContain('Notas:');
+    expect(msg).toContain('TOTAL:');
   });
 
   it('omits notes when whitespace only', () => {
     const custWhitespace = { ...customer, notes: '   ' };
     const msg = buildOrderMessage(items, custWhitespace);
-    expect(msg).not.toContain('📝');
+    expect(msg).not.toContain('Notas:');
   });
 
   it('handles single item', () => {
     const singleItem = [{ name: 'Americano', price: 60, qty: 1 }];
     const msg = buildOrderMessage(singleItem, customer);
-    expect(msg).toContain('• Americano ×1 — $60');
-    expect(msg).toContain('💰 Total: $60');
+    expect(msg).toContain('1 Americano');
+    expect(msg).toContain('$60.00');
+    expect(msg).toContain('TOTAL:');
   });
 
   it('calculates correct total for multiple quantities', () => {
@@ -51,8 +53,9 @@ describe('buildOrderMessage', () => {
       { name: 'Brownie', price: 65, qty: 3 },
     ];
     const msg = buildOrderMessage(bulkItems, customer);
-    expect(msg).toContain('• Brownie ×3 — $195');
-    expect(msg).toContain('💰 Total: $195');
+    expect(msg).toContain('3 Brownie');
+    expect(msg).toContain('$195.00');
+    expect(msg).toContain('TOTAL:');
   });
 });
 
