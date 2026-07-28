@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import { parsePrice } from '../utils/priceParser';
 import { useSite } from '../context/SiteContext';
@@ -151,7 +152,7 @@ const SectionHeader = ({ title, color }) => (
 );
 
 /* ─── Main Modal ────────────────────────────────────────────────────────────── */
-const DrinkCustomizer = ({ item, sectionColor, sectionEmoji, onClose, onAdd }) => {
+const DrinkCustomizer = ({ item, sectionId, sectionColor, sectionEmoji, isFood, onClose, onAdd }) => {
   const { customizerOptions } = useSite();
   const [selections, setSelections] = useState({ ...DEFAULT_SELECTIONS });
 
@@ -195,6 +196,7 @@ const DrinkCustomizer = ({ item, sectionColor, sectionEmoji, onClose, onAdd }) =
 
   const totalPrice = useMemo(() => {
     let total = basePrice;
+    if (isFood) return total;
 
     // Size modifier
     const sizeOpt = SIZE_OPTIONS.find(o => o.key === selections.size);
@@ -211,7 +213,7 @@ const DrinkCustomizer = ({ item, sectionColor, sectionEmoji, onClose, onAdd }) =
     }
 
     return total;
-  }, [basePrice, selections, SIZE_OPTIONS, MILK_OPTIONS, EXTRAS_OPTIONS]);
+  }, [basePrice, selections, SIZE_OPTIONS, MILK_OPTIONS, EXTRAS_OPTIONS, isFood]);
 
   // Trigger price animation whenever price changes
   useEffect(() => {
@@ -243,10 +245,17 @@ const DrinkCustomizer = ({ item, sectionColor, sectionEmoji, onClose, onAdd }) =
   };
 
   const handleAdd = () => {
-    const sizeOpt = SIZE_OPTIONS.find(o => o.key === selections.size);
-    const milkOpt = MILK_OPTIONS.find(o => o.key === selections.milk);
-    const sweetOpt = SWEETNESS_OPTIONS.find(o => o.key === selections.sweetness);
-    const selectedExtras = EXTRAS_OPTIONS.filter(o => selections.extras.includes(o.key));
+    let sizeOpt = SIZE_OPTIONS.find(o => o.key === selections.size);
+    let milkOpt = MILK_OPTIONS.find(o => o.key === selections.milk);
+    let sweetOpt = SWEETNESS_OPTIONS.find(o => o.key === selections.sweetness);
+    let selectedExtras = EXTRAS_OPTIONS.filter(o => selections.extras.includes(o.key));
+
+    if (isFood) {
+      sizeOpt = null;
+      milkOpt = null;
+      sweetOpt = null;
+      selectedExtras = [];
+    }
 
     onAdd({
       size: sizeOpt,
@@ -255,20 +264,20 @@ const DrinkCustomizer = ({ item, sectionColor, sectionEmoji, onClose, onAdd }) =
       extras: selectedExtras,
       excludedIngredients: selections.excludedIngredients,
       totalPrice,
-      summary: buildSummary(selections, item, { sizes: SIZE_OPTIONS, milks: MILK_OPTIONS, sweetness: SWEETNESS_OPTIONS }),
+      summary: isFood ? '' : buildSummary(selections, item, { sizes: SIZE_OPTIONS, milks: MILK_OPTIONS, sweetness: SWEETNESS_OPTIONS }),
     });
   };
 
   if (!item) return null;
 
-  return (
+  return createPortal(
     <div
       className="dc-overlay"
       onClick={onClose}
       style={{
         position: 'fixed',
         inset: 0,
-        zIndex: 1000,
+        zIndex: 9999,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -323,9 +332,19 @@ const DrinkCustomizer = ({ item, sectionColor, sectionEmoji, onClose, onAdd }) =
           padding: '1.5rem 1.5rem 0',
           textAlign: 'center',
         }}>
-          <span style={{ fontSize: '2.5rem', display: 'block', marginBottom: '0.5rem' }}>
-            {item.img || sectionEmoji || '☕'}
-          </span>
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '0.5rem' }}>
+            {item.image ? (
+              <img 
+                src={item.image} 
+                alt={item.name} 
+                style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: '50%', border: '2px solid var(--color-border)', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} 
+              />
+            ) : (
+              <span style={{ fontSize: '2.5rem', display: 'block' }}>
+                {item.emoji || item.img || sectionEmoji || '☕'}
+              </span>
+            )}
+          </div>
           <h2 style={{
             fontFamily: 'var(--font-display)',
             fontSize: '1.25rem',
@@ -348,56 +367,60 @@ const DrinkCustomizer = ({ item, sectionColor, sectionEmoji, onClose, onAdd }) =
 
         {/* ── Sections ── */}
         <div style={{ padding: '1.25rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-          {/* Size */}
-          <div>
-            <SectionHeader title="Tamaño" color={sectionColor} />
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-              {SIZE_OPTIONS.map(opt => (
-                <Pill
-                  key={opt.key}
-                  label={opt.label}
-                  detail={opt.detail}
-                  modifier={opt.modifier}
-                  selected={selections.size === opt.key}
-                  color={sectionColor}
-                  onClick={() => toggleSelect('size', opt.key)}
-                />
-              ))}
-            </div>
-          </div>
+          {!isFood && (
+            <>
+              {/* Size */}
+              <div>
+                <SectionHeader title="Tamaño" color={sectionColor} />
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                  {SIZE_OPTIONS.map(opt => (
+                    <Pill
+                      key={opt.key}
+                      label={opt.label}
+                      detail={opt.detail}
+                      modifier={opt.modifier}
+                      selected={selections.size === opt.key}
+                      color={sectionColor}
+                      onClick={() => toggleSelect('size', opt.key)}
+                    />
+                  ))}
+                </div>
+              </div>
 
-          {/* Milk */}
-          <div>
-            <SectionHeader title="Base de Leche" color={sectionColor} />
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-              {MILK_OPTIONS.map(opt => (
-                <Pill
-                  key={opt.key}
-                  label={opt.label}
-                  modifier={opt.modifier}
-                  selected={selections.milk === opt.key}
-                  color={sectionColor}
-                  onClick={() => toggleSelect('milk', opt.key)}
-                />
-              ))}
-            </div>
-          </div>
+              {/* Milk */}
+              <div>
+                <SectionHeader title="Base de Leche" color={sectionColor} />
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                  {MILK_OPTIONS.map(opt => (
+                    <Pill
+                      key={opt.key}
+                      label={opt.label}
+                      modifier={opt.modifier}
+                      selected={selections.milk === opt.key}
+                      color={sectionColor}
+                      onClick={() => toggleSelect('milk', opt.key)}
+                    />
+                  ))}
+                </div>
+              </div>
 
-          {/* Sweetness */}
-          <div>
-            <SectionHeader title="Nivel de Dulzor" color={sectionColor} />
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-              {SWEETNESS_OPTIONS.map(opt => (
-                <Pill
-                  key={opt.key}
-                  label={opt.label}
-                  selected={selections.sweetness === opt.key}
-                  color={sectionColor}
-                  onClick={() => toggleSelect('sweetness', opt.key)}
-                />
-              ))}
-            </div>
-          </div>
+              {/* Sweetness */}
+              <div>
+                <SectionHeader title="Nivel de Dulzor" color={sectionColor} />
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                  {SWEETNESS_OPTIONS.map(opt => (
+                    <Pill
+                      key={opt.key}
+                      label={opt.label}
+                      selected={selections.sweetness === opt.key}
+                      color={sectionColor}
+                      onClick={() => toggleSelect('sweetness', opt.key)}
+                    />
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
 
           {/* Ingredients */}
           {item?.ingredients?.length > 0 && (
@@ -448,20 +471,22 @@ const DrinkCustomizer = ({ item, sectionColor, sectionEmoji, onClose, onAdd }) =
           )}
 
           {/* Extras */}
-          <div>
-            <SectionHeader title="Extras / Toppings" color={sectionColor} />
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-              {EXTRAS_OPTIONS.map(opt => (
-                <ExtraPill
-                  key={opt.key}
-                  label={opt.label}
-                  modifier={opt.modifier}
-                  selected={selections.extras.includes(opt.key)}
-                  onClick={() => toggleExtra(opt.key)}
-                />
-              ))}
+          {!isFood && (
+            <div>
+              <SectionHeader title="Extras / Toppings" color={sectionColor} />
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                {EXTRAS_OPTIONS.map(opt => (
+                  <ExtraPill
+                    key={opt.key}
+                    label={opt.label}
+                    modifier={opt.modifier}
+                    selected={selections.extras.includes(opt.key)}
+                    onClick={() => toggleExtra(opt.key)}
+                  />
+                ))}
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
         {/* ── Price Display ── */}
@@ -470,13 +495,16 @@ const DrinkCustomizer = ({ item, sectionColor, sectionEmoji, onClose, onAdd }) =
           textAlign: 'center',
           marginBottom: '1rem',
         }}>
-          <div style={{
-            fontSize: '0.8125rem',
-            color: 'var(--color-text-secondary)',
-            marginBottom: '0.25rem',
-          }}>
-            {buildSummary(selections, item, { sizes: SIZE_OPTIONS, milks: MILK_OPTIONS, sweetness: SWEETNESS_OPTIONS })}
-          </div>
+          {/* Summary Display */}
+          {!isFood && (
+            <div style={{
+              fontSize: '0.8125rem',
+              color: 'var(--color-text-secondary)',
+              marginBottom: '0.25rem',
+            }}>
+              {buildSummary(selections, item, { sizes: SIZE_OPTIONS, milks: MILK_OPTIONS, sweetness: SWEETNESS_OPTIONS })}
+            </div>
+          )}
           <div
             key={totalPrice}
             style={{
@@ -529,7 +557,8 @@ const DrinkCustomizer = ({ item, sectionColor, sectionEmoji, onClose, onAdd }) =
           }
         }
       `}</style>
-    </div>
+    </div>,
+    document.body
   );
 };
 

@@ -199,12 +199,12 @@ const defaultTestimonials = [
 ];
 
 const defaultFaqs = [
-  { q: '¿Cuál es el tiempo de entrega?', a: 'Realizamos entregas de lunes a sábado en la CDMX y área metropolitana. Los pedidos realizados antes de las 2:00 PM se entregan al día siguiente.' },
-  { q: '¿Cómo puedo reservar una mesa?', a: 'Puedes reservar directamente por WhatsApp o a través de nuestra página de contacto. Aceptamos reservaciones para grupos de hasta 12 personas.' },
-  { q: '¿De dónde viene su café?', a: 'Trabajamos directamente con fincas en Colombia, Etiopía, Guatemala y México. Cada origen se selecciona por su perfil de sabor único.' },
-  { q: '¿Qué incluye la Suscripción Premium?', a: 'La suscripción incluye mensualmente una bolsa de café de origen rotatorio, acceso a catas exclusivas, preventas de ediciones limitadas, envío gratuito y puntos de fidelidad.' },
-  { q: '¿Puedo cancelar o pausar mi suscripción?', a: 'Sí, puedes pausar o cancelar en cualquier momento desde tu cuenta o contactándonos por WhatsApp. No hay penalizaciones.' },
-  { q: '¿Ofrecen capacitación para baristas?', a: 'Sí, organizamos talleres mensuales de preparación de café: latte art, pour over, cold brew y más. También ofrecemos certificaciones.' },
+  { q: '¿Cuál es el tiempo de entrega?', a: 'Realizamos entregas rápidas en Guadalajara, Jalisco y su área metropolitana. Dependiendo de tu ubicación, tu pedido llegará en un estimado de 30 a 45 minutos.' },
+  { q: '¿Cómo puedo reservar una mesa?', a: 'Puedes reservar directamente por WhatsApp o a través de nuestra página. Aceptamos reservaciones para grupos en Príncipe Lonches más café. Contáctanos con anticipación.' },
+  { q: '¿De dónde vienen sus ingredientes?', a: 'En Príncipe Lonches más café utilizamos pan calientito e ingredientes frescos y locales de Jalisco. Nuestro café de especialidad proviene de fincas selectas para acompañar perfectamente tu lonche.' },
+  { q: '¿Tienen opciones para eventos o reuniones grandes?', a: '¡Claro! Atendemos pedidos especiales y catering para tus eventos en Guadalajara. Lonches, café y repostería para todos tus invitados.' },
+  { q: '¿Puedo personalizar mi pedido?', a: 'Sí, puedes agregar extras, elegir el tamaño de tu bebida o modificar los ingredientes de tu lonche directamente al hacer tu pedido en nuestra plataforma.' },
+  { q: '¿Cuáles son los métodos de pago aceptados?', a: 'Aceptamos pagos en efectivo, transferencias, y tarjetas de crédito/débito tanto en sucursal como en pedidos a domicilio.' },
 ];
 
 const defaultSubBenefits = [
@@ -2372,10 +2372,10 @@ const Admin = memo(() => {
       case 'images': {
         const imageSlots = [
           { key: 'logo', label: 'Logo', size: '~45 KB' },
-          ...(images.portfolio || []).map((_, i) => ({ 
-            key: `portfolio.${i}`, 
-            label: `Galería ${i + 1}`, 
-            size: `~${120 + i * 30} KB`, 
+          ...Array.from({ length: 16 }).map((_, i) => ({
+            key: `portfolio.${i}`,
+            label: `Pieza de Galería ${i + 1}`,
+            size: `~150 KB`,
           })),
         ];
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { ShoppingCart, Plus, Minus, Send, Trash2, ShoppingBag, MapPin, User, Phone, FileText, X, Navigation, Printer } from 'lucide-react';
 import { useSite, SECTION_ICON_MAP } from '../context/SiteContext';
@@ -138,41 +138,61 @@ const Order = () => {
 
   // ── Cart helpers ──────────────────────────────────────────────────────────
   const addItemWithCustomization = useCallback((item, sectionId, sectionEmoji, customization) => {
-    setCart(prev => ({
-      ...prev,
-      items: [...prev.items, {
-        cartId: `cart-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-        name: item.name,
-        price: customization.totalPrice,
-        qty: 1,
-        sectionId,
-        emoji: sectionEmoji,
-        customization: customization.summary ? {
-          size: customization.size?.key || null,
-          sizeLabel: customization.size?.label || null,
-          milk: customization.milk?.key || null,
-          milkLabel: customization.milk?.label || null,
-          sweetness: customization.sweetness?.key || null,
-          sweetnessLabel: customization.sweetness?.label || null,
-          extras: customization.extras?.map(e => e.key) || [],
-          extrasLabels: customization.extras?.map(e => e.label) || [],
-          excludedIngredients: customization.excludedIngredients || [],
-          summary: customization.summary || '',
-        } : null,
-      }],
-    }));
+    setCart(prev => {
+      // Validamos si ya existe el mismo artículo con exactamente la misma personalización
+      const existingIdx = prev.items.findIndex(i => 
+        i.name === item.name && 
+        i.sectionId === sectionId &&
+        (i.customization?.summary || '') === (customization.summary || '')
+      );
+
+      if (existingIdx >= 0) {
+        const newItems = [...prev.items];
+        newItems[existingIdx] = {
+          ...newItems[existingIdx],
+          qty: newItems[existingIdx].qty + 1
+        };
+        return { ...prev, items: newItems };
+      }
+
+      return {
+        ...prev,
+        items: [...prev.items, {
+          cartId: `cart-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+          name: item.name,
+          price: customization.totalPrice,
+          qty: 1,
+          sectionId,
+          emoji: sectionEmoji,
+          customization: customization.summary ? {
+            size: customization.size?.key || null,
+            sizeLabel: customization.size?.label || null,
+            milk: customization.milk?.key || null,
+            milkLabel: customization.milk?.label || null,
+            sweetness: customization.sweetness?.key || null,
+            sweetnessLabel: customization.sweetness?.label || null,
+            extras: customization.extras?.map(e => e.key) || [],
+            extrasLabels: customization.extras?.map(e => e.label) || [],
+            excludedIngredients: customization.excludedIngredients || [],
+            summary: customization.summary || '',
+          } : null,
+        }],
+      };
+    });
   }, []);
 
   // Handle 'featured' URL parameter
+  const processedFeatured = useRef(false);
   useEffect(() => {
     const featuredId = searchParams.get('featured');
-    if (featuredId && products) {
+    if (featuredId && products && !processedFeatured.current) {
+      processedFeatured.current = true;
       const prod = products.find(p => p.id === featuredId);
       if (prod) {
         setTimeout(() => {
           if (prod.isCustomizable) {
             // Open customizer
-            setCustomizerItem({ item: prod, sectionId: 'featured', sectionColor: '#C8956C', sectionEmoji: '⭐' });
+            setCustomizerItem({ item: prod, sectionId: 'featured', sectionColor: '#C8956C', sectionEmoji: '⭐', isFood: false });
           } else {
             // Add directly to cart
             addItemWithCustomization(prod, 'featured', '⭐', {
@@ -228,8 +248,9 @@ const Order = () => {
   const totalPrice = useMemo(() => cart.items.reduce((sum, i) => sum + i.price * i.qty, 0), [cart.items]);
 
   const getItemQty = useCallback((name, sectionId) => {
-    const found = cart.items.find(i => i.name === name && i.sectionId === sectionId);
-    return found ? found.qty : 0;
+    return cart.items
+      .filter(i => i.name === name && i.sectionId === sectionId)
+      .reduce((sum, i) => sum + i.qty, 0);
   }, [cart.items]);
 
   // ── Submit ────────────────────────────────────────────────────────────────
@@ -452,6 +473,7 @@ const Order = () => {
 
           {menuSections.map((section) => {
             const Icon = SECTION_ICON_MAP[section.icon] || SECTION_ICON_MAP.coffee;
+            const isFoodSection = !['coffee', 'snowflake', 'glass-water', 'droplets', 'wine', 'beer'].includes(section.icon);
             return (
               <section key={section.id} style={{ marginBottom: '2rem' }}>
                 {/* Section Header */}
@@ -476,7 +498,7 @@ const Order = () => {
                     onClick={(e) => {
                       // Don't open customizer if clicking on the +/- buttons
                       if (e.target.closest('button')) return;
-                      setCustomizerItem({ item, sectionId: section.id, sectionColor: section.color, sectionEmoji: item.img || '🍽️' });
+                      setCustomizerItem({ item, sectionId: section.id, sectionColor: section.color, sectionEmoji: item.img || '🍽️', isFood: isFoodSection });
                     }}
                     >
                       {/* Thumbnail image or emoji */}
@@ -542,16 +564,14 @@ const Order = () => {
                           onClick={(e) => {
                             e.stopPropagation();
                             if (item.isCustomizable) {
-                              setCustomizerItem({ item, sectionId: section.id, sectionColor: section.color, sectionEmoji: section.emoji });
+                              setCustomizerItem({ item, sectionId: section.id, sectionColor: section.color, sectionEmoji: item.img || section.emoji, isFood: false });
                             } else {
                               const found = cart.items.find(i => i.name === item.name && i.sectionId === section.id && !i.customization);
                               if (found) {
                                 incrementCartItem(found.cartId);
                               } else {
-                                addItemWithCustomization(item, section.id, section.emoji, {
-                                  totalPrice: parsePrice(item.price),
-                                  size: null, milk: null, sweetness: null, extras: [], excludedIngredients: [], summary: ''
-                                });
+                                // En lugar de agregarlo directo, abrimos el modal para que vean la información
+                                setCustomizerItem({ item, sectionId: section.id, sectionColor: section.color, sectionEmoji: item.img || section.emoji, isFood: isFoodSection });
                               }
                             }
                           }}
@@ -823,6 +843,7 @@ const Order = () => {
           sectionId={customizerItem.sectionId}
           sectionColor={customizerItem.sectionColor}
           sectionEmoji={customizerItem.sectionEmoji}
+          isFood={customizerItem.isFood}
           onClose={() => setCustomizerItem(null)}
           onAdd={(customization) => {
             addItemWithCustomization(
