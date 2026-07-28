@@ -42,26 +42,33 @@ describe('Order Page', () => {
     expect(screen.getByText('Cold Brew Clásico')).toBeDefined();
   });
 
-  it('adds an item to cart when clicking +', () => {
+  it('adds an item to cart when clicking +', async () => {
     renderOrder();
     const addButtons = screen.getAllByLabelText(/Agregar Espresso Doble/);
     fireEvent.click(addButtons[0]);
+    fireEvent.click(await screen.findByText(/Agregar al pedido —/));
     // Item count appears in both cart total and floating bar
     expect(screen.getAllByText(/\d+ artículos?/).length).toBeGreaterThanOrEqual(1);
   });
 
-  it('increments quantity when clicking + on item already in cart', () => {
+  it('increments quantity when clicking + on item already in cart', async () => {
     renderOrder();
     const addButtons = screen.getAllByLabelText(/Agregar Espresso Doble/);
     fireEvent.click(addButtons[0]);
+    fireEvent.click(await screen.findByText(/Agregar al pedido —/));
+    
+    // Now it's in the cart, clicking + on the menu item directly increments it without modal
     fireEvent.click(addButtons[0]);
+    
     expect(screen.getAllByText(/2 artículos/).length).toBeGreaterThanOrEqual(1);
   });
 
-  it('decrements quantity and removes item at zero', () => {
+  it('decrements quantity and removes item at zero', async () => {
     renderOrder();
     const addButtons = screen.getAllByLabelText(/Agregar Espresso Doble/);
     fireEvent.click(addButtons[0]);
+    fireEvent.click(await screen.findByText(/Agregar al pedido —/));
+    
     expect(screen.getAllByText(/\d+ artículos?/).length).toBeGreaterThanOrEqual(1);
 
     // Decrement via the menu row minus button
@@ -77,10 +84,12 @@ describe('Order Page', () => {
     expect(btn.closest('button').disabled).toBe(true);
   });
 
-  it('send button is enabled when cart has items', () => {
+  it('send button is enabled when cart has items', async () => {
     renderOrder();
     const addButtons = screen.getAllByLabelText(/Agregar Espresso Doble/);
     fireEvent.click(addButtons[0]);
+    fireEvent.click(await screen.findByText(/Agregar al pedido —/));
+    
     const btn = screen.getByText('Enviar Pedido por WhatsApp');
     expect(btn.closest('button').disabled).toBe(false);
   });
@@ -89,6 +98,7 @@ describe('Order Page', () => {
     renderOrder();
     const addButtons = screen.getAllByLabelText(/Agregar Espresso Doble/);
     fireEvent.click(addButtons[0]);
+    fireEvent.click(await screen.findByText(/Agregar al pedido —/));
 
     fireEvent.click(screen.getByText('Enviar Pedido por WhatsApp'));
 
@@ -103,6 +113,7 @@ describe('Order Page', () => {
     renderOrder();
     const addButtons = screen.getAllByLabelText(/Agregar Espresso Doble/);
     fireEvent.click(addButtons[0]);
+    fireEvent.click(await screen.findByText(/Agregar al pedido —/));
 
     fireEvent.change(screen.getByPlaceholderText('Tu nombre'), { target: { value: 'Juan' } });
     fireEvent.change(screen.getByPlaceholderText(/Calle, número/), { target: { value: 'Calle 123' } });
@@ -121,6 +132,7 @@ describe('Order Page', () => {
     renderOrder();
     const addButtons = screen.getAllByLabelText(/Agregar Espresso Doble/);
     fireEvent.click(addButtons[0]);
+    fireEvent.click(await screen.findByText(/Agregar al pedido —/));
 
     fireEvent.change(screen.getByPlaceholderText('Tu nombre'), { target: { value: 'Juan' } });
     fireEvent.change(screen.getByPlaceholderText(/Calle, número/), { target: { value: 'Calle 123' } });
@@ -146,6 +158,7 @@ describe('Order Page', () => {
     renderOrder();
     const addButtons = screen.getAllByLabelText(/Agregar Espresso Doble/);
     fireEvent.click(addButtons[0]);
+    fireEvent.click(await screen.findByText(/Agregar al pedido —/));
 
     fireEvent.change(screen.getByPlaceholderText('Tu nombre'), { target: { value: 'Juan' } });
     fireEvent.change(screen.getByPlaceholderText(/Calle, número/), { target: { value: 'Calle 123' } });
@@ -162,10 +175,11 @@ describe('Order Page', () => {
     });
   });
 
-  it('persists cart in localStorage', () => {
+  it('persists cart in localStorage', async () => {
     renderOrder();
     const addButtons = screen.getAllByLabelText(/Agregar Espresso Doble/);
     fireEvent.click(addButtons[0]);
+    fireEvent.click(await screen.findByText(/Agregar al pedido —/));
 
     const stored = JSON.parse(localStorage.getItem('order_cart_v1'));
     expect(stored).toBeTruthy();
@@ -180,6 +194,7 @@ describe('Order Page', () => {
     renderOrder();
     const addButtons = screen.getAllByLabelText(/Agregar Espresso Doble/);
     fireEvent.click(addButtons[0]);
+    fireEvent.click(await screen.findByText(/Agregar al pedido —/));
 
     fireEvent.change(screen.getByPlaceholderText('Tu nombre'), { target: { value: 'Juan' } });
     fireEvent.change(screen.getByPlaceholderText(/Calle, número/), { target: { value: 'Calle 123' } });
@@ -201,12 +216,15 @@ describe('Order Page', () => {
     expect(notesField).toBeDefined();
   });
 
-  it('clear button removes all items from cart', () => {
+  it('clear button removes all items from cart', async () => {
     renderOrder();
     const addButtons = screen.getAllByLabelText(/Agregar Espresso Doble/);
     fireEvent.click(addButtons[0]);
+    fireEvent.click(await screen.findByText(/Agregar al pedido —/));
+    
     const coldAdd = screen.getAllByLabelText(/Agregar Cold Brew Clásico/);
     fireEvent.click(coldAdd[0]);
+    fireEvent.click(await screen.findByText(/Agregar al pedido —/));
 
     expect(screen.getAllByText(/2 artículos/).length).toBeGreaterThanOrEqual(1);
 
