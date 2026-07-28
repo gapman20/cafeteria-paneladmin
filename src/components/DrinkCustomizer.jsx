@@ -152,7 +152,7 @@ const SectionHeader = ({ title, color }) => (
 );
 
 /* ─── Main Modal ────────────────────────────────────────────────────────────── */
-const DrinkCustomizer = ({ item, sectionId, sectionColor, sectionEmoji, isFood, onClose, onAdd }) => {
+const DrinkCustomizer = ({ item, sectionColor, sectionEmoji, isFood, onClose, onAdd }) => {
   const { customizerOptions } = useSite();
   const [selections, setSelections] = useState({ ...DEFAULT_SELECTIONS });
 
