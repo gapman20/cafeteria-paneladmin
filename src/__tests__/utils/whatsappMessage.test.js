@@ -12,6 +12,7 @@ describe('buildOrderMessage', () => {
     address: 'Calle Centro 123',
     phone: '+521234567890',
     notes: 'Sin azúcar, por favor',
+    orderType: 'delivery',
   };
 
   it('formats the complete message with notes', () => {

@@ -120,6 +120,9 @@ describe('Order Page', () => {
     fireEvent.change(screen.getByPlaceholderText(/Calle, número/), { target: { value: 'Calle 123' } });
     fireEvent.change(screen.getByPlaceholderText(/\+52/), { target: { value: '+521234567890' } });
 
+    // Bypass GPS coverage for test
+    fireEvent.click(screen.getByText(/Validar cobertura/));
+
     fireEvent.click(screen.getByText('Enviar Pedido por WhatsApp'));
 
     await waitFor(() => {
@@ -127,7 +130,7 @@ describe('Order Page', () => {
       const url = openSpy.mock.calls[0][0];
       expect(url).toContain('wa.me/521234567890');
       expect(url).toContain('text=');
-      expect(decodeURIComponent(url)).toContain('Pedido de Café Aromático');
+      expect(decodeURIComponent(url)).toContain('CAFÉ AROMÁTICO');
     });
   });
 
@@ -141,6 +144,9 @@ describe('Order Page', () => {
     fireEvent.change(screen.getByPlaceholderText('Tu nombre'), { target: { value: 'Juan' } });
     fireEvent.change(screen.getByPlaceholderText(/Calle, número/), { target: { value: 'Calle 123' } });
     fireEvent.change(screen.getByPlaceholderText(/\+52/), { target: { value: '+521234567890' } });
+
+    // Bypass GPS coverage for test
+    fireEvent.click(screen.getByText(/Validar cobertura/));
 
     fireEvent.click(screen.getByText('Enviar Pedido por WhatsApp'));
 
@@ -171,6 +177,9 @@ describe('Order Page', () => {
     fireEvent.change(screen.getByPlaceholderText('Tu nombre'), { target: { value: 'Juan' } });
     fireEvent.change(screen.getByPlaceholderText(/Calle, número/), { target: { value: 'Calle 123' } });
     fireEvent.change(screen.getByPlaceholderText(/\+52/), { target: { value: '+521234567890' } });
+
+    // Bypass GPS coverage for test
+    fireEvent.click(screen.getByText(/Validar cobertura/));
 
     fireEvent.click(screen.getByText('Enviar Pedido por WhatsApp'));
 
