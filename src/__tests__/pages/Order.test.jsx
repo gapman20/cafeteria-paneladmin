@@ -20,7 +20,7 @@ describe('Order Page', () => {
     vi.restoreAllMocks();
     
     // Mock navigator.geolocation to be undefined so GPS check falls back to error
-    Object.defineProperty(global.navigator, 'geolocation', {
+    Object.defineProperty(window.navigator, 'geolocation', {
       value: undefined,
       configurable: true
     });
