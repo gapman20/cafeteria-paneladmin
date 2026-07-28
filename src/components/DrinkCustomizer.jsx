@@ -163,19 +163,32 @@ const DrinkCustomizer = ({ item, sectionColor, sectionEmoji, onClose, onAdd }) =
 
   // Set defaults from first available option if current selection is no longer valid
   useEffect(() => {
-    if (SIZE_OPTIONS.length > 0 && !SIZE_OPTIONS.find(o => o.key === selections.size)) {
-      setSelections(prev => ({ ...prev, size: SIZE_OPTIONS[0].key }));
-    }
-    if (MILK_OPTIONS.length > 0 && !MILK_OPTIONS.find(o => o.key === selections.milk)) {
-      setSelections(prev => ({ ...prev, milk: MILK_OPTIONS[0].key }));
-    }
-    if (SWEETNESS_OPTIONS.length > 0 && !SWEETNESS_OPTIONS.find(o => o.key === selections.sweetness)) {
-      setSelections(prev => ({ ...prev, sweetness: SWEETNESS_OPTIONS[0].key }));
-    }
-    setSelections(prev => ({
-      ...prev,
-      extras: prev.extras.filter(k => EXTRAS_OPTIONS.find(o => o.key === k)),
-    }));
+    const timer = setTimeout(() => {
+      setSelections(prev => {
+        let changed = false;
+        const next = { ...prev };
+        
+        if (SIZE_OPTIONS.length > 0 && !SIZE_OPTIONS.find(o => o.key === prev.size)) {
+          next.size = SIZE_OPTIONS[0].key;
+          changed = true;
+        }
+        if (MILK_OPTIONS.length > 0 && !MILK_OPTIONS.find(o => o.key === prev.milk)) {
+          next.milk = MILK_OPTIONS[0].key;
+          changed = true;
+        }
+        if (SWEETNESS_OPTIONS.length > 0 && !SWEETNESS_OPTIONS.find(o => o.key === prev.sweetness)) {
+          next.sweetness = SWEETNESS_OPTIONS[0].key;
+          changed = true;
+        }
+        const validExtras = prev.extras.filter(k => EXTRAS_OPTIONS.find(o => o.key === k));
+        if (validExtras.length !== prev.extras.length) {
+          next.extras = validExtras;
+          changed = true;
+        }
+        return changed ? next : prev;
+      });
+    }, 0);
+    return () => clearTimeout(timer);
   }, [customizerOptions, SIZE_OPTIONS, MILK_OPTIONS, SWEETNESS_OPTIONS, EXTRAS_OPTIONS, selections.size, selections.milk, selections.sweetness]);
 
   const basePrice = useMemo(() => parsePrice(item?.price || '$0'), [item]);

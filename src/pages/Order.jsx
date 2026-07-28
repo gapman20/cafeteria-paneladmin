@@ -169,17 +169,19 @@ const Order = () => {
     if (featuredId && products) {
       const prod = products.find(p => p.id === featuredId);
       if (prod) {
-        if (prod.isCustomizable) {
-          // Open customizer
-          setCustomizerItem({ item: prod, sectionId: 'featured', sectionColor: '#C8956C', sectionEmoji: '⭐' });
-        } else {
-          // Add directly to cart
-          addItemWithCustomization(prod, 'featured', '⭐', {
-            totalPrice: parsePrice(prod.price),
-            size: null, milk: null, sweetness: null, extras: [], excludedIngredients: [], summary: ''
-          });
-          setMobileCartOpen(true);
-        }
+        setTimeout(() => {
+          if (prod.isCustomizable) {
+            // Open customizer
+            setCustomizerItem({ item: prod, sectionId: 'featured', sectionColor: '#C8956C', sectionEmoji: '⭐' });
+          } else {
+            // Add directly to cart
+            addItemWithCustomization(prod, 'featured', '⭐', {
+              totalPrice: parsePrice(prod.price),
+              size: null, milk: null, sweetness: null, extras: [], excludedIngredients: [], summary: ''
+            });
+            setMobileCartOpen(true);
+          }
+        }, 0);
       }
       // Remove the parameter so it doesn't trigger again on refresh
       setSearchParams(new URLSearchParams());
@@ -284,7 +286,7 @@ const Order = () => {
     setCoverageMsg('');
     setErrors({});
     setSubmitted(true);
-  }, [cart, whatsappNumber]);
+  }, [cart, whatsappNumber, content.siteName, coverageStatus, tableNumber]);
 
   // ── Render ────────────────────────────────────────────────────────────────
   if (lastOrder) {
