@@ -53,7 +53,7 @@ function buildSummary(selections, item, options) {
 }
 
 /* ─── Pill Option Button ─────────────────────────────────────────────────────── */
-const Pill = ({ label, detail, modifier, selected, color, onClick }) => {
+const Pill = ({ label, detail, modifier, selected, onClick }) => {
   const selectedStyle = selected
     ? { background: 'var(--accent-gradient)', color: 'var(--btn-text, #fff)' }
     : { background: 'var(--color-surface)', color: 'var(--color-text)', border: '1px solid var(--color-border)' };
@@ -151,10 +151,9 @@ const SectionHeader = ({ title, color }) => (
 );
 
 /* ─── Main Modal ────────────────────────────────────────────────────────────── */
-const DrinkCustomizer = ({ item, sectionId, sectionColor, sectionEmoji, onClose, onAdd }) => {
+const DrinkCustomizer = ({ item, sectionColor, sectionEmoji, onClose, onAdd }) => {
   const { customizerOptions } = useSite();
   const [selections, setSelections] = useState({ ...DEFAULT_SELECTIONS });
-  const [priceKey, setPriceKey] = useState(0);
 
   // Read from context with fallback, filter to active only
   const SIZE_OPTIONS = (customizerOptions?.sizes || FALLBACK_SIZES).filter(o => o.active !== false);
@@ -177,7 +176,7 @@ const DrinkCustomizer = ({ item, sectionId, sectionColor, sectionEmoji, onClose,
       ...prev,
       extras: prev.extras.filter(k => EXTRAS_OPTIONS.find(o => o.key === k)),
     }));
-  }, [customizerOptions]);
+  }, [customizerOptions, SIZE_OPTIONS, MILK_OPTIONS, SWEETNESS_OPTIONS, EXTRAS_OPTIONS, selections.size, selections.milk, selections.sweetness]);
 
   const basePrice = useMemo(() => parsePrice(item?.price || '$0'), [item]);
 
@@ -199,11 +198,13 @@ const DrinkCustomizer = ({ item, sectionId, sectionColor, sectionEmoji, onClose,
     }
 
     return total;
-  }, [basePrice, selections]);
+  }, [basePrice, selections, SIZE_OPTIONS, MILK_OPTIONS, EXTRAS_OPTIONS]);
 
   // Trigger price animation whenever price changes
   useEffect(() => {
-    setPriceKey(k => k + 1);
+    // setPriceKey(k => k + 1);
+    // Suppressed setPriceKey in effect since it causes cascading renders.
+    // Instead we can just use totalPrice as the key directly in the JSX.
   }, [totalPrice]);
 
   const toggleSelect = (category, key) => {
@@ -464,7 +465,7 @@ const DrinkCustomizer = ({ item, sectionId, sectionColor, sectionEmoji, onClose,
             {buildSummary(selections, item, { sizes: SIZE_OPTIONS, milks: MILK_OPTIONS, sweetness: SWEETNESS_OPTIONS })}
           </div>
           <div
-            key={priceKey}
+            key={totalPrice}
             style={{
               fontFamily: 'var(--font-display)',
               fontSize: '2rem',

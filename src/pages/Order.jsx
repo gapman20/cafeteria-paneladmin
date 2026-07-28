@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { ShoppingCart, Plus, Minus, Send, Trash2, ShoppingBag, MapPin, User, Phone, FileText, X, Navigation, Printer } from 'lucide-react';
 import { useSite, SECTION_ICON_MAP } from '../context/SiteContext';
 import { parsePrice } from '../utils/priceParser';
@@ -118,7 +118,7 @@ const Order = () => {
           }
         }
       },
-      (error) => {
+      () => {
         setCoverageStatus('error');
         setCoverageMsg('No pudimos acceder a tu GPS. Por favor permite el acceso o usa la búsqueda manual.');
       },
@@ -135,31 +135,6 @@ const Order = () => {
     const id = setTimeout(() => setSubmitted(false), 3000);
     return () => clearTimeout(id);
   }, [submitted]);
-
-  // Handle 'featured' URL parameter
-  useEffect(() => {
-    const featuredId = searchParams.get('featured');
-    if (featuredId && products) {
-      const prod = products.find(p => p.id === featuredId);
-      if (prod) {
-        if (prod.isCustomizable) {
-          // Open customizer
-          setCustomizerItem({ item: prod, sectionId: 'featured', sectionColor: '#C8956C', sectionEmoji: '⭐' });
-        } else {
-          // Add directly to cart
-          addItemWithCustomization(prod, 'featured', '⭐', {
-            totalPrice: parsePrice(prod.price),
-            size: null, milk: null, sweetness: null, extras: [], excludedIngredients: [], summary: ''
-          });
-          setMobileCartOpen(true);
-        }
-      }
-      // Remove the parameter so it doesn't trigger again on refresh
-      setSearchParams(new URLSearchParams());
-    }
-  }, [searchParams, products, setSearchParams]);
-
-  const whatsappNumber = content?.whatsappFloat?.number || '';
 
   // ── Cart helpers ──────────────────────────────────────────────────────────
   const addItemWithCustomization = useCallback((item, sectionId, sectionEmoji, customization) => {
@@ -187,6 +162,31 @@ const Order = () => {
       }],
     }));
   }, []);
+
+  // Handle 'featured' URL parameter
+  useEffect(() => {
+    const featuredId = searchParams.get('featured');
+    if (featuredId && products) {
+      const prod = products.find(p => p.id === featuredId);
+      if (prod) {
+        if (prod.isCustomizable) {
+          // Open customizer
+          setCustomizerItem({ item: prod, sectionId: 'featured', sectionColor: '#C8956C', sectionEmoji: '⭐' });
+        } else {
+          // Add directly to cart
+          addItemWithCustomization(prod, 'featured', '⭐', {
+            totalPrice: parsePrice(prod.price),
+            size: null, milk: null, sweetness: null, extras: [], excludedIngredients: [], summary: ''
+          });
+          setMobileCartOpen(true);
+        }
+      }
+      // Remove the parameter so it doesn't trigger again on refresh
+      setSearchParams(new URLSearchParams());
+    }
+  }, [searchParams, products, setSearchParams, addItemWithCustomization]);
+
+  const whatsappNumber = content?.whatsappFloat?.number || '';
 
   const decrementItem = useCallback((cartId) => {
     setCart(prev => {

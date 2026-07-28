@@ -4,7 +4,7 @@ import {
   Coffee, Leaf, Globe, ChevronDown, ArrowRight,
   Gift, Truck, Star,
 } from 'lucide-react';
-import { useContent, useProducts } from '../hooks';
+import { useProducts } from '../hooks';
 import { useSite } from '../context/SiteContext';
 import { useScrollReveal } from '../hooks/useScrollReveal';
 import SEO from '../components/SEO';
