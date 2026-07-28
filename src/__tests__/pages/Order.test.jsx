@@ -18,6 +18,12 @@ describe('Order Page', () => {
   beforeEach(() => {
     localStorage.clear();
     vi.restoreAllMocks();
+    
+    // Mock navigator.geolocation to be undefined so GPS check falls back to error
+    Object.defineProperty(global.navigator, 'geolocation', {
+      value: undefined,
+      configurable: true
+    });
   });
 
   it('renders menu sections from context', () => {
@@ -151,7 +157,8 @@ describe('Order Page', () => {
     fireEvent.click(screen.getByText('Enviar Pedido por WhatsApp'));
 
     await waitFor(() => {
-      expect(screen.getByText('Tu carrito está vacío')).toBeDefined();
+      // Upon successful submission, the success ticket view replaces the form/cart
+      expect(screen.getByText('¡Pedido Enviado!')).toBeDefined();
     });
   });
 
@@ -184,7 +191,7 @@ describe('Order Page', () => {
     fireEvent.click(screen.getByText('Enviar Pedido por WhatsApp'));
 
     await waitFor(() => {
-      expect(screen.getByText(/Pedido enviado por WhatsApp/)).toBeDefined();
+      expect(screen.getByText('¡Pedido Enviado!')).toBeDefined();
     });
   });
 
