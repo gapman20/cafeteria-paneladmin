@@ -5,6 +5,7 @@ import {
   Utensils, Wine, Beer, IceCream, Sandwich, Salad, Cookie,
   Cherry, Flame, Star, Leaf, Droplets, GlassWater, Beef, Fish, Egg, Soup,
 } from 'lucide-react';
+import { fetchAllData, saveData } from '../services/sheetsApi';
 
 // ─── Section Icon Map ────────────────────────────────────────────────────────
 export const SECTION_ICON_MAP = {
@@ -448,90 +449,18 @@ function applyTheme(theme) {
 const SiteContext = createContext(null);
 
 export const SiteProvider = ({ children }) => {
-  const [content, _setContentRaw] = useState(() => {
-    try {
-      const saved = localStorage.getItem(CONTENT_KEY);
-      if (saved) return deepMerge(defaultContent, JSON.parse(saved));
-    } catch { /* ignore */ }
-    return defaultContent;
+  const [content, _setContentRaw] = useState(defaultContent);
+  const [images, _setImagesRaw] = useState(defaultImages);
+  const [theme, _setThemeRaw] = useState(defaultTheme);
+  const [pages, _setPagesRaw] = useState(defaultPages);
+  const [products, _setProductsRaw] = useState(defaultProducts);
+  const [analytics, setAnalytics] = useState({
+    whatsapp_clicks: 0,
+    visits_simulated: [120, 150, 200, 180, 250, 310, 290],
   });
-
-  const [images, _setImagesRaw] = useState(() => {
-    try {
-      const saved = localStorage.getItem(IMAGES_KEY);
-      if (saved) return { ...defaultImages, ...JSON.parse(saved) };
-    } catch { /* ignore */ }
-    return defaultImages;
-  });
-
-  const [theme, _setThemeRaw] = useState(() => {
-    try {
-      const saved = localStorage.getItem(THEME_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        // Remove legacy override keys so applyTheme() falls back to
-        // textPrimary/textSecondary for card & navbar text colors.
-        // These were hardcoded in defaultTheme and prevented theme adaptation.
-        delete parsed.textCardPrimary;
-        delete parsed.textCardSecondary;
-        delete parsed.textNavbarPrimary;
-        delete parsed.textNavbarSecondary;
-        return { ...defaultTheme, ...parsed };
-      }
-    } catch { /* ignore */ }
-    return defaultTheme;
-  });
-
-  const [pages, _setPagesRaw] = useState(() => {
-    try {
-      const saved = localStorage.getItem(PAGES_KEY);
-      if (saved) return JSON.parse(saved);
-    } catch { /* ignore */ }
-    return defaultPages;
-  });
-
-  const [products, _setProductsRaw] = useState(() => {
-    try {
-      const saved = localStorage.getItem(PRODS_KEY);
-      if (saved) return JSON.parse(saved);
-    } catch { /* ignore */ }
-    return defaultProducts;
-  });
-
-  const [analytics, setAnalytics] = useState(() => {
-    try {
-      const saved = localStorage.getItem(ANALYTICS_KEY);
-      if (saved) return JSON.parse(saved);
-    } catch { /* ignore */ }
-    return {
-      whatsapp_clicks: 0,
-      visits_simulated: [120, 150, 200, 180, 250, 310, 290] // Simulamos 7 días
-    };
-  });
-
-  const [inbox, setInbox] = useState(() => {
-    try {
-      const saved = localStorage.getItem(INBOX_KEY);
-      if (saved) return JSON.parse(saved);
-    } catch { /* ignore */ }
-    return [];
-  });
-
-  const [menuSections, _setMenuSectionsRaw] = useState(() => {
-    try {
-      const saved = localStorage.getItem(MENU_KEY);
-      if (saved) return JSON.parse(saved);
-    } catch { /* ignore */ }
-    return defaultMenuSections;
-  });
-
-  const [customizerOptions, _setCustomizerOptionsRaw] = useState(() => {
-    try {
-      const saved = localStorage.getItem(CUSTOMIZER_KEY);
-      if (saved) return deepMerge(defaultCustomizerOptions, JSON.parse(saved));
-    } catch { /* ignore */ }
-    return defaultCustomizerOptions;
-  });
+  const [inbox, setInbox] = useState([]);
+  const [menuSections, _setMenuSectionsRaw] = useState(defaultMenuSections);
+  const [customizerOptions, _setCustomizerOptionsRaw] = useState(defaultCustomizerOptions);
 
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [saveStatus, setSaveStatus] = useState(null);
@@ -608,9 +537,33 @@ export const SiteProvider = ({ children }) => {
     if (session) setIsAuthenticated(true);
   }, []);
 
-  // Load data from localStorage on mount
+  // Load data from Google Sheets on mount
   useEffect(() => {
-    setLoadingDb(false);
+    const loadFromCloud = async () => {
+      try {
+        const data = await fetchAllData();
+        if (data && Object.keys(data).length > 0) {
+          if (data.content) _setContentRaw(deepMerge(defaultContent, data.content));
+          if (data.theme) {
+            const saved = { ...defaultTheme, ...data.theme };
+            delete saved.textCardPrimary;
+            delete saved.textCardSecondary;
+            delete saved.textNavbarPrimary;
+            delete saved.textNavbarSecondary;
+            _setThemeRaw(saved);
+          }
+          if (data.pages) _setPagesRaw(data.pages);
+          if (data.products) _setProductsRaw(data.products);
+          if (data.menuSections) _setMenuSectionsRaw(data.menuSections);
+          if (data.customizerOptions) _setCustomizerOptionsRaw(deepMerge(defaultCustomizerOptions, data.customizerOptions));
+        }
+      } catch (err) {
+        console.error('Failed to load from Google Sheets:', err);
+      } finally {
+        setLoadingDb(false);
+      }
+    };
+    loadFromCloud();
   }, []);
 
   // Apply every theme change live (real-time preview)
@@ -909,24 +862,24 @@ export const SiteProvider = ({ children }) => {
   };
   const removeImage = (key, index = null) => updateImage(key, null, index);
 
-  // ── Persist (localStorage only) ───────────────────────────────────────
+  // ── Persist (Google Sheets cloud only) ─────────────────────────────
   const saveContent = async () => {
     try {
       setSaveStatus('saving');
-      
-      localStorage.setItem(CONTENT_KEY, JSON.stringify(content));
-      localStorage.setItem(IMAGES_KEY,  JSON.stringify(images));
-      localStorage.setItem(THEME_KEY,   JSON.stringify(theme));
-      localStorage.setItem(PAGES_KEY,   JSON.stringify(pages));
-      localStorage.setItem(PRODS_KEY,   JSON.stringify(products));
-      localStorage.setItem(ANALYTICS_KEY,JSON.stringify(analytics));
-      localStorage.setItem(INBOX_KEY,   JSON.stringify(inbox));
-      localStorage.setItem(MENU_KEY,    JSON.stringify(menuSections));
-      localStorage.setItem(CUSTOMIZER_KEY, JSON.stringify(customizerOptions));
+
+      // Save to Google Sheets
+      await Promise.all([
+        saveData('content', content),
+        saveData('theme', theme),
+        saveData('pages', pages),
+        saveData('products', products),
+        saveData('menuSections', menuSections),
+        saveData('customizerOptions', customizerOptions),
+      ]);
 
       setSaveStatus('saved');
     } catch (error) {
-      console.error("Error saving to localStorage:", error);
+      console.error("Error saving:", error);
       setSaveStatus('error');
     } finally {
       setTimeout(() => setSaveStatus(null), 3000);
@@ -956,16 +909,15 @@ export const SiteProvider = ({ children }) => {
       _setMenuSectionsRaw(finalMenuSections);
       _setCustomizerOptionsRaw(finalCustomizerOptions);
 
-      // Persist to localStorage
-      localStorage.setItem(CONTENT_KEY, JSON.stringify(finalContent));
-      localStorage.setItem(IMAGES_KEY,  JSON.stringify(finalImages));
-      localStorage.setItem(THEME_KEY,   JSON.stringify(finalTheme));
-      localStorage.setItem(PAGES_KEY,   JSON.stringify(finalPages));
-      localStorage.setItem(PRODS_KEY,   JSON.stringify(finalProducts));
-      localStorage.setItem(ANALYTICS_KEY, JSON.stringify(analytics));
-      localStorage.setItem(INBOX_KEY,   JSON.stringify(inbox));
-      localStorage.setItem(MENU_KEY,    JSON.stringify(finalMenuSections));
-      localStorage.setItem(CUSTOMIZER_KEY, JSON.stringify(finalCustomizerOptions));
+      // Save to Google Sheets
+      await Promise.all([
+        saveData('content', finalContent),
+        saveData('theme', finalTheme),
+        saveData('pages', finalPages),
+        saveData('products', finalProducts),
+        saveData('menuSections', finalMenuSections),
+        saveData('customizerOptions', finalCustomizerOptions),
+      ]);
 
       // Clear draft and exit draft mode
       setDraft({});
@@ -985,8 +937,7 @@ export const SiteProvider = ({ children }) => {
     setDraftMode(false);
   };
 
-  const resetContent = () => {
-    [CONTENT_KEY, IMAGES_KEY, THEME_KEY, PAGES_KEY, PRODS_KEY, ANALYTICS_KEY, MENU_KEY, CUSTOMIZER_KEY].forEach(k => localStorage.removeItem(k));
+  const resetContent = async () => {
     _setContentRaw(defaultContent);
     _setImagesRaw(defaultImages);
     _setThemeRaw(defaultTheme);
@@ -996,6 +947,21 @@ export const SiteProvider = ({ children }) => {
     _setCustomizerOptionsRaw(defaultCustomizerOptions);
     setDraft({});
     setDraftMode(false);
+
+    // Reset cloud data to defaults
+    try {
+      await Promise.allSettled([
+        saveData('content', defaultContent),
+        saveData('theme', defaultTheme),
+        saveData('pages', defaultPages),
+        saveData('products', defaultProducts),
+        saveData('menuSections', defaultMenuSections),
+        saveData('customizerOptions', defaultCustomizerOptions),
+      ]);
+    } catch (err) {
+      console.warn('Cloud reset failed:', err);
+    }
+
     setSaveStatus('saved');
     setTimeout(() => setSaveStatus(null), 3000);
   };
