@@ -147,7 +147,7 @@ const Order = () => {
         qty: 1,
         sectionId,
         emoji: sectionEmoji,
-        customization: {
+        customization: customization.summary ? {
           size: customization.size?.key || null,
           sizeLabel: customization.size?.label || null,
           milk: customization.milk?.key || null,
@@ -158,7 +158,7 @@ const Order = () => {
           extrasLabels: customization.extras?.map(e => e.label) || [],
           excludedIngredients: customization.excludedIngredients || [],
           summary: customization.summary || '',
-        },
+        } : null,
       }],
     }));
   }, []);
@@ -739,7 +739,7 @@ const Order = () => {
                   <label style={labelStyle}><Phone size={12} style={{ marginRight: '0.25rem', verticalAlign: 'middle' }} /> Teléfono *</label>
                   <input
                     type="tel"
-                    placeholder="33 1234 5678"
+                    placeholder="+52 33 1234 5678"
                     value={cart.customer.phone}
                     onChange={e => {
                       let val = e.target.value.replace(/\D/g, '');
@@ -783,12 +783,12 @@ const Order = () => {
               {/* Submit */}
               <button
                 type="submit"
-                disabled={cart.items.length === 0 || (!tableNumber && (coverageStatus === 'unverified' || coverageStatus === 'checking'))}
+                disabled={cart.items.length === 0}
                 className="btn-primary"
                 style={{
                   width: '100%', padding: '0.75rem',
-                  opacity: (cart.items.length === 0 || (!tableNumber && (coverageStatus === 'unverified' || coverageStatus === 'checking'))) ? 0.5 : 1,
-                  cursor: (cart.items.length === 0 || (!tableNumber && (coverageStatus === 'unverified' || coverageStatus === 'checking'))) ? 'not-allowed' : 'pointer',
+                  opacity: cart.items.length === 0 ? 0.5 : 1,
+                  cursor: cart.items.length === 0 ? 'not-allowed' : 'pointer',
                 }}
               >
                 <Send size={16} />
