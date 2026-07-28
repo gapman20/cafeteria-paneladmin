@@ -5,6 +5,7 @@ import {
   Gift, Truck, Star,
 } from 'lucide-react';
 import { useContent, useProducts } from '../hooks';
+import { useSite } from '../context/SiteContext';
 import { useScrollReveal } from '../hooks/useScrollReveal';
 import SEO from '../components/SEO';
 import RomaBrewHero from '../components/RomaBrewHero';
@@ -47,23 +48,7 @@ const services = [
   },
 ];
 
-const testimonials = [
-  {
-    text: 'El mejor café que he probado en la ciudad. Cada visita es una experiencia única que conecta todos los sentidos.',
-    name: 'María García',
-    role: 'Chef Pastelera',
-  },
-  {
-    text: 'La suscripción Premium cambió mi rutina matutina. Recibir café fresco cada mes es un regalo que no me cambio por nada.',
-    name: 'Carlos Mendoza',
-    role: 'Diseñador Gráfico',
-  },
-  {
-    text: 'Los talleres de barismo son transformadores. Aprender a preparar mi propio café en casa me dio una nueva perspectiva.',
-    name: 'Ana Rodríguez',
-    role: 'Barista Profesional',
-  },
-];
+// The testimonials are now dynamic and fetched from SiteContext
 
 const faqData = [
   {
@@ -102,11 +87,28 @@ const subscriptionBenefits = [
 // ── Component ────────────────────────────────────────────────────────────────
 
 const Home = memo(() => {
-  const { content: siteContent } = useContent();
+  const { content: siteContent, addHomeTestimonial } = useSite();
   const { products } = useProducts();
   const navigate = useNavigate();
   const h = siteContent.home || {};
   const [openFaq, setOpenFaq] = useState(null);
+  
+  // Testimonial Form State
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [reviewForm, setReviewForm] = useState({ name: '', role: '', text: '' });
+  const [reviewSent, setReviewSent] = useState(false);
+
+  const handleReviewSubmit = (e) => {
+    e.preventDefault();
+    if (!reviewForm.name || !reviewForm.text) return;
+    addHomeTestimonial(reviewForm);
+    setReviewSent(true);
+    setReviewForm({ name: '', role: '', text: '' });
+    setTimeout(() => {
+      setReviewSent(false);
+      setShowReviewModal(false);
+    }, 2000);
+  };
   const [searchParams] = useSearchParams();
   const mesa = searchParams.get('mesa');
 
@@ -331,25 +333,69 @@ const Home = memo(() => {
           <p className="lux-section-subtitle lux-section-subtitle--light">
             Historias reales de personas que encontraron su café perfecto.
           </p>
-          <div className={`lux-testimonials-grid sr-stagger ${testimonialsReveal.isVisible ? 'sr-stagger--visible' : ''}`}>
-            {testimonials.map((t, i) => (
-              <div key={i} className="lux-testimonial-card sr-child">
-                <div className="lux-testimonial-quote">&ldquo;</div>
-                <p className="lux-testimonial-text">{t.text}</p>
-                <div className="lux-testimonial-author">
-                  <div className="lux-testimonial-avatar">
-                    {t.name.charAt(0)}
-                  </div>
-                  <div>
-                    <span className="lux-testimonial-name">{t.name}</span>
-                    <span className="lux-testimonial-role">{t.role}</span>
+          <div className={`lux-testimonials-marquee-wrapper sr-stagger ${testimonialsReveal.isVisible ? 'sr-stagger--visible' : ''}`}>
+            <div className="lux-testimonials-marquee">
+              {[...(h.testimonials || []), ...(h.testimonials || [])].map((t, i) => (
+                <div key={i} className="lux-testimonial-card sr-child">
+                  <div className="lux-testimonial-quote">&ldquo;</div>
+                  <p className="lux-testimonial-text">{t.text}</p>
+                  <div className="lux-testimonial-author">
+                    <div className="lux-testimonial-avatar">
+                      {t.name?.charAt(0) || 'C'}
+                    </div>
+                    <div>
+                      <span className="lux-testimonial-name">{t.name}</span>
+                      <span className="lux-testimonial-role">{t.role}</span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
+          </div>
+
+          <div style={{ marginTop: '3rem', textAlign: 'center' }}>
+            <button 
+              className="lux-btn" 
+              onClick={() => setShowReviewModal(true)}
+              style={{ background: 'transparent', border: '1px solid var(--lux-accent)', color: 'var(--lux-accent)' }}
+            >
+              Déjanos tu Reseña
+            </button>
           </div>
         </div>
       </section>
+
+      {/* Review Modal */}
+      {showReviewModal && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.8)', zIndex: 9999,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          padding: '1rem', backdropFilter: 'blur(5px)'
+        }}>
+          <div style={{
+            background: 'var(--color-surface)', padding: '2rem', borderRadius: '12px',
+            border: '1px solid var(--color-border)', width: '100%', maxWidth: '400px',
+            position: 'relative', animation: 'fadeInUp 0.3s ease forwards'
+          }}>
+            <button 
+              onClick={() => setShowReviewModal(false)}
+              style={{ position: 'absolute', top: '15px', right: '15px', background: 'transparent', border: 'none', color: 'var(--color-text)', fontSize: '1.2rem', cursor: 'pointer' }}
+            >
+              &times;
+            </button>
+            <h3 style={{ color: 'var(--color-text)', textAlign: 'center', marginBottom: '1.5rem', fontFamily: 'var(--font-display)', fontSize: '1.5rem' }}>Tu Reseña</h3>
+            <form onSubmit={handleReviewSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <input type="text" placeholder="Tu Nombre *" required value={reviewForm.name} onChange={e => setReviewForm({...reviewForm, name: e.target.value})} style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--color-border)', background: 'transparent', color: 'var(--color-text)' }} />
+              <input type="text" placeholder="Tu Ocupación (opcional)" value={reviewForm.role} onChange={e => setReviewForm({...reviewForm, role: e.target.value})} style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--color-border)', background: 'transparent', color: 'var(--color-text)' }} />
+              <textarea placeholder="Cuéntanos tu experiencia... *" required rows="4" value={reviewForm.text} onChange={e => setReviewForm({...reviewForm, text: e.target.value})} style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--color-border)', background: 'transparent', color: 'var(--color-text)', resize: 'vertical' }} />
+              <button type="submit" className="btn-primary" style={{ marginTop: '0.5rem', justifyContent: 'center', background: reviewSent ? '#10b981' : '' }}>
+                {reviewSent ? '¡Enviado!' : 'Publicar Reseña'}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* ── FAQ — Restyled ────────────────────────────────────────────────── */}
       <section

@@ -658,6 +658,14 @@ export const SiteProvider = ({ children }) => {
     });
   };
 
+  const addHomeTestimonial = (testimonial) => {
+    setContent(prev => {
+      const next = deepMerge({}, prev);
+      next.home.testimonials = [testimonial, ...(next.home.testimonials || [])];
+      return next;
+    });
+  };
+
   // ── Pages helpers ─────────────────────────────────────────────────────────
   const createPage = () => {
     const newPage = {
@@ -993,7 +1001,7 @@ export const SiteProvider = ({ children }) => {
   return (
     <SiteContext.Provider value={{
       content: effectiveContent, updateContent, updateServiceCard, moveServiceCard,
-      updateHomeStat, updateHomeStep, updateHomeTestimonial,
+      updateHomeStat, updateHomeStep, updateHomeTestimonial, addHomeTestimonial,
       images: effectiveImages,  updateImage, removeImage,
       theme: effectiveTheme,   updateTheme, resetTheme,
       pages: effectivePages, createPage, updatePage, deletePage, movePage,

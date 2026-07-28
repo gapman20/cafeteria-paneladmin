@@ -1210,6 +1210,7 @@ const Admin = memo(() => {
           { name: 'Esmeralda', p: '#10b981', s: '#06b6d4', bg: '#050a08', bgS: '#0a1a12', bgT: '#12291e', tP: '#FAFAFA', tS: '#A1A1AA', nav: '#050a08', card: '#0a1a12', rm: 1, go: 0.06, gi: 1 },
           { name: 'Rojo & Fuego', p: '#ef4444', s: '#f97316', bg: '#080505', bgS: '#1a0c0c', bgT: '#2a1515', tP: '#FAFAFA', tS: '#A1A1AA', nav: '#080505', card: '#1a0c0c', rm: 1, go: 0.06, gi: 1 },
           { name: 'Claro', p: '#3b82f6', s: '#8b5cf6', bg: '#f8fafc', bgS: '#ffffff', bgT: '#f1f5f9', tP: '#0f172a', tS: '#64748b', nav: '#f8fafc', card: '#ffffff', rm: 1, go: 0.06, gi: 0.5 },
+          { name: 'Verde Café', p: '#2A4737', s: '#d97706', bg: '#111111', bgS: '#1A1A1A', bgT: '#222222', tP: '#FAFAFA', tS: '#A1A1AA', nav: '#000000', navT: '#FFFFFF', card: '#1A1A1A', rm: 1, go: 0.05, gi: 0.5 },
         ];
 
         const applyPreset = (preset) => {
@@ -1221,6 +1222,13 @@ const Admin = memo(() => {
           updateTheme('textPrimary', preset.tP);
           updateTheme('textSecondary', preset.tS);
           updateTheme('navbarColor', preset.nav);
+          if (preset.navT) {
+            updateTheme('textNavbarPrimary', preset.navT);
+            updateTheme('textNavbarSecondary', preset.navT);
+          } else {
+            updateTheme('textNavbarPrimary', preset.tP);
+            updateTheme('textNavbarSecondary', preset.tS);
+          }
           updateTheme('cardBg', preset.card);
           updateTheme('radiusMultiplier', preset.rm);
           updateTheme('glassOpacity', preset.go);
