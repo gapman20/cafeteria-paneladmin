@@ -54,11 +54,14 @@ describe('Order Page', () => {
   it('increments quantity when clicking + on item already in cart', async () => {
     renderOrder();
     const addButtons = screen.getAllByLabelText(/Agregar Espresso Doble/);
+    
+    // First addition
     fireEvent.click(addButtons[0]);
     fireEvent.click(await screen.findByText(/Agregar al pedido —/));
     
-    // Now it's in the cart, clicking + on the menu item directly increments it without modal
+    // Second addition (opens modal again for customizable items)
     fireEvent.click(addButtons[0]);
+    fireEvent.click(await screen.findByText(/Agregar al pedido —/));
     
     expect(screen.getAllByText(/2 artículos/).length).toBeGreaterThanOrEqual(1);
   });

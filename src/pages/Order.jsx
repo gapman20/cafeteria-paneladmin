@@ -540,8 +540,10 @@ const Order = () => {
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
-                                const found = cart.items.find(i => i.name === item.name && i.sectionId === section.id && !i.customization);
-                                if (found) decrementItem(found.cartId);
+                                const cartItems = cart.items.filter(i => i.name === item.name && i.sectionId === section.id);
+                                if (cartItems.length > 0) {
+                                  decrementItem(cartItems[cartItems.length - 1].cartId);
+                                }
                               }}
                               aria-label={`Reducir ${item.name}`}
                               style={{
