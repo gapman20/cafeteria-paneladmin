@@ -7,18 +7,20 @@ La presente actualización tuvo como objetivo principal llevar a cabo un redise�
 El sistema fue estructurado utilizando componentes funcionales de React, aprovechando ampliamente la API de Hooks para el manejo de estado, efectos secundarios y lógica compartida.
 
 **Vistas Principales:**
-*   **`Home.jsx`**: Landing page principal con información del negocio. Se implementó un redireccionamiento automático (`useEffect`) para usuarios que ingresan escaneando un código QR con el parámetro `?mesa=XX`, llevándolos directamente a la vista de pedidos.
+*   **`Home.jsx`**: Landing page principal con información del negocio. Se implementó un redireccionamiento automático (`useEffect`) para usuarios que ingresan escaneando un código QR con el parámetro `?mesa=XX`, llevándolos directamente a la vista de pedidos. Además, consume las preguntas frecuentes (FAQs) directamente del estado global.
 *   **`Order.jsx`**: Pantalla central del sistema (Arma tu pedido). Se rediseñó para incluir:
     *   Formulario de cliente validado.
     *   Verificación de cobertura por GPS utilizando la API de geolocalización nativa del navegador y la fórmula de Haversine para calcular distancias.
     *   Generación de un "Ticket" visual al finalizar la orden, optimizado para impresión térmica (`window.print()`).
     *   Formateo en tiempo real del número telefónico a formato de 10 dígitos (`XX XXXX XXXX`).
+*   **`Admin.jsx`**: Panel de control robusto para la administración del contenido (FAQs, diseño, carga de imágenes de la galería, productos y configuración general).
 *   **`Contact.jsx`**: Vista de información de contacto corporativo y mapa. Rediseñada con CSS Grid responsivo (`auto-fit`).
-*   **`Menu.jsx`** y **`Gallery.jsx`**: Presentación del catálogo con revelado al hacer scroll (Scroll Reveal).
+*   **`Gallery.jsx`**: Presentación del catálogo visual (layout tipo "gato" de 16 espacios) enriquecida con un sistema de "Skeleton Loader" fluido para la carga asíncrona de imágenes.
 
-**Hooks Utilizados:**
-*   **Nativos de React**: `useState` (estado local para formularios y modales), `useEffect` (side-effects como redireccionamientos y listeners de scroll), `useCallback` (memorización de funciones como validadores y manejadores de eventos), `useMemo` (cálculos costosos o filtros).
-*   **React Router**: `useNavigate` (navegación programática), `useSearchParams` (extracción de parámetros como la mesa desde la URL).
+**Hooks y APIs Utilizadas:**
+*   **Nativos de React**: `useState` (estado local para formularios y modales), `useEffect` (side-effects como redireccionamientos y listeners de scroll), `useCallback` (memorización de funciones), `useMemo` (cálculos costosos o filtros), y `useRef` (utilizado como guardia para evitar renders duplicados causados por el *Strict Mode*).
+*   **React DOM**: `createPortal` (utilizado para renderizar ventanas modales directamente en el `body` y evitar conflictos de *Stacking Context* y `z-index`).
+*   **React Router**: `useNavigate` (navegación programática), `useSearchParams` (extracción de parámetros de URL).
 *   **Hooks Personalizados (Custom Hooks)**:
     *   `useSite()`: Contexto global (SiteContext) que provee datos del negocio, carrito y configuración temática.
     *   `useScrollReveal()`: Hook para inyectar clases CSS basadas en la intersección del usuario con la pantalla (`IntersectionObserver`), logrando animaciones suaves de entrada.
@@ -45,10 +47,12 @@ cafeteria-paneladmin/
 │   ├── hooks/
 │   │   └── useScrollReveal.js       <-- Lógica del Intersection Observer
 │   └── pages/
-│       ├── Home.jsx                 <-- Landing page con redirección QR
+│       ├── Home.jsx                 <-- Landing page con redirección QR y FAQs dinámicos
 │       ├── Order.jsx                <-- Lógica central de carrito, GPS, y ticket impreso
 │       ├── Menu.jsx                 <-- Listado de productos
-│       └── Contact.jsx              <-- Formularios de contacto y ubicación
+│       ├── Contact.jsx              <-- Formularios de contacto y ubicación
+│       ├── Gallery.jsx              <-- Galería con layout "gato" de 16 imágenes y Skeleton Loader
+│       └── Admin.jsx                <-- Panel de control, configuración de galería y FAQs
 ```
 
 ## 4. Historial de Errores y Soluciones Detalladas
@@ -90,3 +94,35 @@ Durante la jornada de desarrollo se presentaron diversos obstáculos que fueron 
 9.  **Ticket de Confirmación Impreso Deficiente**
     *   *Problema:* Al mandar a imprimir el recibo virtual, salía la interfaz completa (navegación, fondo oscuro brillante, botones, URLs y números de página del navegador), gastando tinta inútilmente.
     *   *Solución:* Se generó una hoja de estilos de impresión estricta (`@media print`) y `@page { margin: 0; }`. Se forzó el fondo a blanco y el texto a negro, ocultando `.navbar`, `header`, `footer` y configurando un `width: 380px` para que se ajustara elegantemente al tamaño de un ticket real sin estirarse al ancho de la hoja A4. Se agregaron recortes circulares para simular un verdadero ticket de papel.
+
+10. **Galería de Imágenes: Skeleton Loader Intermitente y Carga Fluida**
+    *   *Problema:* Las imágenes de la galería pausaban la interfaz mostrando un spinner por unos segundos en cada carga, luciendo poco estético. 
+    *   *Solución:* Se implementó un "Skeleton Loader" dinámico (un placeholder gris animado) que se muestra fluidamente mientras se precargan las imágenes en segundo plano. Se sincronizó para que todas las imágenes se revelen juntas evitando parpadeos.
+
+11. **Configuración de Galería en Admin (16 Imágenes)**
+    *   *Problema:* El usuario necesitaba subir 16 imágenes específicas para rellenar el diseño de la galería.
+    *   *Solución:* Se expandió el formulario en el panel de administrador para permitir la carga y gestión de hasta 16 slots fotográficos conectados a `SiteContext`.
+
+12. **Personalizador de Productos (Modal): Imágenes Dinámicas**
+    *   *Problema:* El modal (Customizer) que permite elegir el tamaño y leche siempre mostraba un ícono estático (o el logo) en lugar del producto real.
+    *   *Solución:* Se extrajo la propiedad `item.image` y se inyectó en el modal `DrinkCustomizer` para mostrar la foto real del producto con bordes circulares (avatar).
+
+13. **Productos No Personalizables (Comida) con Opciones de Bebida**
+    *   *Problema:* Al abrir platillos como el "Pollo a la plancha", el sistema preguntaba por "Tamaño", "Base de leche" y "Dulzor".
+    *   *Solución:* Se implementó un sistema de detección inteligente (`isFood`). Desde `Order.jsx` se evalúa si el icono de la categoría es comida o si el producto tiene la bandera `isCustomizable` apagada. Si es así, se ocultan todos los modificadores de bebida y solo se muestra información, precio base y el botón de agregar.
+
+14. **Flujo UX: Botón '+' Redirigiendo al Modal**
+    *   *Problema:* Presionar el botón de "+" en un producto no personalizable lo agregaba al instante al carrito sin dejar leer la descripción o ver la foto en grande.
+    *   *Solución:* Se reescribió el evento `onClick` del botón '+'. Ahora, la primera vez que se presiona un producto nuevo, siempre levanta el modal informativo. Solo aumenta la cantidad directamente en la lista si el producto ya había sido agregado previamente.
+
+15. **Productos Destacados Duplicados (Bug de React Strict Mode)**
+    *   *Problema:* Al hacer clic en un "producto estrella" desde la página de inicio, el enlace a la ruta `/pedir?featured=ID` terminaba agregando el producto dos veces (x2) al carrito de forma invisible.
+    *   *Solución:* Se identificó que el `useEffect` se ejecutaba dos veces por el "Strict Mode" de React 18. Se solucionó introduciendo un `useRef` como guardia (`processedFeatured`) para asegurar que la inyección al carrito ocurra estrictamente una vez.
+
+16. **Z-Index y Stacking Context en Modal de Mesa**
+    *   *Problema:* Al pedir desde una mesa (con el banner superior naranja visible), al abrir un producto el modal quedaba atrapado debajo del banner y de la barra de navegación, tapando y cortando la imagen del producto.
+    *   *Solución:* Se extrajo el componente `DrinkCustomizer` del flujo normal del DOM. Utilizando la técnica `createPortal` de `react-dom`, se inyectó el modal directamente en `document.body`. Esto permitió escapar del "Stacking Context" relativo de la vista de órdenes y garantizar que el modal cubra absolutamente toda la pantalla con un z-index prioritario.
+
+17. **Preguntas Frecuentes (FAQ) Dinámicas desde el Admin**
+    *   *Problema:* Las Preguntas Frecuentes de la vista principal estaban fijas en el código, impidiendo editarlas.
+    *   *Solución:* Se rediseñó el flujo para que `Home.jsx` lea los FAQs directamente del estado global (`content.home.faqs`). Además, se inicializaron con información contextualizada sobre las entregas en Guadalajara y el nombre "Príncipe Lonches más café".
