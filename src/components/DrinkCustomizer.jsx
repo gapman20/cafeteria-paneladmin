@@ -336,15 +336,16 @@ const DrinkCustomizer = ({ item, sectionColor, sectionEmoji, isFood, onClose, on
           <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '0.5rem' }}>
             {item.image ? (
               <div style={{
-                width: '80px', height: '80px', borderRadius: '50%',
+                width: '110px', height: '110px', borderRadius: '50%',
                 overflow: 'hidden', border: '2px solid var(--color-border)',
                 boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
                 background: `linear-gradient(135deg, ${sectionColor}20, ${sectionColor}08)`,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
                 <ImageFallback
                   src={item.image}
                   alt={item.name}
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  style={{ width: '100%', height: '100%', objectFit: 'contain' }}
                 />
               </div>
             ) : (

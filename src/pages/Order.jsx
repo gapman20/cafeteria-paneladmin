@@ -504,7 +504,7 @@ const Order = () => {
                       {/* Thumbnail image or emoji */}
                       {item.image ? (
                         <div style={{
-                          width: '56px', height: '56px', borderRadius: 'var(--radius-md)',
+                          width: '56px', height: '56px', borderRadius: '50%',
                           overflow: 'hidden', flexShrink: 0,
                           background: `linear-gradient(135deg, ${section.color}20, ${section.color}08)`,
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -513,7 +513,7 @@ const Order = () => {
                             src={item.image}
                             alt={item.name}
                             loading="lazy"
-                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                            style={{ width: '100%', height: '100%', objectFit: 'contain' }}
                           />
                         </div>
                       ) : (
@@ -598,7 +598,7 @@ const Order = () => {
 
         {/* ── Cart Column ── */}
         <div className={`order-cart${mobileCartOpen ? ' mobile-open' : ''}`}>
-          <div className="glass-card-static" style={{ padding: '1.25rem', position: 'sticky', top: 'calc(var(--nav-height) + 1rem)' }}>
+          <div className="glass-card-static" style={{ padding: '1.25rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <ShoppingCart size={18} style={{ color: 'var(--color-accent)' }} />

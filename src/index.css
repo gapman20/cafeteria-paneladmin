@@ -1367,6 +1367,9 @@ main {
 
 .order-cart {
   min-width: 0;
+  position: sticky;
+  top: calc(var(--nav-height) + 1rem);
+  align-self: start;
 }
 
 .order-floating-bar {
