@@ -1,10 +1,11 @@
-import React, { memo, useState, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import React, { memo, useState, useCallback, useEffect } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Coffee, Leaf, Globe, ChevronDown, ArrowRight,
   Gift, Truck, Star,
 } from 'lucide-react';
-import { useContent } from '../hooks';
+import { useProducts } from '../hooks';
+import { useSite } from '../context/SiteContext';
 import { useScrollReveal } from '../hooks/useScrollReveal';
 import SEO from '../components/SEO';
 import RomaBrewHero from '../components/RomaBrewHero';
@@ -29,33 +30,6 @@ const features = [
   },
 ];
 
-const shopProducts = [
-  {
-    name: 'Café de Origen Premium',
-    price: '285',
-    tag: 'Edición Limitada',
-    image: 'https://images.unsplash.com/photo-1559056199-641a0ac8b55e?w=600&q=80',
-  },
-  {
-    name: 'Prensa Francesa',
-    price: '450',
-    tag: 'Más Vendido',
-    image: 'https://images.unsplash.com/photo-1517256673644-36ad11246d21?w=600&q=80',
-  },
-  {
-    name: 'Granos Artesanales Tostados',
-    price: '195',
-    tag: null,
-    image: 'https://images.unsplash.com/photo-1447933601403-0c6688de566e?w=600&q=80',
-  },
-  {
-    name: 'Molino de Precisión',
-    price: '680',
-    tag: 'Nuevo',
-    image: 'https://images.unsplash.com/photo-1517668808822-9ebb02f2a0e6?w=600&q=80',
-  },
-];
-
 const services = [
   {
     emoji: '\u2615',
@@ -74,49 +48,15 @@ const services = [
   },
 ];
 
-const testimonials = [
-  {
-    text: 'El mejor café que he probado en la ciudad. Cada visita es una experiencia única que conecta todos los sentidos.',
-    name: 'María García',
-    role: 'Chef Pastelera',
-  },
-  {
-    text: 'La suscripción Premium cambió mi rutina matutina. Recibir café fresco cada mes es un regalo que no me cambio por nada.',
-    name: 'Carlos Mendoza',
-    role: 'Diseñador Gráfico',
-  },
-  {
-    text: 'Los talleres de barismo son transformadores. Aprender a preparar mi propio café en casa me dio una nueva perspectiva.',
-    name: 'Ana Rodríguez',
-    role: 'Barista Profesional',
-  },
-];
+// The testimonials are now dynamic and fetched from SiteContext
 
 const faqData = [
-  {
-    q: '¿Cuál es el tiempo de entrega?',
-    a: 'Realizamos entregas de lunes a sábado en la CDMX y área metropolitana. Los pedidos realizados antes de las 2:00 PM se entregan al día siguiente. Para el resto del país, el envío toma de 3 a 5 días hábiles.',
-  },
-  {
-    q: '¿Cómo puedo reservar una mesa?',
-    a: 'Puedes reservar directamente por WhatsApp o a través de nuestra página de contacto. Aceptamos reservaciones para grupos de hasta 12 personas. Para eventos privados o catas personalizadas, contáctanos con al menos una semana de anticipación.',
-  },
-  {
-    q: '¿De dónde viene su café?',
-    a: 'Trabajamos directamente con fincas en Colombia, Etiopía, Guatemala y México. Cada origen se selecciona por su perfil de sabor único y se tuesta en lotes pequeños cada semana para garantizar la máxima frescura.',
-  },
-  {
-    q: '¿Qué incluye la Suscripción Premium?',
-    a: 'La suscripción incluye mensualmente una bolsa de café de origen rotatorio (250g), acceso a catas exclusivas, preventas de ediciones limitadas, envío gratuito y acumulación de puntos de fidelidad canjeables en tienda.',
-  },
-  {
-    q: '¿Puedo cancelar o pausar mi suscripción?',
-    a: 'Sí, puedes pausar o cancelar en cualquier momento desde tu cuenta o contactándonos por WhatsApp. No hay penalizaciones ni permanencia mínima. Si pausas, conservas todos tus puntos acumulados.',
-  },
-  {
-    q: '¿Ofrecen capacitación para baristas?',
-    a: 'Sí, organizamos talleres mensuales de preparación de café: latte art, pour over, cold brew y más. También ofrecemos certificaciones para profesionales. Consulta nuestro calendario de eventos para las próximas fechas.',
-  },
+  { q: '¿Cuál es el tiempo de entrega?', a: 'Realizamos entregas rápidas en Guadalajara, Jalisco y su área metropolitana. Dependiendo de tu ubicación, tu pedido llegará en un estimado de 30 a 45 minutos.' },
+  { q: '¿Cómo puedo reservar una mesa?', a: 'Puedes reservar directamente por WhatsApp o a través de nuestra página. Aceptamos reservaciones para grupos en Príncipe Lonches más café. Contáctanos con anticipación.' },
+  { q: '¿De dónde vienen sus ingredientes?', a: 'En Príncipe Lonches más café utilizamos pan calientito e ingredientes frescos y locales de Jalisco. Nuestro café de especialidad proviene de fincas selectas para acompañar perfectamente tu lonche.' },
+  { q: '¿Tienen opciones para eventos o reuniones grandes?', a: '¡Claro! Atendemos pedidos especiales y catering para tus eventos en Guadalajara. Lonches, café y repostería para todos tus invitados.' },
+  { q: '¿Puedo personalizar mi pedido?', a: 'Sí, puedes agregar extras, elegir el tamaño de tu bebida o modificar los ingredientes de tu lonche directamente al hacer tu pedido en nuestra plataforma.' },
+  { q: '¿Cuáles son los métodos de pago aceptados?', a: 'Aceptamos pagos en efectivo, transferencias, y tarjetas de crédito/débito tanto en sucursal como en pedidos a domicilio.' },
 ];
 
 const subscriptionBenefits = [
@@ -129,9 +69,36 @@ const subscriptionBenefits = [
 // ── Component ────────────────────────────────────────────────────────────────
 
 const Home = memo(() => {
-  const { content } = useContent();
-  const h = content.home;
+  const { content: siteContent, addHomeTestimonial } = useSite();
+  const { products } = useProducts();
+  const navigate = useNavigate();
+  const h = siteContent.home || {};
   const [openFaq, setOpenFaq] = useState(null);
+  
+  // Testimonial Form State
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [reviewForm, setReviewForm] = useState({ name: '', role: '', text: '' });
+  const [reviewSent, setReviewSent] = useState(false);
+
+  const handleReviewSubmit = (e) => {
+    e.preventDefault();
+    if (!reviewForm.name || !reviewForm.text) return;
+    addHomeTestimonial(reviewForm);
+    setReviewSent(true);
+    setReviewForm({ name: '', role: '', text: '' });
+    setTimeout(() => {
+      setReviewSent(false);
+      setShowReviewModal(false);
+    }, 2000);
+  };
+  const [searchParams] = useSearchParams();
+  const mesa = searchParams.get('mesa');
+
+  useEffect(() => {
+    if (mesa) {
+      navigate(`/pedir?mesa=${mesa}`, { replace: true });
+    }
+  }, [mesa, navigate]);
 
   // Scroll reveal hooks — one per section
   const featuresReveal = useScrollReveal();
@@ -192,15 +159,20 @@ const Home = memo(() => {
             Lo mejor de nuestra selección artesanal, listo para llegar a tu puerta.
           </p>
           <div className={`lux-shop-grid sr-stagger ${shopReveal.isVisible ? 'sr-stagger--visible' : ''}`}>
-            {shopProducts.map((product, i) => (
-              <div key={i} className="lux-shop-card sr-child">
+            {products.filter(p => p.active).map((product) => (
+              <div 
+                key={product.id} 
+                className="lux-shop-card sr-child"
+                onClick={() => navigate(`/pedir?featured=${encodeURIComponent(product.id)}`)}
+                style={{ cursor: 'pointer' }}
+              >
                 <div className="lux-shop-card-image-wrap">
                   {product.tag && (
                     <span className="lux-shop-badge">{product.tag}</span>
                   )}
                   <img
                     className="lux-shop-card-image"
-                    src={product.image}
+                    src={product.image || 'https://via.placeholder.com/600x800?text=Sin+Imagen'}
                     alt={product.name}
                     loading="lazy"
                   />
@@ -343,25 +315,69 @@ const Home = memo(() => {
           <p className="lux-section-subtitle lux-section-subtitle--light">
             Historias reales de personas que encontraron su café perfecto.
           </p>
-          <div className={`lux-testimonials-grid sr-stagger ${testimonialsReveal.isVisible ? 'sr-stagger--visible' : ''}`}>
-            {testimonials.map((t, i) => (
-              <div key={i} className="lux-testimonial-card sr-child">
-                <div className="lux-testimonial-quote">&ldquo;</div>
-                <p className="lux-testimonial-text">{t.text}</p>
-                <div className="lux-testimonial-author">
-                  <div className="lux-testimonial-avatar">
-                    {t.name.charAt(0)}
-                  </div>
-                  <div>
-                    <span className="lux-testimonial-name">{t.name}</span>
-                    <span className="lux-testimonial-role">{t.role}</span>
+          <div className={`lux-testimonials-marquee-wrapper sr-stagger ${testimonialsReveal.isVisible ? 'sr-stagger--visible' : ''}`}>
+            <div className="lux-testimonials-marquee">
+              {[...(h.testimonials || []), ...(h.testimonials || [])].map((t, i) => (
+                <div key={i} className="lux-testimonial-card sr-child">
+                  <div className="lux-testimonial-quote">&ldquo;</div>
+                  <p className="lux-testimonial-text">{t.text}</p>
+                  <div className="lux-testimonial-author">
+                    <div className="lux-testimonial-avatar">
+                      {t.name?.charAt(0) || 'C'}
+                    </div>
+                    <div>
+                      <span className="lux-testimonial-name">{t.name}</span>
+                      <span className="lux-testimonial-role">{t.role}</span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
+          </div>
+
+          <div style={{ marginTop: '3rem', textAlign: 'center' }}>
+            <button 
+              className="lux-btn" 
+              onClick={() => setShowReviewModal(true)}
+              style={{ background: 'transparent', border: '1px solid var(--lux-accent)', color: 'var(--lux-accent)' }}
+            >
+              Déjanos tu Reseña
+            </button>
           </div>
         </div>
       </section>
+
+      {/* Review Modal */}
+      {showReviewModal && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.8)', zIndex: 9999,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          padding: '1rem', backdropFilter: 'blur(5px)'
+        }}>
+          <div style={{
+            background: 'var(--color-surface)', padding: '2rem', borderRadius: '12px',
+            border: '1px solid var(--color-border)', width: '100%', maxWidth: '400px',
+            position: 'relative', animation: 'fadeInUp 0.3s ease forwards'
+          }}>
+            <button 
+              onClick={() => setShowReviewModal(false)}
+              style={{ position: 'absolute', top: '15px', right: '15px', background: 'transparent', border: 'none', color: 'var(--color-text)', fontSize: '1.2rem', cursor: 'pointer' }}
+            >
+              &times;
+            </button>
+            <h3 style={{ color: 'var(--color-text)', textAlign: 'center', marginBottom: '1.5rem', fontFamily: 'var(--font-display)', fontSize: '1.5rem' }}>Tu Reseña</h3>
+            <form onSubmit={handleReviewSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <input type="text" placeholder="Tu Nombre *" required value={reviewForm.name} onChange={e => setReviewForm({...reviewForm, name: e.target.value})} style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--color-border)', background: 'transparent', color: 'var(--color-text)' }} />
+              <input type="text" placeholder="Tu Ocupación (opcional)" value={reviewForm.role} onChange={e => setReviewForm({...reviewForm, role: e.target.value})} style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--color-border)', background: 'transparent', color: 'var(--color-text)' }} />
+              <textarea placeholder="Cuéntanos tu experiencia... *" required rows="4" value={reviewForm.text} onChange={e => setReviewForm({...reviewForm, text: e.target.value})} style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--color-border)', background: 'transparent', color: 'var(--color-text)', resize: 'vertical' }} />
+              <button type="submit" className="btn-primary" style={{ marginTop: '0.5rem', justifyContent: 'center', background: reviewSent ? '#10b981' : '' }}>
+                {reviewSent ? '¡Enviado!' : 'Publicar Reseña'}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* ── FAQ — Restyled ────────────────────────────────────────────────── */}
       <section
@@ -375,7 +391,7 @@ const Home = memo(() => {
             suscripción.
           </p>
           <div className="lux-faq-list">
-            {faqData.map((item, i) => {
+            {(h.faqs || faqData).map((item, i) => {
               const isOpen = openFaq === i;
               return (
                 <div

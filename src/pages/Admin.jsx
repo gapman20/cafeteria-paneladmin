@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, memo } from 'react';
 import {
   useContent, useImages, useTheme,
-  usePages, useInbox, useAuth, useAnalytics, useMenu, useCustomizer,
+  usePages, useInbox, useAuth, useAnalytics, useMenu, useCustomizer, useProducts,
 } from '../hooks';
 import { SECTION_ICON_MAP, SECTION_ICON_OPTIONS } from '../context/SiteContext';
 import ImageUploader from '../components/ImageUploader';
@@ -17,7 +17,7 @@ import {
   ArrowUp, ArrowDown, Bold, List, Search,
   Download, Upload, Copy, Utensils, Coffee,
   Folder, LayoutGrid, Edit3, MousePointer, Clock,
-  Link, ImagePlus, MapPin, Phone, AtSign
+  Link, ImagePlus, MapPin, Phone, AtSign, Star
 } from 'lucide-react';
 import { compressImage } from '../utils/compressImage';
 import { validatePassword } from '../utils/validation';
@@ -141,6 +141,7 @@ const sidebarCategories = [
       { id: 'pages', label: 'Páginas', icon: <FileText size={17} /> },
       { id: 'images', label: 'Imágenes & Galería', icon: <ImageIcon size={17} /> },
       { id: 'home', label: 'Inicio', icon: <Monitor size={17} /> },
+      { id: 'featured', label: 'Productos Estrella', icon: <Star size={17} /> },
       { id: 'menu', label: 'Menú', icon: <Utensils size={17} /> },
       { id: 'customizer', label: 'Personalizar Bebidas', icon: <Coffee size={17} /> },
       { id: 'contact', label: 'Contacto', icon: <Mail size={17} /> },
@@ -198,12 +199,12 @@ const defaultTestimonials = [
 ];
 
 const defaultFaqs = [
-  { q: '¿Cuál es el tiempo de entrega?', a: 'Realizamos entregas de lunes a sábado en la CDMX y área metropolitana. Los pedidos realizados antes de las 2:00 PM se entregan al día siguiente.' },
-  { q: '¿Cómo puedo reservar una mesa?', a: 'Puedes reservar directamente por WhatsApp o a través de nuestra página de contacto. Aceptamos reservaciones para grupos de hasta 12 personas.' },
-  { q: '¿De dónde viene su café?', a: 'Trabajamos directamente con fincas en Colombia, Etiopía, Guatemala y México. Cada origen se selecciona por su perfil de sabor único.' },
-  { q: '¿Qué incluye la Suscripción Premium?', a: 'La suscripción incluye mensualmente una bolsa de café de origen rotatorio, acceso a catas exclusivas, preventas de ediciones limitadas, envío gratuito y puntos de fidelidad.' },
-  { q: '¿Puedo cancelar o pausar mi suscripción?', a: 'Sí, puedes pausar o cancelar en cualquier momento desde tu cuenta o contactándonos por WhatsApp. No hay penalizaciones.' },
-  { q: '¿Ofrecen capacitación para baristas?', a: 'Sí, organizamos talleres mensuales de preparación de café: latte art, pour over, cold brew y más. También ofrecemos certificaciones.' },
+  { q: '¿Cuál es el tiempo de entrega?', a: 'Realizamos entregas rápidas en Guadalajara, Jalisco y su área metropolitana. Dependiendo de tu ubicación, tu pedido llegará en un estimado de 30 a 45 minutos.' },
+  { q: '¿Cómo puedo reservar una mesa?', a: 'Puedes reservar directamente por WhatsApp o a través de nuestra página. Aceptamos reservaciones para grupos en Príncipe Lonches más café. Contáctanos con anticipación.' },
+  { q: '¿De dónde vienen sus ingredientes?', a: 'En Príncipe Lonches más café utilizamos pan calientito e ingredientes frescos y locales de Jalisco. Nuestro café de especialidad proviene de fincas selectas para acompañar perfectamente tu lonche.' },
+  { q: '¿Tienen opciones para eventos o reuniones grandes?', a: '¡Claro! Atendemos pedidos especiales y catering para tus eventos en Guadalajara. Lonches, café y repostería para todos tus invitados.' },
+  { q: '¿Puedo personalizar mi pedido?', a: 'Sí, puedes agregar extras, elegir el tamaño de tu bebida o modificar los ingredientes de tu lonche directamente al hacer tu pedido en nuestra plataforma.' },
+  { q: '¿Cuáles son los métodos de pago aceptados?', a: 'Aceptamos pagos en efectivo, transferencias, y tarjetas de crédito/débito tanto en sucursal como en pedidos a domicilio.' },
 ];
 
 const defaultSubBenefits = [
@@ -224,6 +225,7 @@ const Admin = memo(() => {
   const { analytics } = useAnalytics();
   const { menuSections, updateMenuSection, updateMenuItem, addMenuItem, removeMenuItem, addMenuSection, removeMenuSection, moveMenuSection, moveMenuItem } = useMenu();
   const { customizerOptions, updateCustomizerOption, addCustomizerOption, removeCustomizerOption, toggleCustomizerOption, moveCustomizerOption } = useCustomizer();
+  const { products, updateProduct, createProduct, deleteProduct, moveProduct } = useProducts();
 
   const [active, setActive] = useState('dashboard');
   const [toasts, setToasts] = useState([]);
@@ -595,6 +597,109 @@ const Admin = memo(() => {
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+        );
+      }
+
+      // ── Productos Estrella ──────────────────────────────────────────────────
+      case 'featured': {
+        return (
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+              <h3 className="admin-section-title" style={{ margin: 0 }}>
+                <Star size={20} color="var(--admin-accent)" /> Productos Estrella
+              </h3>
+              <button 
+                className="admin-btn"
+                onClick={() => createProduct()}
+              >
+                <Plus size={16} /> Agregar Producto
+              </button>
+            </div>
+
+            <p style={{ color: 'var(--admin-text-muted)', fontSize: '0.875rem', marginBottom: '1.5rem' }}>
+              Administra los productos destacados que aparecen en la página de inicio.
+            </p>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              {products.map((prod, index) => (
+                <div key={prod.id} className="admin-card" style={{ padding: '1rem', display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
+                  
+                  {/* Left: Image Upload */}
+                  <div style={{ width: '220px', flexShrink: 0 }}>
+                    <ImageUploader 
+                      label="Imagen"
+                      value={prod.image}
+                      onChange={(img) => updateProduct(prod.id, 'image', img)}
+                    />
+                  </div>
+
+                  {/* Center: Fields */}
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                      <div>
+                        <label className="admin-label">Título del Producto</label>
+                        <input 
+                          value={prod.name} 
+                          onChange={(e) => updateProduct(prod.id, 'name', e.target.value)}
+                          className="admin-input" 
+                          placeholder="Ej: Café Premium"
+                        />
+                      </div>
+                      <div>
+                        <label className="admin-label">Precio (MXN)</label>
+                        <input 
+                          value={prod.price} 
+                          onChange={(e) => updateProduct(prod.id, 'price', e.target.value)}
+                          className="admin-input" 
+                          placeholder="Ej: 285"
+                        />
+                      </div>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                      <div>
+                        <label className="admin-label">Etiqueta (opcional)</label>
+                        <input 
+                          value={prod.tag || ''} 
+                          onChange={(e) => updateProduct(prod.id, 'tag', e.target.value)}
+                          className="admin-input" 
+                          placeholder="Ej: Edición Limitada"
+                        />
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', paddingTop: '1.5rem' }}>
+                        <label className="admin-toggle" title="¿Tiene opciones de personalización (leche, etc)?">
+                          <input 
+                            type="checkbox" 
+                            checked={prod.isCustomizable || false} 
+                            onChange={e => updateProduct(prod.id, 'isCustomizable', e.target.checked)} 
+                          />
+                        </label>
+                        <span style={{ fontSize: '0.8125rem', color: 'var(--admin-text-muted)', marginLeft: '0.5rem' }}>
+                          Abrir menú de personalización al ordenar
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Right: Actions */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'center' }}>
+                    <button onClick={() => moveProduct(index, 'up')} className="admin-move-btn" title="Arriba"><ArrowUp size={14} /></button>
+                    <button onClick={() => moveProduct(index, 'down')} className="admin-move-btn" title="Abajo"><ArrowDown size={14} /></button>
+                    <label className="admin-toggle" style={{ margin: '8px 0' }} title="Mostrar/Ocultar">
+                      <input type="checkbox" checked={prod.active} onChange={e => updateProduct(prod.id, 'active', e.target.checked)} />
+                    </label>
+                    <button onClick={() => { if (confirm(`¿Eliminar producto "${prod.name}"?`)) deleteProduct(prod.id); }} className="admin-btn-danger" style={{ padding: '6px', marginTop: 'auto' }}>
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                </div>
+              ))}
+              {products.length === 0 && (
+                <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--admin-text-muted)', background: 'var(--admin-surface)', borderRadius: 'var(--admin-radius)' }}>
+                  No hay productos estrella. Agrega uno nuevo.
+                </div>
+              )}
             </div>
           </div>
         );
@@ -1105,6 +1210,7 @@ const Admin = memo(() => {
           { name: 'Esmeralda', p: '#10b981', s: '#06b6d4', bg: '#050a08', bgS: '#0a1a12', bgT: '#12291e', tP: '#FAFAFA', tS: '#A1A1AA', nav: '#050a08', card: '#0a1a12', rm: 1, go: 0.06, gi: 1 },
           { name: 'Rojo & Fuego', p: '#ef4444', s: '#f97316', bg: '#080505', bgS: '#1a0c0c', bgT: '#2a1515', tP: '#FAFAFA', tS: '#A1A1AA', nav: '#080505', card: '#1a0c0c', rm: 1, go: 0.06, gi: 1 },
           { name: 'Claro', p: '#3b82f6', s: '#8b5cf6', bg: '#f8fafc', bgS: '#ffffff', bgT: '#f1f5f9', tP: '#0f172a', tS: '#64748b', nav: '#f8fafc', card: '#ffffff', rm: 1, go: 0.06, gi: 0.5 },
+          { name: 'Verde Café', p: '#2A4737', s: '#d97706', bg: '#111111', bgS: '#1A1A1A', bgT: '#222222', tP: '#FAFAFA', tS: '#A1A1AA', nav: '#000000', navT: '#FFFFFF', card: '#1A1A1A', rm: 1, go: 0.05, gi: 0.5 },
         ];
 
         const applyPreset = (preset) => {
@@ -1116,6 +1222,13 @@ const Admin = memo(() => {
           updateTheme('textPrimary', preset.tP);
           updateTheme('textSecondary', preset.tS);
           updateTheme('navbarColor', preset.nav);
+          if (preset.navT) {
+            updateTheme('textNavbarPrimary', preset.navT);
+            updateTheme('textNavbarSecondary', preset.navT);
+          } else {
+            updateTheme('textNavbarPrimary', preset.tP);
+            updateTheme('textNavbarSecondary', preset.tS);
+          }
           updateTheme('cardBg', preset.card);
           updateTheme('radiusMultiplier', preset.rm);
           updateTheme('glassOpacity', preset.go);
@@ -2259,10 +2372,10 @@ const Admin = memo(() => {
       case 'images': {
         const imageSlots = [
           { key: 'logo', label: 'Logo', size: '~45 KB' },
-          ...(images.portfolio || []).map((_, i) => ({ 
-            key: `portfolio.${i}`, 
-            label: `Galería ${i + 1}`, 
-            size: `~${120 + i * 30} KB`, 
+          ...Array.from({ length: 16 }).map((_, i) => ({
+            key: `portfolio.${i}`,
+            label: `Pieza de Galería ${i + 1}`,
+            size: `~150 KB`,
           })),
         ];
 

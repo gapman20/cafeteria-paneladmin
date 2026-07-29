@@ -192,10 +192,8 @@ const defaultPages = [
 
 // ─── Default Products ────────────────────────────────────────────────────────
 const defaultProducts = [
-  { id: 'prod-1', name: 'Espresso Doble',        description: 'Doble extracción con granulometría perfecta. Notas intensas de cacao, avellana y un final dulce.', price: '$65', image: null, active: true },
-  { id: 'prod-2', name: 'Cappuccino Clásico',     description: 'Espresso con espuma de leche sedosa, balance perfecto entre café y cremosidad. Un clásico que nunca falla.', price: '$85', image: null, active: true },
-  { id: 'prod-3', name: 'Pour Over Ethiopia',     description: 'Café de origen único con notas de arándano, jazmín y un final cítrico brillante. Preparado método V60.', price: '$120', image: null, active: true },
-  { id: 'prod-4', name: 'Affogato Artesanal',     description: 'Espresso caliente sobre helado de vainilla hecho en casa. El postre perfecto para los amantes del café.', price: '$95', image: null, active: true },
+  { id: 'prod-1', name: 'Café de Origen Premium', description: 'Edición limitada con notas exquisitas.', price: '285', tag: 'Edición Limitada', image: 'https://images.unsplash.com/photo-1559056199-641a0ac8b55e?w=600&q=80', active: true, isCustomizable: true },
+  { id: 'prod-2', name: 'Prensa Francesa', description: 'El método clásico para una extracción perfecta.', price: '450', tag: 'Más Vendido', image: 'https://images.unsplash.com/photo-1517256673644-36ad11246d21?w=600&q=80', active: true, isCustomizable: false },
 ];
 
 // ─── Default Theme ────────────────────────────────────────────────────────────
@@ -622,6 +620,14 @@ export const SiteProvider = ({ children }) => {
     });
   };
 
+  const addHomeTestimonial = (testimonial) => {
+    setContent(prev => {
+      const next = deepMerge({}, prev);
+      next.home.testimonials = [testimonial, ...(next.home.testimonials || [])];
+      return next;
+    });
+  };
+
   // ── Pages helpers ─────────────────────────────────────────────────────────
   const createPage = () => {
     const newPage = {
@@ -657,8 +663,10 @@ export const SiteProvider = ({ children }) => {
       id:          `prod-${Date.now()}`,
       name:        'Nuevo Producto',
       description: 'Descripción breve del producto.',
-      price:       '$0.00',
+      price:       '0',
       image:       null,
+      tag:         '',
+      isCustomizable: false,
       active:      true
     };
     setProducts(prev => [newProduct, ...prev]);
@@ -969,7 +977,7 @@ export const SiteProvider = ({ children }) => {
   return (
     <SiteContext.Provider value={{
       content: effectiveContent, updateContent, updateServiceCard, moveServiceCard,
-      updateHomeStat, updateHomeStep, updateHomeTestimonial,
+      updateHomeStat, updateHomeStep, updateHomeTestimonial, addHomeTestimonial,
       images: effectiveImages,  updateImage, removeImage,
       theme: effectiveTheme,   updateTheme, resetTheme,
       pages: effectivePages, createPage, updatePage, deletePage, movePage,

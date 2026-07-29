@@ -36,12 +36,16 @@ export function buildOrderMessage(cartOrItems, customer) {
   const timeStr = new Date().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
   lines.push(`Fecha: ${dateStr} ${timeStr}`);
   
-  if (customer.tableNumber) {
+  if (customer.orderType === 'table' || customer.tableNumber) {
+    lines.push(`Tipo: En Mesa`);
     lines.push(`Mesa: ${customer.tableNumber}`);
     lines.push(`Para: ${customer.name}`);
   } else {
+    lines.push(`Tipo: ${customer.orderType === 'delivery' ? 'A Domicilio' : 'Para Llevar'}`);
     lines.push(`Para: ${customer.name}`);
-    lines.push(`Dir: ${customer.address}`);
+    if (customer.orderType === 'delivery') {
+      lines.push(`Dir: ${customer.address}`);
+    }
     lines.push(`Tel: ${customer.phone}`);
   }
   

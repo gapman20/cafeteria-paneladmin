@@ -307,6 +307,15 @@ main {
 
 .btn-primary:active { transform: scale(0.98); }
 
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  box-shadow: none;
+  background: var(--color-accent-subtle);
+  color: var(--color-text-muted);
+  transform: none;
+}
+
 .btn-outline {
   display: inline-flex;
   align-items: center;
@@ -470,10 +479,7 @@ main {
 
 @media screen and (max-width: 768px) {
   .whatsapp-float {
-    width: 44px;
-    height: 44px;
-    bottom: 16px;
-    right: 16px;
+    display: none !important;
   }
 }
 
@@ -1380,6 +1386,22 @@ main {
 
   .order-cart.mobile-open {
     display: block;
+    position: fixed;
+    top: 60px; /* Space for navbar */
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1000;
+    background: var(--color-base);
+    padding: var(--container-padding);
+    padding-bottom: 6rem; /* Space for the bottom floating button */
+    overflow-y: auto;
+    animation: slideUpCart 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  @keyframes slideUpCart {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
   }
 
   .order-floating-bar {
@@ -1391,13 +1413,15 @@ main {
     z-index: 998;
     background: var(--color-surface);
     border-top: 1px solid var(--color-border);
-    padding: 0.875rem var(--container-padding);
-    padding-bottom: calc(0.875rem + env(safe-area-inset-bottom, 0px));
+    padding: 1.2rem var(--container-padding);
+    padding-bottom: calc(1.2rem + env(safe-area-inset-bottom, 0px));
     justify-content: space-between;
     align-items: center;
     color: var(--color-text);
     font-size: 0.9rem;
     box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.25);
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
     cursor: pointer;
     transition: background 120ms ease;
   }

@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { ShoppingCart, Plus, Minus, Send, Trash2, ShoppingBag, MapPin, User, Phone, FileText } from 'lucide-react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { ShoppingCart, Plus, Minus, Send, Trash2, ShoppingBag, MapPin, User, Phone, FileText, X, Navigation, Printer } from 'lucide-react';
 import { useSite, SECTION_ICON_MAP } from '../context/SiteContext';
 import { parsePrice } from '../utils/priceParser';
 import { buildOrderMessage, getWhatsAppUrl } from '../utils/whatsappMessage';
@@ -57,12 +58,73 @@ const errorTextStyle = {
 
 /* ─── Order Page ────────────────────────────────────────────────────────────── */
 const Order = () => {
-  const { menuSections, content, tableNumber } = useSite();
+  const { menuSections, content, images, tableNumber, products } = useSite();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [cart, setCart] = useState(loadCart);
   const [errors, setErrors] = useState({});
   const [mobileCartOpen, setMobileCartOpen] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [lastOrder, setLastOrder] = useState(null);
+  const [coverageStatus, setCoverageStatus] = useState('unverified'); // unverified, checking, valid, invalid, error
+  const [coverageMsg, setCoverageMsg] = useState('');
   const [customizerItem, setCustomizerItem] = useState(null); // { item, sectionId, sectionColor, sectionEmoji }
+
+  // ── Delivery Coverage Logic ───────────────────────────────────────────────
+  const getDistanceFromLatLonInKm = (lat1, lon1, lat2, lon2) => {
+    const R = 6371; // Radius of the earth in km
+    const dLat = (lat2 - lat1) * (Math.PI / 180);
+    const dLon = (lon2 - lon1) * (Math.PI / 180);
+    const a = 
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) * 
+      Math.sin(dLon / 2) * Math.sin(dLon / 2); 
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)); 
+    return R * c; 
+  };
+
+  const verifyCoverageByGPS = () => {
+    if (!navigator.geolocation) {
+      setCoverageStatus('error');
+      setCoverageMsg('Tu dispositivo no soporta GPS.');
+      return;
+    }
+
+    setCoverageStatus('checking');
+    setCoverageMsg('Obteniendo ubicación GPS...');
+    setErrors(prev => ({ ...prev, address: undefined, submit: undefined }));
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const customerLat = position.coords.latitude;
+        const customerLng = position.coords.longitude;
+        const cafeLat = parseFloat(content.mapLat || 19.4326);
+        const cafeLng = parseFloat(content.mapLng || -99.1332);
+
+        const distance = getDistanceFromLatLonInKm(cafeLat, cafeLng, customerLat, customerLng);
+        
+        if (distance <= 2.0) {
+          setCoverageStatus('valid');
+          setCoverageMsg(`¡Cobertura confirmada por GPS! (Aprox. ${distance.toFixed(1)} km)`);
+          if (!cart.customer.address) {
+            setCart(prev => ({ ...prev, customer: { ...prev.customer, address: 'Ubicación GPS confirmada' } }));
+            setErrors(prev => ({ ...prev, address: undefined }));
+          }
+        } else {
+          setCoverageStatus('invalid');
+          setCoverageMsg(`Tu ubicación está a ${distance.toFixed(1)} km. Fuera del rango de envío a domicilio, tu pedido será marcado como "Solo para llevar".`);
+          if (!cart.customer.address) {
+            setCart(prev => ({ ...prev, customer: { ...prev.customer, address: 'Para llevar / Pasar a recoger' } }));
+            setErrors(prev => ({ ...prev, address: undefined }));
+          }
+        }
+      },
+      () => {
+        setCoverageStatus('error');
+        setCoverageMsg('No pudimos acceder a tu GPS. Por favor permite el acceso o usa la búsqueda manual.');
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
+  };
 
   // Sync cart to localStorage
   useEffect(() => { saveCart(cart); }, [cart]);
@@ -74,34 +136,79 @@ const Order = () => {
     return () => clearTimeout(id);
   }, [submitted]);
 
-  const whatsappNumber = content?.whatsappFloat?.number || '';
-
   // ── Cart helpers ──────────────────────────────────────────────────────────
   const addItemWithCustomization = useCallback((item, sectionId, sectionEmoji, customization) => {
-    setCart(prev => ({
-      ...prev,
-      items: [...prev.items, {
-        cartId: `cart-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-        name: item.name,
-        price: customization.totalPrice,
-        qty: 1,
-        sectionId,
-        emoji: sectionEmoji,
-        customization: {
-          size: customization.size?.key || null,
-          sizeLabel: customization.size?.label || null,
-          milk: customization.milk?.key || null,
-          milkLabel: customization.milk?.label || null,
-          sweetness: customization.sweetness?.key || null,
-          sweetnessLabel: customization.sweetness?.label || null,
-          extras: customization.extras?.map(e => e.key) || [],
-          extrasLabels: customization.extras?.map(e => e.label) || [],
-          excludedIngredients: customization.excludedIngredients || [],
-          summary: customization.summary || '',
-        },
-      }],
-    }));
+    setCart(prev => {
+      // Validamos si ya existe el mismo artículo con exactamente la misma personalización
+      const existingIdx = prev.items.findIndex(i => 
+        i.name === item.name && 
+        i.sectionId === sectionId &&
+        (i.customization?.summary || '') === (customization.summary || '')
+      );
+
+      if (existingIdx >= 0) {
+        const newItems = [...prev.items];
+        newItems[existingIdx] = {
+          ...newItems[existingIdx],
+          qty: newItems[existingIdx].qty + 1
+        };
+        return { ...prev, items: newItems };
+      }
+
+      return {
+        ...prev,
+        items: [...prev.items, {
+          cartId: `cart-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+          name: item.name,
+          price: customization.totalPrice,
+          qty: 1,
+          sectionId,
+          emoji: sectionEmoji,
+          customization: customization.summary ? {
+            size: customization.size?.key || null,
+            sizeLabel: customization.size?.label || null,
+            milk: customization.milk?.key || null,
+            milkLabel: customization.milk?.label || null,
+            sweetness: customization.sweetness?.key || null,
+            sweetnessLabel: customization.sweetness?.label || null,
+            extras: customization.extras?.map(e => e.key) || [],
+            extrasLabels: customization.extras?.map(e => e.label) || [],
+            excludedIngredients: customization.excludedIngredients || [],
+            summary: customization.summary || '',
+          } : null,
+        }],
+      };
+    });
   }, []);
+
+  // Handle 'featured' URL parameter
+  const processedFeatured = useRef(false);
+  useEffect(() => {
+    const featuredId = searchParams.get('featured');
+    if (featuredId && products && !processedFeatured.current) {
+      processedFeatured.current = true;
+      const prod = products.find(p => p.id === featuredId);
+      if (prod) {
+        setTimeout(() => {
+          if (prod.isCustomizable) {
+            // Open customizer
+            setCustomizerItem({ item: prod, sectionId: 'featured', sectionColor: '#C8956C', sectionEmoji: '⭐', isFood: false });
+          } else {
+            // Add directly to cart
+            addItemWithCustomization(prod, 'featured', '⭐', {
+              totalPrice: parsePrice(prod.price),
+              size: null, milk: null, sweetness: null, extras: [], excludedIngredients: [], summary: ''
+            });
+            setMobileCartOpen(true);
+          }
+        }, 0);
+      }
+      // Remove the parameter so it doesn't trigger again on refresh
+      setSearchParams(new URLSearchParams());
+    }
+  }, [searchParams, products, setSearchParams, addItemWithCustomization]);
+
+  const whatsappNumber = content?.whatsappFloat?.number || '';
 
   const decrementItem = useCallback((cartId) => {
     setCart(prev => {
@@ -130,6 +237,10 @@ const Order = () => {
   const updateCustomer = useCallback((field, value) => {
     setCart(prev => ({ ...prev, customer: { ...prev.customer, [field]: value } }));
     setErrors(prev => ({ ...prev, [field]: undefined }));
+    if (field === 'address') {
+      setCoverageStatus('unverified');
+      setCoverageMsg('');
+    }
   }, []);
 
   // ── Computed ──────────────────────────────────────────────────────────────
@@ -137,8 +248,9 @@ const Order = () => {
   const totalPrice = useMemo(() => cart.items.reduce((sum, i) => sum + i.price * i.qty, 0), [cart.items]);
 
   const getItemQty = useCallback((name, sectionId) => {
-    const found = cart.items.find(i => i.name === name && i.sectionId === sectionId);
-    return found ? found.qty : 0;
+    return cart.items
+      .filter(i => i.name === name && i.sectionId === sectionId)
+      .reduce((sum, i) => sum + i.qty, 0);
   }, [cart.items]);
 
   // ── Submit ────────────────────────────────────────────────────────────────
@@ -156,7 +268,11 @@ const Order = () => {
     
     if (!tableNumber) {
       const addressResult = validateRequired(cart.customer.address, 'Dirección');
-      if (!addressResult.valid) newErrors.address = addressResult.error;
+      if (!addressResult.valid) {
+        newErrors.address = addressResult.error;
+      } else if (coverageStatus === 'unverified' || coverageStatus === 'checking') {
+        newErrors.submit = 'Por favor verifica la cobertura de tu ubicación con el botón GPS antes de enviar el pedido.';
+      }
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -169,18 +285,164 @@ const Order = () => {
       return;
     }
 
-    const customerData = { ...cart.customer, tableNumber, siteName: content.siteName };
+    const orderType = tableNumber ? 'table' : (coverageStatus === 'valid' ? 'delivery' : 'pickup');
+    const customerData = { ...cart.customer, tableNumber, orderType, siteName: content.siteName };
     const message = buildOrderMessage(cart.items, customerData);
     const url = getWhatsAppUrl(whatsappNumber, message);
     window.open(url, '_blank', 'noopener,noreferrer');
 
-    // Clear cart
-    setCart(prev => ({ ...prev, items: [] }));
+    // Save last order before clearing
+    setLastOrder({
+      items: cart.items,
+      customer: customerData,
+      total: cart.items.reduce((acc, item) => {
+        const priceNum = typeof item.price === 'number' ? item.price : parsePrice(`$${item.price}`);
+        return acc + (priceNum * item.qty);
+      }, 0)
+    });
+
+    // Clear cart and customer data completely
+    setCart(INITIAL_CART);
+    setCoverageStatus('unverified');
+    setCoverageMsg('');
     setErrors({});
     setSubmitted(true);
-  }, [cart, whatsappNumber]);
+  }, [cart, whatsappNumber, content.siteName, coverageStatus, tableNumber]);
 
   // ── Render ────────────────────────────────────────────────────────────────
+  if (lastOrder) {
+    return (
+      <div className="page order-page" style={{ position: 'relative', zIndex: 1 }}>
+        <SEO title={`Pedido Exitoso | ${content.siteName}`} />
+        <div style={{ position: 'absolute', top: '10%', left: '50%', transform: 'translate(-50%, -50%)', width: '600px', height: '400px', background: '#22c55e', filter: 'blur(200px)', opacity: '0.05', borderRadius: '50%', zIndex: -1 }} />
+        
+        <header style={{ textAlign: 'center', marginBottom: '2.5rem', marginTop: '1rem' }}>
+          <div className="animate-fade-up">
+            <h1 className="h1-premium" style={{ color: '#22c55e' }}>¡Pedido Enviado!</h1>
+            <p className="subtitle" style={{ maxWidth: '480px', margin: '0 auto' }}>
+              Tu orden ha sido enviada a cocina. Aquí tienes tu ticket de confirmación.
+            </p>
+          </div>
+        </header>
+
+        <div className="animate-fade-up ticket-container" style={{ 
+          maxWidth: '400px', margin: '0 auto', background: 'var(--color-surface)', 
+          border: '1px solid var(--color-border)', borderRadius: '12px', padding: '2rem',
+          boxShadow: 'var(--shadow-md)', position: 'relative', overflow: 'hidden'
+        }}>
+          {/* Internal cutouts */}
+          <div style={{
+            position: 'absolute', top: '100px', left: '-15px', width: '30px', height: '30px',
+            backgroundColor: 'var(--color-base)', borderRadius: '50%',
+            boxShadow: 'inset -2px 0 3px rgba(0,0,0,0.1)'
+          }} />
+          <div style={{
+            position: 'absolute', top: '100px', right: '-15px', width: '30px', height: '30px',
+            backgroundColor: 'var(--color-base)', borderRadius: '50%',
+            boxShadow: 'inset 2px 0 3px rgba(0,0,0,0.1)'
+          }} />
+
+          {/* Ticket styling elements */}
+          <div style={{ borderBottom: '2px dashed var(--color-border)', paddingBottom: '1.5rem', marginBottom: '1.5rem', textAlign: 'center' }}>
+            {images?.logo && (
+              <img src={images.logo} alt={content.siteName} style={{ maxHeight: '60px', margin: '0 auto 1rem', display: 'block' }} />
+            )}
+            <h2 style={{ fontFamily: 'var(--font-display)', color: 'var(--color-text)', fontSize: '1.5rem', margin: 0 }}>{content.siteName}</h2>
+            
+            <div style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', marginTop: '0.5rem', lineHeight: '1.4' }}>
+              <div>{content.contact?.address}</div>
+              <div>{content.contact?.email} • {content.contact?.whatsapp}</div>
+            </div>
+            {lastOrder.customer.tableNumber ? (
+              <p style={{ color: 'var(--color-accent)', fontWeight: 700, margin: '0.5rem 0 0 0' }}>MESA {lastOrder.customer.tableNumber}</p>
+            ) : (
+              <p style={{ color: 'var(--color-text-secondary)', margin: '0.5rem 0 0 0' }}>Para: {lastOrder.customer.name}</p>
+            )}
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1.5rem' }}>
+            {lastOrder.items.map((item, idx) => {
+              const priceNum = typeof item.price === 'number' ? item.price : parsePrice(`$${item.price}`);
+              return (
+                <div key={idx}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--color-text)', fontWeight: 500, fontSize: '0.95rem' }}>
+                    <span>{item.qty}x {item.name}</span>
+                    <span>${(priceNum * item.qty).toFixed(2)}</span>
+                  </div>
+                  {item.customization && item.customization.summary && (
+                    <div style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)', marginLeft: '1.5rem', marginTop: '0.2rem' }}>
+                      ↳ {item.customization.summary}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          <div style={{ borderTop: '2px dashed var(--color-border)', paddingTop: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ fontWeight: 700, color: 'var(--color-text-secondary)' }}>TOTAL</span>
+            <span style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--color-accent)', fontFamily: 'var(--font-display)' }}>${lastOrder.total.toFixed(2)}</span>
+          </div>
+
+          <div style={{ borderTop: '2px dashed var(--color-border)', paddingTop: '1.5rem', marginTop: '1.5rem', textAlign: 'center' }}>
+            <p style={{ fontWeight: 600, color: 'var(--color-text)', margin: 0 }}>¡Gracias por tu compra!</p>
+          </div>
+
+          <div style={{ display: 'flex', gap: '1rem', marginTop: '2rem' }}>
+            <button 
+              onClick={() => {
+                setLastOrder(null);
+                setSubmitted(false);
+                setMobileCartOpen(false);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              className="btn-outline"
+              style={{ flex: 1, padding: '0.8rem', fontSize: '0.9rem' }}
+            >
+              Nueva Orden
+            </button>
+
+            <button 
+              onClick={() => window.print()}
+              className="btn-primary"
+              style={{ flex: 1, padding: '0.8rem', fontSize: '0.9rem', display: 'flex', justifyContent: 'center', gap: '0.5rem' }}
+            >
+              <Printer size={18} /> Imprimir
+            </button>
+          </div>
+        </div>
+
+        <style dangerouslySetInnerHTML={{__html: `
+          @page { margin: 0; }
+          @media print {
+            body, html { 
+              background: white !important; 
+              color: black !important; 
+              margin: 0 !important; 
+              padding: 0 !important; 
+            }
+            .navbar, header, footer, .btn-primary, .btn-outline { display: none !important; }
+            .page { padding: 0 !important; margin: 0 !important; min-height: auto !important; }
+            
+            .ticket-container { 
+              box-shadow: none !important; 
+              border: 1px solid #ddd !important; 
+              background: white !important; 
+              color: black !important;
+              margin: 20px auto !important;
+              width: 380px !important;
+              max-width: 100% !important;
+              page-break-inside: avoid;
+            }
+            .ticket-container * { color: black !important; }
+            .ticket-container > div:nth-child(1), .ticket-container > div:nth-child(2) { display: none !important; }
+            .ticket-container div[style*="dashed"] { border-color: #aaa !important; border-width: 1px !important; }
+          }
+        `}} />
+      </div>
+    );
+  }
+
   return (
     <div className="page order-page" style={{ position: 'relative', zIndex: 1 }}>
       <SEO title={`Pedir | ${content.siteName}`} description="Arma tu pedido y envíalo por WhatsApp" />
@@ -198,16 +460,6 @@ const Order = () => {
         </div>
       </header>
 
-      {submitted && (
-        <div className="animate-fade-up" style={{
-          textAlign: 'center', padding: '1rem', marginBottom: '1.5rem',
-          background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)',
-          borderRadius: 'var(--radius-md)', color: '#22c55e', fontWeight: 600, fontSize: '0.9rem',
-        }}>
-          ¡Pedido enviado por WhatsApp! Tu carrito se ha vaciado.
-        </div>
-      )}
-
       {/* Two-column grid */}
       <div className="order-grid">
         {/* ── Menu Column ── */}
@@ -221,6 +473,7 @@ const Order = () => {
 
           {menuSections.map((section) => {
             const Icon = SECTION_ICON_MAP[section.icon] || SECTION_ICON_MAP.coffee;
+            const isFoodSection = !['coffee', 'snowflake', 'glass-water', 'droplets', 'wine', 'beer'].includes(section.icon);
             return (
               <section key={section.id} style={{ marginBottom: '2rem' }}>
                 {/* Section Header */}
@@ -245,7 +498,7 @@ const Order = () => {
                     onClick={(e) => {
                       // Don't open customizer if clicking on the +/- buttons
                       if (e.target.closest('button')) return;
-                      setCustomizerItem({ item, sectionId: section.id, sectionColor: section.color, sectionEmoji: item.img || '🍽️' });
+                      setCustomizerItem({ item, sectionId: section.id, sectionColor: section.color, sectionEmoji: item.img || '🍽️', isFood: isFoodSection });
                     }}
                     >
                       {/* Thumbnail image or emoji */}
@@ -287,8 +540,10 @@ const Order = () => {
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
-                                const found = cart.items.find(i => i.name === item.name && i.sectionId === section.id && !i.customization);
-                                if (found) decrementItem(found.cartId);
+                                const cartItems = cart.items.filter(i => i.name === item.name && i.sectionId === section.id);
+                                if (cartItems.length > 0) {
+                                  decrementItem(cartItems[cartItems.length - 1].cartId);
+                                }
                               }}
                               aria-label={`Reducir ${item.name}`}
                               style={{
@@ -307,6 +562,31 @@ const Order = () => {
                             }}>{qty}</span>
                           </>
                         )}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (item.isCustomizable) {
+                              setCustomizerItem({ item, sectionId: section.id, sectionColor: section.color, sectionEmoji: item.img || section.emoji, isFood: false });
+                            } else {
+                              const found = cart.items.find(i => i.name === item.name && i.sectionId === section.id && !i.customization);
+                              if (found) {
+                                incrementCartItem(found.cartId);
+                              } else {
+                                // En lugar de agregarlo directo, abrimos el modal para que vean la información
+                                setCustomizerItem({ item, sectionId: section.id, sectionColor: section.color, sectionEmoji: item.img || section.emoji, isFood: isFoodSection });
+                              }
+                            }
+                          }}
+                          aria-label={`Agregar ${item.name}`}
+                          style={{
+                            width: '30px', height: '30px', borderRadius: 'var(--radius-full)',
+                            background: 'var(--color-accent)', border: 'none',
+                            color: 'var(--btn-text)', display: 'flex', alignItems: 'center',
+                            justifyContent: 'center', cursor: 'pointer',
+                          }}
+                        >
+                          <Plus size={14} />
+                        </button>
                       </div>
                     </div>
                   );
@@ -327,13 +607,20 @@ const Order = () => {
                   color: 'var(--color-text)', margin: 0,
                 }}>Tu Pedido</h3>
               </div>
-              {cart.items.length > 0 && (
-                <button onClick={clearCart} className="btn-ghost" style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}
-                  aria-label="Vaciar carrito"
-                >
-                  <Trash2 size={12} /> Limpiar
-                </button>
-              )}
+              <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                {cart.items.length > 0 && (
+                  <button onClick={clearCart} className="btn-ghost" style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}
+                    aria-label="Vaciar carrito"
+                  >
+                    <Trash2 size={12} /> Limpiar
+                  </button>
+                )}
+                {mobileCartOpen && (
+                  <button onClick={() => setMobileCartOpen(false)} className="btn-ghost" style={{ padding: '4px' }}>
+                    <X size={18} />
+                  </button>
+                )}
+              </div>
             </div>
 
             {/* Cart items */}
@@ -432,9 +719,41 @@ const Order = () => {
                       placeholder="Calle, número, colonia"
                       value={cart.customer.address}
                       onChange={e => updateCustomer('address', e.target.value)}
-                      style={errors.address ? inputErrorStyle : inputStyle}
+                      style={{ ...(errors.address || coverageStatus === 'invalid' ? inputErrorStyle : inputStyle), width: '100%' }}
                     />
                     {errors.address && <div style={errorTextStyle}>{errors.address}</div>}
+                    
+                    {/* Coverage Status Banner */}
+                    {coverageStatus === 'valid' && (
+                      <div style={{ marginTop: '0.5rem', color: '#10B981', fontSize: '0.8rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <span style={{ fontSize: '1rem' }}>✓</span> {coverageMsg}
+                      </div>
+                    )}
+                    {(coverageStatus === 'invalid' || coverageStatus === 'error') && (
+                      <div style={{ marginTop: '0.5rem', color: '#EF4444', fontSize: '0.8rem', fontWeight: 600, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <div>{coverageMsg}</div>
+                        <button
+                          type="button"
+                          onClick={verifyCoverageByGPS}
+                          className="btn-ghost"
+                          style={{ color: 'var(--color-accent)', padding: '0.25rem 0', display: 'flex', alignItems: 'center', gap: '0.25rem', width: 'fit-content' }}
+                        >
+                          <Navigation size={14} /> Usar mi ubicación actual (GPS)
+                        </button>
+                      </div>
+                    )}
+                    {coverageStatus === 'unverified' && (
+                      <div style={{ marginTop: '0.5rem' }}>
+                        <button
+                          type="button"
+                          onClick={verifyCoverageByGPS}
+                          className="btn-ghost"
+                          style={{ color: 'var(--color-text-secondary)', padding: '0.25rem 0', display: 'flex', alignItems: 'center', gap: '0.25rem', width: 'fit-content', fontSize: '0.8rem', fontWeight: 600 }}
+                        >
+                          <Navigation size={14} /> Validar cobertura por GPS
+                        </button>
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -442,9 +761,19 @@ const Order = () => {
                   <label style={labelStyle}><Phone size={12} style={{ marginRight: '0.25rem', verticalAlign: 'middle' }} /> Teléfono *</label>
                   <input
                     type="tel"
-                    placeholder="+52 123 456 7890"
+                    placeholder="+52 33 1234 5678"
                     value={cart.customer.phone}
-                    onChange={e => updateCustomer('phone', e.target.value)}
+                    onChange={e => {
+                      let val = e.target.value.replace(/\D/g, '');
+                      if (val.length > 10) val = val.slice(0, 10);
+                      let formatted = val;
+                      if (val.length > 2 && val.length <= 6) {
+                        formatted = `${val.slice(0, 2)} ${val.slice(2)}`;
+                      } else if (val.length > 6) {
+                        formatted = `${val.slice(0, 2)} ${val.slice(2, 6)} ${val.slice(6)}`;
+                      }
+                      updateCustomer('phone', formatted);
+                    }}
                     style={errors.phone ? inputErrorStyle : inputStyle}
                   />
                   {errors.phone && <div style={errorTextStyle}>{errors.phone}</div>}
@@ -502,10 +831,10 @@ const Order = () => {
           aria-label={`Ver carrito: ${totalItems} artículos, $${totalPrice}`}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <ShoppingCart size={18} />
-            <span style={{ fontWeight: 700 }}>{totalItems} {totalItems === 1 ? 'artículo' : 'artículos'}</span>
+            <ShoppingCart size={20} />
+            <span style={{ fontWeight: 700, fontSize: '1rem' }}>{totalItems} {totalItems === 1 ? 'artículo' : 'artículos'}</span>
           </div>
-          <span style={{ fontWeight: 800, fontFamily: 'var(--font-display)' }}>${totalPrice}</span>
+          <span style={{ fontWeight: 800, fontFamily: 'var(--font-display)', fontSize: '1.25rem' }}>${totalPrice}</span>
         </div>
       )}
 
@@ -516,6 +845,7 @@ const Order = () => {
           sectionId={customizerItem.sectionId}
           sectionColor={customizerItem.sectionColor}
           sectionEmoji={customizerItem.sectionEmoji}
+          isFood={customizerItem.isFood}
           onClose={() => setCustomizerItem(null)}
           onAdd={(customization) => {
             addItemWithCustomization(
