@@ -27,4 +27,10 @@ export default defineConfig([
       'react-hooks/refs': 'off',
     },
   },
+  {
+    files: ['server.js', 'api/**/*.js'],
+    languageOptions: {
+      globals: globals.node,
+    },
+  },
 ])
