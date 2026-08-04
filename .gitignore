@@ -20,6 +20,9 @@ dist-ssr
 # CodeGraph
 .codegraph/
 
+# Gentle AI skill registry (auto-generated)
+.atl/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
